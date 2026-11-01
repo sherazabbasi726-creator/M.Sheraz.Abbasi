@@ -430,6 +430,7 @@ nav#nav button .ni{width:44px;height:28px}
 .wpa span{font-size:24px;line-height:1}
 .satlbl{background:rgba(10,20,32,.72);color:#fff;border:0;box-shadow:none;font:700 11px system-ui;padding:2px 6px;border-radius:6px}
 .satlbl:before{display:none}
+.phlbl{background:rgba(10,20,32,.85);color:#fff;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);font:800 14px system-ui;letter-spacing:.05em;padding:3px 9px;border-radius:8px}.phlbl:before{display:none}.phlbl.ph1{border-color:#ff9f43}.phlbl.ph2{border-color:#54a0ff}.phlbl.ph3{border-color:#c56cf0}.phlbl.ph4{border-color:#1dd1a1}
 .leaflet-popup-content{font:13px/1.4 system-ui;color:#15202b}
 .grp h2{margin:2px 0 4px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--txt)}
 .grp .gsub{color:var(--mut);font-size:13px;margin-bottom:14px}
@@ -2186,8 +2187,8 @@ function renderSatView(el){
     let bounds=null;
     if(SITE_BORDER){const pl=SITE_BORDER.map(ll);bounds=L.latLngBounds(pl);
       if(satLayers.border)L.polygon(pl,{color:'#ffeb3b',weight:3,dashArray:'8 6',fill:false,interactive:false}).addTo(map)}
-    if(satLayers.phases){try{const P=heroPolys(),cols={1:'#ff9f43',2:'#54a0ff',3:'#5f27cd',4:'#1dd1a1'};
-      for(const [i,rings] of Object.entries(P))for(const r of rings){if(!r||r.length<3)continue;L.polygon(r.map(ll),{color:cols[i]||'#fff',weight:2,fill:false}).bindTooltip('Phase '+i,{sticky:true}).addTo(map)}}catch(e){console.warn(e)}}
+    if(satLayers.phases){try{const P=heroPolys(),cols={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};
+      for(const [i,rings] of Object.entries(P)){const big=(rings||[]).filter(r=>r&&r.length>=3).sort((a,b)=>b.length-a.length)[0];for(const r of rings){if(!r||r.length<3)continue;const pg=L.polygon(r.map(ll),{color:cols[i]||'#fff',weight:3,fill:false,interactive:false});if(r===big)pg.bindTooltip('PHASE '+i,{permanent:true,direction:'center',className:'phlbl ph'+i});pg.addTo(map)}}}catch(e){console.warn(e)}}
     if(satLayers.areas){for(const a of newAreaList()){let pf=0;try{const R=asCalc(a.k);pf=R?R.pFill:0}catch(e){}
       const t=Math.max(0,Math.min(1,pf/100)),col=a.w?'#4fc3f7':`rgb(${Math.round(220-180*t)},${Math.round(80+150*t)},${Math.round(60+40*t)})`;
       const poly=L.polygon(a.c.map(ll),{color:'#ffffff',weight:1.5,fillColor:col,fillOpacity:a.w?.25:.38});
@@ -2218,7 +2219,7 @@ function loadLeafletIn(win){
   const d=win.document;
   return new Promise((res,rej)=>{
     if(!d.getElementById('lfcss')){const c=d.createElement('link');c.id='lfcss';c.rel='stylesheet';c.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';d.head.append(c);
-      const st=d.createElement('style');st.textContent='.satlbl{background:rgba(10,20,32,.75);color:#fff;border:0;box-shadow:none;font:800 12px system-ui;padding:2px 6px;border-radius:6px}.satlbl:before{display:none}.leaflet-popup-content{font:13px/1.4 system-ui;color:#15202b}';d.head.append(st)}
+      const st=d.createElement('style');st.textContent='.satlbl{background:rgba(10,20,32,.75);color:#fff;border:0;box-shadow:none;font:800 12px system-ui;padding:2px 6px;border-radius:6px}.satlbl:before{display:none}.phlbl{background:rgba(10,20,32,.85);color:#fff;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);font:800 14px system-ui;letter-spacing:.05em;padding:3px 9px;border-radius:8px}.phlbl:before{display:none}.phlbl.ph1{border-color:#ff9f43}.phlbl.ph2{border-color:#54a0ff}.phlbl.ph3{border-color:#c56cf0}.phlbl.ph4{border-color:#1dd1a1}.leaflet-popup-content{font:13px/1.4 system-ui;color:#15202b}';d.head.append(st)}
     const sc=d.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';sc.onload=()=>res();sc.onerror=()=>rej(new Error('The map needs internet the first time.'));d.head.append(sc)})
 }
 function renderSimpleSat(box,win){
@@ -2231,6 +2232,7 @@ function renderSimpleSat(box,win){
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,maxNativeZoom:19,opacity:.85}).addTo(map);
     const ll=([E,N])=>utm38ToLL(E,N);let bounds=null;
     if(SITE_BORDER){const pl=SITE_BORDER.map(ll);bounds=L.latLngBounds(pl);L.polygon(pl,{color:'#ffeb3b',weight:3,dashArray:'8 6',fill:false,interactive:false}).addTo(map)}
+    try{const P=heroPolys(),cols={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};for(const [i,rings] of Object.entries(P)){const big=(rings||[]).filter(r=>r&&r.length>=3).sort((a,b)=>b.length-a.length)[0];for(const r of rings){if(!r||r.length<3)continue;const pg=L.polygon(r.map(ll),{color:cols[i]||'#fff',weight:3,fill:false,interactive:false});if(r===big)pg.bindTooltip('PHASE '+i,{permanent:true,direction:'center',className:'phlbl ph'+i});pg.addTo(map)}}}catch(e){console.warn(e)}
     for(const a of newAreaList()){
       const nm=newAreaName(a.k),num=a.w?('W'+(+a.k.slice(1))):String(+a.k.slice(1));
       L.polygon(a.c.map(ll),{color:'#ffffff',weight:1.5,fillColor:a.w?'#4fc3f7':'#ffffff',fillOpacity:a.w?.2:.06})
