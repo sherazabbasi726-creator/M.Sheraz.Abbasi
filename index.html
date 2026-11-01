@@ -1449,7 +1449,7 @@ function downloadApp(){
    Single file. Data: Firebase RTDB over REST/SSE with localStorage cache.
    Dynamic DOM is built with h() + addEventListener (no inline handlers).
    ===================================================================== */
-const DB_URL='https://valetsitetrack-default-rtdb.europe-west1.firebasedatabase.app/';
+const DB_URL='https://sheraz-site-default-rtdb.europe-west1.firebasedatabase.app/';  // Sheraz's own Firebase (project sheraz-site)
 const ROOT='earthsync_site/';
 const CTRL_BASE=[[1,2763383.11,667322.387],[2,2760361.552,669115.225],[3,2760376.249,669077.081],[4,2760383.093,669055.928],[5,2760393.842,669014.983],[6,2760400.496,668985.216],[7,2760411.297,668936.904],[8,2760422.459,668886.966],[9,2760439.184,668812.161],[10,2760459.766,668720.09],[11,2760474.02,668656.331],[12,2760482.839,668622.672],[13,2760504.977,668565.493],[14,2760529.655,668520.531],[15,2760551.623,668488.941],[16,2760594.286,668441.114],[17,2760621.253,668416.226],[18,2760899.946,668160.855],[19,2760933.436,668126.489],[20,2760978.014,668070.008],[21,2761009.089,668019.794],[22,2761046.262,667937.478],[23,2761095.21,667801.511],[24,2761112.827,667752.574],[25,2761118.517,667736.77],[26,2761128.238,667707.294],[27,2761142.166,667650.563],[28,2761148.917,667606.158],[29,2761151.969,667566.87],[30,2761152.0,667517.872],[31,2761148.0,667470.156],[32,2761134.199,667398.067],[33,2761120.36,667352.441],[34,2761059.409,667177.896],[35,2761034.333,667106.087],[36,2761022.633,667069.731],[37,2761013.56,667024.056],[38,2761008.678,666979.472],[39,2760869.259,667071.347],[40,2760500.381,667334.309],[41,2760216.214,667558.275],[42,2760076.901,667672.62],[43,2759948.053,667771.977],[44,2759881.54,667820.753],[45,2759760.493,667905.371],[46,2759635.093,667987.671],[47,2759545.227,668043.465],[48,2759484.793,668079.637],[49,2759409.818,668123.585],[50,2759421.878,668167.269],[51,2759434.702,668229.886],[52,2759439.017,668290.011],[53,2759442.764,668493.976],[54,2759444.828,668623.029],[55,2759441.437,668697.993],[56,2759424.062,668816.752],[57,2759401.54,668903.855],[58,2759373.514,668982.573],[59,2759280.992,669210.96],[60,2759160.804,669507.642],[61,2758990.124,669928.96]];            // [[no, northing, easting], ...] from PNEZ_Points.csv
 const COL=['#f2a93b','#4fb3a5','#7aa2f7','#d9737f'];
@@ -1598,7 +1598,8 @@ const boqSum=(k,i)=>BOQ[k][i][0]+BOQ[k][i][1];
 const ph=id=>{const o=Object.assign({name:'Phase '+id,color:COL[id-1],targetHa:0,targetCut:0,targetFill:0,poly:''},S.phases[id]||{});if(!o.poly&&BORDER_SEED[id])o.poly=BORDER_SEED[id];if(!o.targetCut&&BOQ.cut[id])o.targetCut=boqSum('cut',id);if(!o.targetFill&&BOQ.fill[id])o.targetFill=boqSum('fill',id);return o};
 
 /* ---------- owner sign-in (Firebase Auth, email + password). Everyone can read; only the signed-in owner can write ---------- */
-const FB_KEY='';   // Firebase web API key (not a secret). Can also be typed once in Data > Owner sign-in
+const FB_KEY='AIzaSyAM6UPdbAY6ReQoUgurQNd_xqMC8UP1sAs';
+const OWNER_UID='C9I8h7GvPMe6m5KNpPXucfNnmRl2';   // Firebase web API key (not a secret). Can also be typed once in Data > Owner sign-in
 let AUTH=lsGet('es_auth',null);
 const fbKey=()=>FB_KEY||lsGet('es_fbkey','');
 const signedIn=()=>!!(AUTH&&AUTH.rt);
@@ -1669,7 +1670,7 @@ function applyRemote(path,data){
     }else{
       // empty cloud: publish what we have (seeded WIRs + any local edits)
       normalize();
-      patch('',{wirs:S.wirs,phases:S.phases,ctrl:S.ctrl,cf:S.cf,meta:Object.assign({},S.meta,{seeded:true})});
+      if(canEdit())patch('',Object.assign({},S,{meta:Object.assign({},S.meta,{seeded:true})}));
     }
   }else{setAt(S,parts,data);normalize()}
   if(!canEdit()&&pending.length){pending.length=0;lsSet('es_pending',pending)}   // a view-only device never pushes queued edits
@@ -1887,7 +1888,7 @@ function repairBox(msg){
 function renderAll(){try{renderAll0();updateNav()}catch(e){console.error(e);repairBox(e&&e.message||e)}}
 function renderAll0(){
   lockUI();
-  $('#title').firstChild.textContent=S.meta.name||'Survey Eng Muhammad Sheraz Abbasi';
+  $('#title').firstChild.textContent='Survey Eng Muhammad Sheraz Abbasi';
   if(cur==='home')renderHome();
   else if(cur==='wir')renderWir();
   else if(cur==='check')renderCheck();
@@ -4171,8 +4172,8 @@ async function hashPw(p){
 function lockOn(){return !!(S.meta&&S.meta.lock&&S.meta.lock.h)}
 // Edit rights: only the signed-in owner. Everyone else (and any device not signed in) is view only.
 function lockOn(){return true}
-function canEdit(){return true; /* personal use – always editable */}
-const blockMsg=()=>'Editing enabled (personal mode)';
+function canEdit(){return !!(AUTH&&AUTH.rt&&AUTH.uid===OWNER_UID)} /* only the owner (signed in) can change data; everyone else views */
+const blockMsg=()=>'View only – sign in as owner in More → Data to make changes';
 function toast(msg){
   const o=document.getElementById('toast');if(o)o.remove();
   const t=h('div',{id:'toast'},msg);document.body.append(t);setTimeout(()=>t.remove(),3500);
@@ -4180,9 +4181,9 @@ function toast(msg){
 function lockUI(){
   let b=document.getElementById('lockBar');
   if(canEdit()){if(b)b.remove();return}
-  if(!b){b=h('div',{id:'lockBar'},'✅ Personal mode – full edit access enabled');document.querySelector('header').after(b)}
+  if(!b){b=h('div',{id:'lockBar',style:'cursor:pointer',onclick:()=>{showTab('data')}},'👁 View only · owner: tap to sign in');document.querySelector('header').after(b)}
 }
-const EDIT_LABELS=['+ New WIR','Edit','⚑','Mark closed','Scan photo','Scan photo of contractor table','Delete','Save','Add','Add remark','Log','Clear'];
+const EDIT_LABELS=['+Add photo','+ New WIR','Edit','⚑','Mark closed','Scan photo','Scan photo of contractor table','Delete','Save','Add','Add remark','Log','Clear'];
 function hideEditControls(){
   if(canEdit())return;
   document.querySelectorAll('button').forEach(x=>{const t=x.textContent.trim();
@@ -4204,7 +4205,7 @@ async function serverCheck(out){
 }
 function protectCard(){
   const c=h('div',{class:'card'});
-  c.append(h('div',{class:'mut',style:'font-size:12px;margin-bottom:8px'},'Personal mode: you have full edit access on this device. All changes are saved locally. Backup regularly.'));
+  c.append(h('div',{class:'mut',style:'font-size:12px;margin-bottom:8px'},'Everyone with the link can view. Only the owner, signed in here, can add or change data. Sign in once on each of your devices.'));
   const msg=h('div',{style:'font-size:13px;margin-top:8px;line-height:1.4'});
   if(signedIn()){
     c.append(h('div',{style:'color:var(--ok);font-weight:600'},'✓ Signed in as '+(AUTH.email||'owner')+' – editing is on'),
@@ -4281,7 +4282,7 @@ function renderData(){
   const el=$('#t-data');el.replaceChildren();
   const file=h('input',{type:'file',accept:'.csv,.txt',onchange:e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importCsv(String(r.result));r.readAsText(f)}});
   const paste=h('textarea',{placeholder:'Point, Northing, Easting, Elevation\n1, 2763383.11, 667322.387, 612.45'});
-  el.append(h('h2',{},'Personal mode'),h('div',{class:'card'},'Full edit access is enabled. Use Backup below to save your data.'),h('h2',{},'Backup'),backupCard());
+  el.append(h('h2',{},'Owner sign-in'),protectCard(),h('h2',{},'Backup'),backupCard());
   el.append(h('h2',{},'Design surface'),
     h('div',{class:'card'},
       h('div',{},DES?`Loaded: ${fmt(DES.n)} points, ${Object.keys(DES.ph).join(', ')}`:'Not loaded. Put m4_design.json next to this page, or choose it below.'),
