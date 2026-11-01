@@ -1,6 +1,6 @@
 // EarthSync offline helper: keeps the app, its icons and the PDF/3D libraries on the phone.
 // Live data (Firebase) is never cached here - it always goes to the internet.
-const CACHE = 'earthsync-v15';
+const CACHE = 'earthsync-v16';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
