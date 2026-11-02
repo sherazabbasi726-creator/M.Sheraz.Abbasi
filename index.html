@@ -2083,7 +2083,7 @@ function heroPolys(){
 function drawHero(cv){
   if(!DES||!cv.isConnected)return;
   const W=cv.clientWidth,H=cv.clientHeight,dpr=window.devicePixelRatio||1;if(!W||!H)return;
-  cv.width=W*dpr;cv.height=H*dpr;const c=cv.getContext('2d');c.scale(dpr,dpr);
+  let c=null;try{c=cv.getContext('2d')}catch(e){}if(!c)return;cv.width=W*dpr;cv.height=H*dpr;c.setTransform(1,0,0,1,0,0);c.scale(dpr,dpr);
   const P=heroPolys(),all=[];for(const k in P)for(const r of P[k])for(const p of r)all.push(p);
   // principal axis of the site, turned to run left to right (north-west end on the left)
   let mx=0,my=0;for(const p of all){mx+=p[0];my+=p[1]}mx/=all.length;my/=all.length;
@@ -2111,7 +2111,7 @@ function drawHero(cv){
     c.font='600 '+(W<500?10:12)+'px '+fam;c.fillText('Phase '+k,x,y-4);
     c.font='800 '+(W<500?14:19)+'px '+fam;c.fillText(done[k].toFixed(1)+'%',x,y+(W<500?11:15));c.shadowBlur=0}
   c.font='600 11px '+fam;c.textAlign='left';c.fillStyle=txt;c.globalAlpha=.6;c.fillText(lo.toFixed(0)+' m',pad,H-6);c.textAlign='right';c.fillText(hi.toFixed(0)+' m design level',W-pad,H-6);c.globalAlpha=1}
-addEventListener('resize',()=>{const cv=document.querySelector('.hero canvas');if(cv)drawHero(cv)});
+addEventListener('resize',()=>{const cv=document.querySelector('.hero .hs:not(.h3) canvas');if(cv)try{drawHero(cv)}catch(e){}});
 /* ---------- home: what the contractor has done ---------- */
 let doneC=null;
 function doneData(){
