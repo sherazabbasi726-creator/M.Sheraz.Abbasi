@@ -600,6 +600,7 @@ td.num,th.num{text-align:right}
 .typebar .bar{flex:1}
 .typebar .n{width:28px;text-align:right;font-family:var(--mono);font-size:12px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
+.frow{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px}.frow .dot{flex:none}
 &lt;/style&gt;
 
 &lt;/head&gt;&lt;body&gt;&lt;header&gt;
@@ -1174,22 +1175,26 @@ function renderFore(){
   $(&#x27;v-fore&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;
   &lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Foremen&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;${S.fore.length} foremen&lt;/div&gt;&lt;/div&gt;&lt;button class=&quot;btn acc&quot; id=&quot;fNew&quot;&gt;+ Add&lt;/button&gt;&lt;/div&gt;
   ${segHtml(&#x27;pSeg&#x27;,[[&#x27;fore&#x27;,&#x27;Foremen&#x27;],[&#x27;ops&#x27;,&#x27;Operators&#x27;]],pplMode)}
-  ${S.fore.map(f=&gt;{const es=S.equip.filter(e=&gt;e.fore===f.id&amp;&amp;e.status!==&#x27;off&#x27;);const zs=[...new Set(es.map(e=&gt;e.zone))];
+  ${S.fore.map(f=&gt;{const es=S.equip.filter(e=&gt;e.fore===f.id).sort((a,b)=&gt;a.type.localeCompare(b.type)||a.no.localeCompare(b.no));const zs=[...new Set(es.map(e=&gt;e.zone).filter(Boolean))];
+    const ops=[...new Set(es.map(e=&gt;e.operator).filter(Boolean))],wk=es.filter(e=&gt;e.status===&#x27;work&#x27;).length;
     return`&lt;div class=&quot;card tap&quot; tabindex=&quot;0&quot; data-f=&quot;${f.id}&quot; style=&quot;cursor:pointer&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;b style=&quot;font-size:16px&quot;&gt;${esc(f.name)}&lt;/b&gt;&lt;div class=&quot;small muted mono&quot;&gt;Salary no. ${esc(f.sal||&#x27;—&#x27;)}${f.phone?&#x27; · &#x27;+esc(f.phone):&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;&lt;b style=&quot;font-family:var(--display);font-size:28px&quot;&gt;${es.length}&lt;/b&gt;&lt;/div&gt;
-    &lt;div class=&quot;row&quot; style=&quot;margin-top:8px;gap:5px&quot;&gt;${es.slice(0,12).map(e=&gt;`&lt;span class=&quot;plate&quot; style=&quot;height:22px;font-size:11px&quot; title=&quot;${esc(e.no)}&quot;&gt;${esc(e.no)}&lt;/span&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;
-    &lt;div class=&quot;small muted&quot; style=&quot;margin-top:6px&quot;&gt;${esc(zs.join(&#x27; · &#x27;)||&#x27;No machines&#x27;)}&lt;/div&gt;&lt;/div&gt;`}).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty&quot;&gt;No foremen yet. Tap “+ Add”.&lt;/div&gt;&#x27;}&lt;/div&gt;`;
+    &lt;div class=&quot;small muted&quot; style=&quot;margin:4px 0 6px&quot;&gt;${es.length} machines · ${ops.length} operators · ${wk} working${zs.length?&#x27; · &#x27;+esc(zs.join(&#x27;, &#x27;)):&#x27;&#x27;}&lt;/div&gt;
+    ${es.map(e=&gt;`&lt;div class=&quot;frow&quot;&gt;&lt;span class=&quot;dot&quot; style=&quot;--c:var(${st(e.status)[1]})&quot; title=&quot;${st(e.status)[0]}&quot;&gt;&lt;/span&gt;&lt;b class=&quot;mono&quot; style=&quot;min-width:64px&quot;&gt;${esc(e.no)}&lt;/b&gt;&lt;span class=&quot;grow muted&quot;&gt;${esc(e.model||e.type)}&lt;/span&gt;&lt;span&gt;👷 ${esc(e.operator||&#x27;—&#x27;)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No machines assigned&lt;/div&gt;&#x27;}&lt;/div&gt;`}).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty&quot;&gt;No foremen yet. Tap “+ Add”.&lt;/div&gt;&#x27;}
+  ${(()=&gt;{const un=S.equip.filter(e=&gt;!e.fore||!S.fore.some(f=&gt;f.id===e.fore));return un.length?`&lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;b style=&quot;font-size:16px&quot;&gt;No foreman&lt;/b&gt;&lt;div class=&quot;small muted&quot;&gt;Machines not given to any foreman&lt;/div&gt;&lt;/div&gt;&lt;b style=&quot;font-family:var(--display);font-size:28px&quot;&gt;${un.length}&lt;/b&gt;&lt;/div&gt;${un.map(e=&gt;`&lt;div class=&quot;frow tap&quot; data-e=&quot;${e.id}&quot;&gt;&lt;span class=&quot;dot&quot; style=&quot;--c:var(${st(e.status)[1]})&quot;&gt;&lt;/span&gt;&lt;b class=&quot;mono&quot; style=&quot;min-width:64px&quot;&gt;${esc(e.no)}&lt;/b&gt;&lt;span class=&quot;grow muted&quot;&gt;${esc(e.model||e.type)}&lt;/span&gt;&lt;span&gt;👷 ${esc(e.operator||&#x27;—&#x27;)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&#x27;})()}&lt;/div&gt;`;
   bindSeg(&#x27;pSeg&#x27;,k=&gt;{pplMode=k;renderFore()});
   $(&#x27;fNew&#x27;).onclick=()=&gt;editFore(null);
   $(&#x27;v-fore&#x27;).querySelectorAll(&#x27;[data-f]&#x27;).forEach(c=&gt;{c.onclick=()=&gt;openFore(foreById(c.dataset.f));c.onkeydown=k=&gt;{if(k.key===&#x27;Enter&#x27;)c.click()}});
+  $(&#x27;v-fore&#x27;).querySelectorAll(&#x27;.frow[data-e]&#x27;).forEach(r=&gt;{r.onclick=ev=&gt;{ev.stopPropagation();openEquip(eqById(r.dataset.e))}});
 }
 function openFore(f){
   const es=S.equip.filter(e=&gt;e.fore===f.id);
   openSheet(`&lt;h2 style=&quot;font-size:26px&quot;&gt;${esc(f.name)}&lt;/h2&gt;&lt;div class=&quot;small muted mono&quot;&gt;Salary no. ${esc(f.sal||&#x27;—&#x27;)}${f.phone?&#x27; · &#x27;+esc(f.phone):&#x27;&#x27;}&lt;/div&gt;
   &lt;div class=&quot;ch&quot; style=&quot;margin:14px 0 6px&quot;&gt;&lt;h2 style=&quot;font-size:16px&quot;&gt;Machines&lt;/h2&gt;&lt;small&gt;${es.length}&lt;/small&gt;&lt;/div&gt;
-  &lt;div class=&quot;list&quot;&gt;${es.map(e=&gt;`&lt;div class=&quot;li&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;${esc(e.zone||&#x27;—&#x27;)}${e.operator?&#x27; · &#x27;+esc(e.operator):&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;/div&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No machines assigned&lt;/div&gt;&#x27;}&lt;/div&gt;
-  &lt;div class=&quot;row&quot; style=&quot;margin-top:12px&quot;&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fEd&quot;&gt;Edit&lt;/button&gt;&lt;button class=&quot;btn warn sm&quot; id=&quot;fDel&quot;&gt;Delete&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fCl&quot; style=&quot;margin-left:auto&quot;&gt;Close&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;fBox&quot;&gt;&lt;/div&gt;`);
+  &lt;div class=&quot;list&quot;&gt;${es.map(e=&gt;`&lt;div class=&quot;li&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;${esc(e.zone||&#x27;—&#x27;)} · 👷 ${esc(e.operator||&#x27;no operator&#x27;)}${e.opSal?&#x27; (&#x27;+esc(e.opSal)+&#x27;)&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;/div&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No machines assigned&lt;/div&gt;&#x27;}&lt;/div&gt;
+  &lt;div class=&quot;row&quot; style=&quot;margin-top:12px&quot;&gt;&lt;button class=&quot;btn acc sm&quot; id=&quot;fShare&quot;&gt;Share list (WhatsApp)&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fEd&quot;&gt;Edit&lt;/button&gt;&lt;button class=&quot;btn warn sm&quot; id=&quot;fDel&quot;&gt;Delete&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fCl&quot; style=&quot;margin-left:auto&quot;&gt;Close&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;fBox&quot;&gt;&lt;/div&gt;`);
   sheet.querySelectorAll(&#x27;[data-e]&#x27;).forEach(r=&gt;r.onclick=()=&gt;openEquip(eqById(r.dataset.e)));
   $(&#x27;fEd&#x27;).onclick=()=&gt;editFore(f);$(&#x27;fCl&#x27;).onclick=closeSheet;
+  $(&#x27;fShare&#x27;).onclick=()=&gt;{const L=[&#x27;*Foreman: &#x27;+f.name+&#x27;*&#x27;+(f.sal?&#x27; (&#x27;+f.sal+&#x27;)&#x27;:&#x27;&#x27;),&#x27;Date: &#x27;+new Date().toLocaleDateString(&#x27;en-GB&#x27;),&#x27;Machines: &#x27;+es.length,&#x27;&#x27;];es.forEach((e,i)=&gt;L.push((i+1)+&#x27;. &#x27;+e.no+&#x27; – &#x27;+(e.model||e.type)+&#x27; – Op: &#x27;+(e.operator||&#x27;—&#x27;)+(e.opSal?&#x27; (&#x27;+e.opSal+&#x27;)&#x27;:&#x27;&#x27;)+&#x27; – &#x27;+(e.zone||&#x27;—&#x27;)+&#x27; – &#x27;+st(e.status)[0]));L.push(&#x27;&#x27;,&#x27;— &#x27;+M().eng);const t=L.join(&#x27;\n&#x27;);if(navigator.share){navigator.share({text:t}).catch(()=&gt;{})}else window.open(&#x27;https://wa.me/?text=&#x27;+encodeURIComponent(t),&#x27;_blank&#x27;)};
   $(&#x27;fDel&#x27;).onclick=()=&gt;confirmBox($(&#x27;fBox&#x27;),`Delete ${esc(f.name)}? His ${es.length} machines will have no foreman.`,&#x27;Delete&#x27;,()=&gt;{es.forEach(e=&gt;{e.fore=&#x27;&#x27;;touch(e)});delItem(&#x27;fore&#x27;,f);save();closeSheet();renderFore();toast(&#x27;Foreman deleted&#x27;)});
 }
 function editFore(f){
@@ -2315,7 +2320,7 @@ function homeTiles(el){
 /* =====================================================================
    SCAN PHOTO  (read the contractor table from photos, check, review, save)
    ===================================================================== */
-const TESS_URL='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js';
+const TESS_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';  // v5 – matches createWorker(lang, oem, options) used below
 const scan={no:null,rows:[],busy:false,msg:'',prog:0,merge:true,names:[]};
 function loadTess(){
   return new Promise((res,rej)=>{
@@ -2397,7 +2402,7 @@ async function scanRun(files,done){
     const m=new Map(scan.rows.map(r=>[r.id,r]));for(const r of all)m.set(r.id,r);
     scan.rows=[...m.values()].sort((a,b)=>+a.id-+b.id);
     scan.msg=all.length?('Read '+all.length+' rows from '+files.length+' photo'+(files.length>1?'s':'')+'. Check the red rows below.'):'No table rows were found. Try a straighter, closer, sharper photo, or paste the text instead (Check tab).';
-  }catch(e){scan.msg='Error: '+e.message}
+  }catch(e){const t=(e&&(e.message||e.toString&&e.toString()))||'unknown';scan.msg='Error: '+(t==='[object Event]'||t==='undefined'?'the reader could not start. Check the internet connection and try again.':t);console.warn(e)}
   scan.busy=false;done();
 }
 function scanSave(){
@@ -2427,7 +2432,8 @@ function renderScanView(el){
         scan.no=n;rerender();return}
       scan.no=+e.target.value;rerender()}},h('option',{value:'new'},'+ New WIR…'),...(nos.includes(scan.no)?nos:[scan.no,...nos]).map(n=>h('option',{value:n,selected:n===scan.no},'WIR '+n+(S.wirs[n]?'':' (new)'))))),
     h('label',{style:'display:flex;gap:8px;align-items:center;margin:8px 0;font-size:13px'},h('input',{type:'checkbox',style:'width:auto;flex:none',checked:scan.merge,onchange:e=>{scan.merge=e.target.checked}}),h('span',{},'Add to points already in this WIR (same point numbers are replaced)')),
-    h('div',{class:'row'},h('button',{class:'btn pri',disabled:scan.busy,onclick:()=>fi.click()},scan.busy?'Reading…':'Take or choose photos'),fi),
+    (()=>{const fc=h('input',{type:'file',accept:'image/*',capture:'environment',style:'display:none',onchange:e=>{const f=[...e.target.files];if(f.length)scanRun(f,rerender)}});
+      return h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},h('button',{class:'btn pri',disabled:scan.busy,onclick:()=>fc.click()},scan.busy?'Reading…':'📷 Camera'),h('button',{class:'btn',disabled:scan.busy,onclick:()=>fi.click()},'🖼 Gallery (several pages)'),fi,fc)})(),
     scan.msg?h('div',{class:'mono',style:'font-size:12px;margin-top:8px;color:var(--info)'},scan.msg):null,
     scan.busy?h('div',{class:'bar fill'},h('i',{style:'width:'+scan.prog+'%'})):null));
   if(!scan.rows.length)return;
@@ -3116,12 +3122,14 @@ function photoView(w,p){
       p.seed?null:h('button',{class:'btn dng',onclick:()=>{if(confirm('Delete this photo?')){put('wirs/'+w.no+'/photos/'+p.id,null);close()}}},'Delete')])}
 function photoStrip(w){
   const P=wirPhotos(w);
-  const fi=h('input',{type:'file',accept:'image/*',multiple:true,style:'display:none',onchange:async e=>{
+  const addF=async e=>{
     const fs=[...e.target.files];if(!fs.length)return;let k=0;
     for(const f of fs){try{const src=await shrinkPhoto(f);put('wirs/'+w.no+'/photos/p'+Date.now().toString(36)+(k++),{src,cap:'',date:today()})}catch(err){toast('Could not read '+f.name)}}
-    toast(fs.length+' photo'+(fs.length>1?'s':'')+' added to WIR '+w.no)}});
+    toast(fs.length+' photo'+(fs.length>1?'s':'')+' added to WIR '+w.no);e.target.value=''};
+  const fi=h('input',{type:'file',accept:'image/*',multiple:true,style:'display:none',onchange:addF});
+  const fc=h('input',{type:'file',accept:'image/*',capture:'environment',style:'display:none',onchange:addF});
   return h('div',{class:'wph'},...P.map(p=>h('button',{class:'wpt',title:p.cap||'Site photo',onclick:()=>photoView(w,p)},h('img',{src:p.src,alt:p.cap||'Site photo',loading:'lazy'}))),
-    h('button',{class:'wpa',onclick:()=>fi.click()},h('span',{},'+'),'Add photo'),fi)}
+    h('button',{class:'wpa',onclick:()=>fc.click()},h('span',{},'📷'),'Camera'),h('button',{class:'wpa',onclick:()=>fi.click()},h('span',{},'🖼'),'Gallery'),fi,fc)}
 function editWir(w){
   const isNew=!w;
   const no=isNew?Math.max(0,...Object.keys(S.wirs).map(Number))+1:w.no;
@@ -4295,7 +4303,7 @@ function lockUI(){
   if(canEdit()){if(b)b.remove();return}
   if(!b){b=h('div',{id:'lockBar',style:'cursor:pointer',onclick:()=>{showTab('data')}},'👁 View only · owner: tap to sign in');document.querySelector('header').after(b)}
 }
-const EDIT_LABELS=['+Add photo','+ New WIR','Edit','⚑','Mark closed','Scan photo','Scan photo of contractor table','Delete','Save','Add','Add remark','Log','Clear'];
+const EDIT_LABELS=['📷Camera','🖼Gallery','+Add photo','+ New WIR','Edit','⚑','Mark closed','Scan photo','Scan photo of contractor table','Delete','Save','Add','Add remark','Log','Clear'];
 function hideEditControls(){
   if(canEdit())return;
   document.querySelectorAll('button').forEach(x=>{const t=x.textContent.trim();
