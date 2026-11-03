@@ -3506,10 +3506,58 @@ function fitPlan(){
 const toS=(e,n)=>[plan.w/2+(e-view.cx)*view.k,plan.h/2-(n-view.cy)*view.k];
 const toW=(x,y)=>[view.cx+(x-plan.w/2)/view.k,view.cy-(y-plan.h/2)/view.k];
 function niceStep(px){const t=px/view.k;for(const s of [10,20,50,100,200,500,1000,2000,5000,10000])if(s>=t)return s;return 10000}
+
+/* ---------- satellite imagery under the site plan and on the 3D ground (Esri World Imagery) ---------- */
+const SAT_URL=(z,x,y)=>'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/'+z+'/'+y+'/'+x;
+const satCache=new Map();let satOn=lsGet('es_sat',false)===true,sat3On=lsGet('es_sat3',false)===true,satRaf=0;
+const sLon2x=(lon,z)=>(lon+180)/360*2**z,sLat2y=(lat,z)=>{const r=lat*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*2**z};
+const sX2lon=(x,z)=>x/2**z*360-180,sY2lat=(y,z)=>{const n=Math.PI-2*Math.PI*y/2**z;return 180/Math.PI*Math.atan(Math.sinh(n))};
+function satTile(z,x,y,cb){const k=z+'/'+x+'/'+y;let t=satCache.get(k);
+  if(t){if(t.ok)return t.img;if(cb&&!t.err)t.cbs.push(cb);return null}
+  const img=new Image();img.crossOrigin='anonymous';t={img,ok:false,cbs:cb?[cb]:[]};satCache.set(k,t);
+  img.onload=()=>{t.ok=true;const c=t.cbs;t.cbs=[];c.forEach(f=>{try{f()}catch(e){}})};img.onerror=()=>{t.err=true;t.cbs=[]};img.src=SAT_URL(z,x,y);
+  if(satCache.size>900){for(const [kk,v] of satCache){if(v.ok||v.err){satCache.delete(kk);break}}}
+  return null}
+// draw tiles into a 2D context; W2S maps UTM (E,N) to canvas pixels; mpp = metres per canvas pixel
+function satDraw(c,W2S,eA,eB,nA,nB,mpp,onLoad,base){
+  const LL=[utm38ToLL(eA,nA),utm38ToLL(eB,nA),utm38ToLL(eA,nB),utm38ToLL(eB,nB)];
+  const la0=Math.min(...LL.map(q=>q[0])),la1=Math.max(...LL.map(q=>q[0])),lo0=Math.min(...LL.map(q=>q[1])),lo1=Math.max(...LL.map(q=>q[1]));
+  let z=Math.round(Math.log2(156543.03*Math.cos((la0+la1)/2*Math.PI/180)/Math.max(mpp,.05)));z=Math.max(5,Math.min(19,z));
+  let x0,x1,y0,y1;for(;;){x0=Math.floor(sLon2x(lo0,z));x1=Math.floor(sLon2x(lo1,z));y0=Math.floor(sLat2y(la1,z));y1=Math.floor(sLat2y(la0,z));if((x1-x0+1)*(y1-y0+1)<=(base?400:90)||z<=5)break;z--}
+  const S=(x,y)=>{const ll=[sY2lat(y,z),sX2lon(x,z)],u=llToUtm38(ll[0],ll[1]);return W2S(u[0],u[1])};
+  const m0=c.getTransform();
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    let img=satTile(z,x,y,onLoad),tz=z,tx=x,ty=y,sub=null;
+    if(!img&&!base){for(let d=1;d<=4&&!img;d++){const pz=z-d;if(pz<5)break;const k=satCache.get(pz+'/'+(x>>d)+'/'+(y>>d));if(k&&k.ok){img=k.img;tz=pz;tx=x>>d;ty=y>>d;const n=1<<d;sub=[(x-(tx<<d))*256/n,(y-(ty<<d))*256/n,256/n]}}}
+    if(!img)continue;
+    const a=S(x,y),b=S(x+1,y),d=S(x,y+1);
+    c.setTransform(m0.a*(b[0]-a[0])/256,m0.a*(b[1]-a[1])/256,m0.a*(d[0]-a[0])/256,m0.a*(d[1]-a[1])/256,m0.a*a[0]+m0.e,m0.a*a[1]+m0.f);
+    try{sub?c.drawImage(img,sub[0],sub[1],sub[2],sub[2],0,0,256.6,256.6):c.drawImage(img,0,0,256.6,256.6)}catch(e){}
+  }
+  c.setTransform(m0);return z}
+function satPlan(c){
+  const [w0,w1]=[toW(0,plan.h),toW(plan.w,0)];
+  satDraw(c,toS,w0[0],w1[0],w0[1],w1[1],1/view.k/Math.min(2,plan.dpr||1),()=>{if(!satRaf)satRaf=requestAnimationFrame(()=>{satRaf=0;drawPlan()})});
+}
+// one picture of the whole site for the 3D ground
+let sat3={key:'',cv:null,tex:null,R:null,miss:0};
+function sat3Tex(){
+  if(!DES||typeof THREE==='undefined')return null;
+  const pad=60,e0=DES.e0-pad,e1=DES.e1+pad,n0=DES.n0-pad,n1=DES.n1+pad,ext=Math.max(e1-e0,n1-n0),PXs=Math.max(1,ext/2048);
+  const key=[e0,e1,n0,n1].join();if(sat3.key===key&&sat3.tex)return {tex:sat3.tex,R:sat3.R};
+  const W=Math.ceil((e1-e0)/PXs),H=Math.ceil((n1-n0)/PXs),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const c=cv.getContext('2d');c.fillStyle='#8a7a62';c.fillRect(0,0,W,H);
+  const R={cv,PXs,e0,top:n1};const tex=new THREE.CanvasTexture(cv);tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;
+  sat3={key,cv,tex,R};let pend=0;
+  const paint=()=>{c.setTransform(1,0,0,1,0,0);satDraw(c,(E,N)=>[(E-e0)/PXs,(n1-N)/PXs],e0,e1,n0,n1,PXs,null,true);tex.needsUpdate=true;render3D()};
+  const onL=()=>{if(!pend){pend=setTimeout(()=>{pend=0;try{paint()}catch(e){toast('Satellite picture could not be put on the 3D ground (the imagery server blocked it).');sat3On=false;dirty3D=true;show3D()}},250)}};
+  c.setTransform(1,0,0,1,0,0);satDraw(c,(E,N)=>[(E-e0)/PXs,(n1-N)/PXs],e0,e1,n0,n1,PXs,onL,true);
+  return {tex,R}}
 function drawPlan(){
   if(cur!=='plan'||!plan.w||!(view.k>0))return;
   const c=plan.ctx;c.setTransform(plan.dpr,0,0,plan.dpr,0,0);
   c.fillStyle=cssv('--bg');c.fillRect(0,0,plan.w,plan.h);
+  if(satOn&&plan.snapOnly!==-1)try{satPlan(c)}catch(e){}
   const line=cssv('--line'),mut=cssv('--mut'),txt=cssv('--txt'),acc=cssv('--acc'),bad=cssv('--bad');
   // grid
   const st=niceStep(90),[w0,w1]=[toW(0,plan.h),toW(plan.w,0)];
@@ -3521,7 +3569,7 @@ function drawPlan(){
     const useCf=plan.cf&&DES.G,rk=useCf?'cf':(plan.status&&cwSel&&cwirPts(+cwSel).length)?'s'+cwSel+':'+cwirPts(+cwSel).length:'e';
     getRast(rk,useCf?cfColor:rk==='e'?null:cwStatusFn(true));
     const [rx,ry]=toS(rast.e0,rast.top),sz=rast.PXs*view.k;
-    c.imageSmoothingEnabled=sz>1.5;c.globalAlpha=.7;
+    c.imageSmoothingEnabled=sz>1.5;c.globalAlpha=(satOn&&plan.snapOnly!==-1)?.35:.7;
     c.drawImage(rast.cv,rx,ry,rast.cv.width*sz,rast.cv.height*sz);c.globalAlpha=1;
   }
   const boxes=[],hit=(x,y,w,h_)=>boxes.some(b=>x-w/2<b[0]+b[2]/2&&x+w/2>b[0]-b[2]/2&&y-h_/2<b[1]+b[3]/2&&y+h_/2>b[1]-b[3]/2);
@@ -3642,6 +3690,7 @@ function updatePlanBar(){
     h('button',{'data-m':'6',class:'btn sm'+(plan.pts?' on':''),onclick:()=>{plan.pts=!plan.pts;lsSet('es_pts',plan.pts);updatePlanBar();drawPlan()}},'Points'),
     plan.pts?h('button',{class:'btn sm'+(plan.labels?' on':''),onclick:()=>{plan.labels=!plan.labels;updatePlanBar();drawPlan()}},'Labels'):null,
     DES&&DES.G?h('button',{'data-m':'2',class:'btn sm'+(plan.cf?' on':''),onclick:()=>{plan.cf=!plan.cf;if(plan.cf){plan.showDes=true;plan.status=false;plan.check=[]}updatePlanBar();updatePlanLegend();drawPlan()}},'Cut/Fill'):null,
+    h('button',{'data-m':'1.5',class:'btn sm'+(satOn?' on':''),title:'Satellite picture under the plan (needs internet)',onclick:()=>{satOn=!satOn;lsSet('es_sat',satOn);updatePlanBar();drawPlan()}},'🛰 Satellite'),
     h('button',{'data-m':'4',class:'btn sm'+(plan.bm?' on':''),onclick:()=>{plan.bm=!plan.bm;lsSet('es_bm',plan.bm);updatePlanBar();drawPlan()}},'BM'),
     h('button',{class:'btn sm'+(plan.bm3!==false?' on':''),title:'Khuzam-3 benchmarks (purple)',onclick:()=>{plan.bm3=plan.bm3===false;lsSet('es_bm3',plan.bm3);updatePlanBar();drawPlan()}},'BM K3'),
     cwList().length?h('button',{class:'btn sm'+(plan.wirs?' on':''),onclick:()=>{plan.wirs=!plan.wirs;lsSet('es_wirs',plan.wirs);updatePlanBar();updatePlanLegend();drawPlan()}},'WIRs'):null,
@@ -3762,6 +3811,7 @@ function show3D(){
         if(!cwSel){const L=cwList();if(!L.length){alert('No WIR layer loaded yet');return}setCw(String(L[0]))}
         cwTerrain=cwTerrain==='status'?'elev':'status';cwMode='dev';dirty3D=true;show3D()}},'Work status'),
       DES&&DES.G?h('span',{id:'surfRow',style:'display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap'},h('b',{style:'font-size:12px'},'Ground:'),...['design','ngl','both','cf'].map(m=>h('button',{class:'btn sm'+(surfMode===m?' on':''),onclick:()=>setSurf(m)},{design:'Design',ngl:'NGL',both:'Both',cf:'Cut/Fill'}[m]))):null,
+      DES?h('button',{class:'btn sm'+(sat3On?' on':''),id:'sat3Btn',title:'Satellite picture on the 3D ground (needs internet)',onclick:e=>{sat3On=!sat3On;lsSet('es_sat3',sat3On);e.currentTarget.classList.toggle('on',sat3On);dirty3D=true;show3D()}},'🛰 Satellite'):null,
       h('button',{class:'btn sm',id:'pkBtn',onclick:e=>{hidePk=!hidePk;lsSet('es_hidepk',hidePk);e.currentTarget.textContent=hidePk?'Show peak':'Hide peak';waterCache=null;dirty3D=true;show3D()}},hidePk?'Show peak':'Hide peak'),
       h('button',{class:'btn sm',id:'pondBtn',onclick:toggleBrook},waterOn?'Brook: on':'Brook: off'),
       h('button',{class:'btn sm',id:'pondsBtn',onclick:togglePonds},pondsOn?'Ponds: on':'Ponds: off'),
@@ -4430,11 +4480,12 @@ function build3D(){
     const sf=cwAll?null:cwStatusFn(false);let tx=null;
     if(sf){const rk='s'+cwSel+':'+cwirPts(+cwSel).length,R=getRast(rk,cwStatusFn(true));
       const tex=new THREE.CanvasTexture(R.cv);tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;tx={tex,R}}
+    if(sat3On){try{const st=sat3Tex();if(st)tx=st}catch(e){}}
     let sm=(DES.G?surfMode:'design');
     // a WIR whose layer is still below design would be hidden under the opaque design surface: show the design see-through over the natural ground
     if(sm==='design'&&DES.G&&cwSel){const Pw=cwAll?cwList().flatMap(n=>cwirPts(n)):cwirPts(+cwSel);if(Pw.length&&Pw.filter(q=>q.A-q.C>.03).length>Pw.length*.4)sm='both'}
     if(sm==='design')g.add(designMesh(20,X,Y,Zc,null,tx));
-    else if(sm==='ngl')g.add(designMesh(20,X,Y,Zc,null,null,'ngl'));
+    else if(sm==='ngl')g.add(designMesh(20,X,Y,Zc,null,sat3On?tx:null,'ngl'));
     else if(sm==='cf')g.add(designMesh(20,X,Y,Zc,null,null,'cf'));
     else{const dm=designMesh(20,X,Y,Zc,null,tx);dm.material.transparent=true;dm.material.opacity=.55;dm.material.depthWrite=false;dm.renderOrder=2;g.add(designMesh(20,X,Y,Zc,null,null,'ngl'));g.add(dm)}
     T.waterTex=null;if(waterOn){const wm=waterMesh(X,Y,Zc);if(wm){g.add(wm);T.waterTex=wm.userData.tex||null;startWater()}}
