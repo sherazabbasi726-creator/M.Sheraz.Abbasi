@@ -2727,14 +2727,17 @@ function renderCwView(el){
     canEdit()&&rows.length>=4?h('button',{class:'btn sm',onclick:()=>{const b=autoBorder(cwirPts(no));if(!b){toast('Not enough points for a border');return}if(confirm('Make the area border from the outer points?\n'+b.length+' corners, '+fmt(Math.round(borderArea(b)))+' m².\nArea and quantities of this WIR will be measured inside it.'))put('cwir/'+no,Object.assign({},S.cwir[no]||CWIR_SEED[no],{border:b,autoBorder:true}))}},bd?'↻ Re-make border from outer points':'⬡ Make border from outer points'):null,
     canEdit()&&cw.border?h('button',{class:'btn sm',onclick:()=>{if(confirm('Remove the area border of WIR '+no+'?')){const c=Object.assign({},S.cwir[no]);delete c.border;delete c.autoBorder;put('cwir/'+no,c)}}},'Remove border'):null)))}
   if(canEdit()&&rows.length)el.append(h('div',{class:'row',style:'margin-bottom:6px;gap:8px'},h('span',{class:'mut',style:'font-size:12px;flex:1'},'Wrong points? Tap ✕ on a row to delete it, or delete them all and scan again.'),h('button',{class:'btn sm dng',onclick:()=>{if(confirm('Delete ALL '+rows.length+' points of WIR '+no+'? The WIR itself stays.'))cwDelAll(no)}},'Delete all points')));
+  const SUS=cwSuspect(P),ed=canEdit();
+  if(SUS.size)el.append(h('div',{class:'card',style:'border:1.5px solid #f0b43c;padding:10px 12px;margin-bottom:8px'},
+    h('div',{style:'font-size:13px'},'⚠ '+SUS.size+' point(s) look misread by the scan: '+[...SUS.keys()].join(', ')+'. They are marked ⚠ in the table. Check them against the paper sheet.'),
+    ed?h('button',{class:'btn sm dng',style:'margin-top:6px',onclick:()=>{if(confirm('Delete these '+SUS.size+' points from WIR '+no+'?\n'+[...SUS.keys()].join(', ')))cwDelPts(no,[...SUS.keys()])}},'Delete the ⚠ points'):null));
   el.append(h('div',{class:'mut',style:'font-size:12px;margin-bottom:4px'},shown.length+' of '+rows.length+' points · tap a row to see it on the plan'));
-  const ed=canEdit();
   const tb=h('table',{style:'font-size:11px;white-space:nowrap'},h('tr',{},...['Pt','Dev cm','Thick','Design','Finished','Before','N','E'].concat(ed?['']:[]).map((t,i)=>h('th',{class:i?'n':''},t))));
   for(const r of shown){
     const p=byId.get(String(r.n));if(!p)continue;
     const k=cls(r),col=k==='ok'?'var(--ok)':k==='hi'?'#f08a3c':'#7aa2f7',dv=(p.C-p.A)*100;
     tb.append(h('tr',{style:'cursor:pointer',onclick:()=>{cwSel=String(no);lsSet('es_cw',cwSel);plan.status=true;plan.showDes=true;focusPlan([r])}},
-      h('td',{},p.id),h('td',{class:'n',style:'color:'+col+';font-weight:600'},(dv>=0?'+':'')+dv.toFixed(1)),h('td',{class:'n'},(p.C-p.B).toFixed(3)),
+      h('td',{title:SUS.get(String(p.id))||''},SUS.has(String(p.id))?'⚠ '+p.id:p.id),h('td',{class:'n',style:'color:'+col+';font-weight:600'},(dv>=0?'+':'')+dv.toFixed(1)),h('td',{class:'n'},(p.C-p.B).toFixed(3)),
       h('td',{class:'n'},p.A.toFixed(3)),h('td',{class:'n'},p.C.toFixed(3)),h('td',{class:'n'},p.B.toFixed(3)),h('td',{class:'n'},p.N.toFixed(1)),h('td',{class:'n'},p.E.toFixed(1)),
       ed?h('td',{},h('button',{class:'btn sm',title:'Delete this point',style:'padding:2px 8px;color:var(--bad)',onclick:ev=>{ev.stopPropagation();if(confirm('Delete point '+p.id+' from WIR '+no+'?'))cwDelPts(no,[p.id])}},'✕')):null));
   }
@@ -4816,6 +4819,19 @@ function cwDelPts(no,ids){const c=S.cwir[no]||CWIR_SEED[no];if(!c)return;const s
   const pts=(c.pts||'').split(';').filter(x=>x&&!set.has(x.split(',')[0].trim())).join(';');
   const nc=Object.assign({},c,{pts,src:(c.src||'')+' · '+ids.length+' point(s) deleted '+today()});if(c.autoBorder){const P=pts.split(';').filter(Boolean).map(x=>{const a=x.split(',');return{E:+a[2],N:+a[1]}});const b=autoBorder(P);if(b)nc.border=b;else delete nc.border}
   put('cwir/'+no,nc);toast(ids.length+' point(s) deleted from WIR '+no)}
+/* points that were probably misread by the scan: odd point number, rounded level, or a thickness far from the rest */
+function cwSuspect(P){const out=new Map();if(!P||P.length<6)return out;
+  const med=a=>{const b=a.slice().sort((x,y)=>x-y);return b[b.length>>1]};
+  const L=med(P.map(p=>String(p.id).length));
+  const NB=P.map(p=>P.filter(q=>q!==p).map(q=>[Math.hypot(q.E-p.E,q.N-p.N),q]).sort((a,b)=>a[0]-b[0]).slice(0,4));
+  const nn=med(NB.map(a=>a[0]?a[0][0]:0));
+  P.forEach((p,i)=>{const r=[],nb=NB[i];
+    const odd=Math.abs(String(p.id).length-L)>=2,short=L-String(p.id).length>=2,round=['A','B','C'].some(k=>Math.abs(p[k]-Math.round(p[k]))<1e-9);
+    if(nb[0]&&nb[0][0]>Math.max(50,nn*6))r.push('far away from the other points');
+    if(odd&&round)r.push('point number and a round level look misread');
+    else if(short)r.push('point number is much shorter than the others (digits may be missing)');
+    if(r.length)out.set(String(p.id),r.join('; '))});
+  return out}
 function cwDelAll(no){put('cwir/'+no,{pts:'',src:'All points deleted '+today()});toast('All points of WIR '+no+' deleted')}
 function cwList(){
   const k=new Set([...Object.keys(CWIR_SEED),...Object.keys(S.cwir)]);
