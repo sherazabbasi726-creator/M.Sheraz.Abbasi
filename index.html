@@ -2288,11 +2288,60 @@ function loadLeaflet(){
     const s=document.createElement('script');s.crossOrigin='anonymous';s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';s.onload=()=>res();s.onerror=()=>rej(new Error('Map library needs internet the first time.'));document.head.append(s)})
 }
 function wirCenter(no){const P=cwirPts(no).filter(p=>isFinite(p.E)&&isFinite(p.N));if(!P.length)return null;return [P.reduce((a,p)=>a+p.E,0)/P.length,P.reduce((a,p)=>a+p.N,0)/P.length]}
+
+/* ---------- Google Earth / Google My Maps export (KML): the whole site plan on Google's 3D terrain ---------- */
+function kmlCol(hex,a){hex=String(hex||'#ffffff').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');return (a||'ff')+hex.slice(4,6)+hex.slice(2,4)+hex.slice(0,2)}
+const kEsc=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function kRing(EN){const r=EN.map(([E,N])=>{const [la,lo]=utm38ToLL(E,N);return lo.toFixed(7)+','+la.toFixed(7)+',0'});if(r.length&&r[0]!==r[r.length-1])r.push(r[0]);return r.join(' ')}
+function kPoly(name,EN,line,fill,desc,w){return '<Placemark><name>'+kEsc(name)+'</name>'+(desc?'<description><![CDATA['+desc+']]></description>':'')+'<Style><LineStyle><color>'+line+'</color><width>'+(w||2)+'</width></LineStyle><PolyStyle><color>'+fill+'</color>'+(fill.slice(0,2)==='00'?'<fill>0</fill>':'')+'</PolyStyle></Style><Polygon><tessellate>1</tessellate><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>'+kRing(EN)+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>'}
+function kPt(name,E,N,style,desc){const [la,lo]=utm38ToLL(E,N);return '<Placemark><name>'+kEsc(name)+'</name><styleUrl>#'+style+'</styleUrl>'+(desc?'<description><![CDATA['+desc+']]></description>':'')+'<Point><coordinates>'+lo.toFixed(7)+','+la.toFixed(7)+',0</coordinates></Point></Placemark>'}
+function buildKML(opt){opt=opt||{};const o=[];
+  const dot=(id,c,sc,lab)=>'<Style id="'+id+'"><IconStyle><color>'+kmlCol(c)+'</color><scale>'+sc+'</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href></Icon></IconStyle><LabelStyle><scale>'+lab+'</scale></LabelStyle></Style>';
+  o.push('<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Khuzam 4 site plan – Engr Muhammad Sheraz Abbasi ('+dmy(today())+')</name>',
+    dot('bm','#f5a524',.9,.8),dot('bm3','#b388ff',.9,.8),dot('ptF','#4f8ff7',.35,0),dot('ptS','#e0b25a',.35,0),dot('ptW','#c77dff',.35,0),dot('ptG','#58c487',.35,0),dot('lab','#ffffff',0,1.1));
+  if(SITE_BORDER)o.push('<Folder><name>Site border</name>'+kPoly('Site border',SITE_BORDER,kmlCol('#ffeb3b'),'00000000','Khuzam 4 project border · '+fmt(SITE_M2)+' m²',3)+'</Folder>');
+  try{const P=heroPolys(),cols={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};o.push('<Folder><name>Phases</name>');
+    for(const [i,rings] of Object.entries(P)){const R=(rings||[]).filter(r=>r&&r.length>=3);R.forEach((r,j)=>o.push(kPoly('PHASE '+i+(R.length>1?' ('+(j+1)+')':''),r,kmlCol(cols[i]),kmlCol(cols[i],'33'),'Phase '+i,3)));
+      const big=R.sort((a,b)=>b.length-a.length)[0];if(big){const cx=big.reduce((a,q)=>a+q[0],0)/big.length,cy=big.reduce((a,q)=>a+q[1],0)/big.length;o.push(kPt('PHASE '+i,cx,cy,'lab'))}}
+    o.push('</Folder>')}catch(e){}
+  o.push('<Folder><name>Work areas</name>');
+  for(const a of newAreaList()){let pf=0;try{const R=asCalc(a.k);pf=R?R.pFill:0}catch(e){}
+    const t=Math.max(0,Math.min(1,pf/100)),col=a.w?'#4fc3f7':'#'+[220-180*t,80+150*t,60+40*t].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+    const nm=newAreaName(a.k);o.push(kPoly(nm+(a.w?'':' · '+Math.round(pf)+'%'),a.c,kmlCol('#ffffff'),kmlCol(col,'66'),'<b>'+kEsc(nm)+'</b><br>'+(a.m2?fmt(Math.round(a.m2))+' m²<br>':'')+(a.w?'Wadi strip':'Fill placed '+Math.round(pf)+'%'),1.5));
+    o.push(kPt(nm,a.lx,a.ly,'lab'))}
+  o.push('</Folder>');
+  const kc={strip:['#e0b25a','ptS'],fill:['#4f8ff7','ptF'],waste:['#c77dff','ptW'],final:['#58c487','ptG']};
+  o.push('<Folder><name>WIRs</name>');
+  for(const no of cwList()){const w=S.wirs[no]||{no},k=kc[wirKind(no)]||kc.fill,bd=cwBorder(no),P=cwirPts(no);
+    o.push('<Folder><name>WIR '+no+(w.ref?' · '+kEsc(w.ref):'')+'</name><visibility>1</visibility>');
+    if(bd)o.push(kPoly('WIR '+no+' border',bd.map(([n,e])=>[e,n]),kmlCol(k[0]),'00000000','WIR '+no+(w.cno?' ('+kEsc(w.cno)+')':'')+'<br>'+kEsc(subTxt(w))+'<br>'+fmt(Math.round(borderArea(bd)))+' m²',2.5));
+    if(opt.pts!==false)for(const p of P){if(!isFinite(p.E)||!isFinite(p.N))continue;const dv=p.A-p.C;
+      o.push(kPt('Pt '+p.id,p.E,p.N,k[1],'<b>WIR '+no+' · Pt '+kEsc(p.id)+'</b><br>N '+p.N.toFixed(3)+' E '+p.E.toFixed(3)+'<br>Design '+p.A.toFixed(3)+'<br>Before '+p.B.toFixed(3)+'<br>Finished '+p.C.toFixed(3)+'<br>Dev '+(Math.abs(dv)<=REM_TOL?'on design':dv>0?'fill '+dv.toFixed(3)+' m':'cut -'+(-dv).toFixed(3)+' m')))}
+    o.push('</Folder>')}
+  o.push('</Folder>');
+  const B=[...(BMS||[]).map(b=>[b,'bm']),...(typeof BMS3!=='undefined'?BMS3:[]).map(b=>[b,'bm3'])];
+  if(B.length){o.push('<Folder><name>Benchmarks</name>');for(const [b,st] of B)o.push(kPt(b.n,b.E,b.N,st,'<b>'+kEsc(b.n)+'</b><br>Z '+b.z.toFixed(3)+' m<br>N '+b.N.toFixed(3)+' E '+b.E.toFixed(3)));o.push('</Folder>')}
+  o.push('</Document></kml>');return o.join('\n')}
+async function openGoogleEarth(){
+  const chk=h('input',{type:'checkbox',checked:true});
+  const make=()=>{const kml=buildKML({pts:chk.checked}),name='Khuzam4-site-plan-'+today()+(chk.checked?'':'-no-points')+'.kml',type='application/vnd.google-earth.kml+xml';return {kml,name,type,file:new File([kml],name,{type})}};
+  let canFile=false;try{canFile=!!(navigator.canShare&&navigator.canShare({files:[new File(['x'],'a.kml',{type:'application/vnd.google-earth.kml+xml'})]}))}catch(e){}
+  modal('Open in Google Earth (3D)',h('div',{},
+    h('p',{},'This makes one file with the site border, phases, work areas (with fill %), WIR borders, WIR points and benchmarks. Google Earth shows it on its own satellite picture and 3D ground.'),
+    h('label',{style:'display:flex;gap:8px;align-items:center;margin:8px 0'},chk,'Include all WIR points (about '+fmt(cwList().reduce((a,n)=>a+cwirPts(n).length,0))+'; untick for Google My Maps)'),
+    h('p',{class:'mut',style:'font-size:13px'},'Phone: tap Share and pick Google Earth, or save the file and in Google Earth open Projects → Open → Import KML file. Laptop: earth.google.com → Projects → New project → Import KML file from computer. Google My Maps (mymaps.google.com → Create → Import) opens it too.')),
+    close=>[
+      canFile?h('button',{class:'btn pri',onclick:async()=>{try{const m=make();await navigator.share({files:[m.file],title:'Site plan'})}catch(e){}}},'Share / open in Google Earth'):null,
+      h('button',{class:'btn'+(canFile?'':' pri'),onclick:()=>{try{const m=make();download(m.name,m.kml,m.type)}catch(e){alert('Could not make the file: '+(e.message||e))}}},'Save the file'),
+      h('button',{class:'btn',onclick:()=>window.open('https://earth.google.com/web/','_blank')},'Open Google Earth'),
+      h('button',{class:'btn',onclick:close},'Close')]);
+}
 function renderSatView(el){
   el.append(h('div',{class:'row',style:'margin-bottom:8px;flex-wrap:wrap;gap:6px'},
     h('b',{style:'font-size:16px'},'Satellite map'),h('span',{class:'sp'}),
     ...[['areas','Areas'],['pts','WIR points'],['phases','Phases'],['border','Border']].map(([k,l])=>h('button',{class:'btn sm'+(satLayers[k]?' on':''),onclick:()=>{satLayers[k]=!satLayers[k];lsSet('es_satlay',satLayers);renderHome()}},(satLayers[k]?'✓ ':'')+l)),
-    h('button',{class:'btn sm',onclick:()=>{if(satView&&satView.map)satView.map.locate({setView:true,maxZoom:18,enableHighAccuracy:true})}},'◎ My location')));
+    h('button',{class:'btn sm',onclick:()=>{if(satView&&satView.map)satView.map.locate({setView:true,maxZoom:18,enableHighAccuracy:true})}},'◎ My location'),
+    h('button',{class:'btn sm',onclick:openGoogleEarth},'🌍 Google Earth 3D')));
   const box=h('div',{style:'height:calc(100vh - 230px);min-height:340px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b1620;position:relative'},
     h('div',{style:'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9fb3c8;font:14px system-ui'},'Loading the satellite map…'));
   el.append(box,h('div',{class:'mut',style:'font-size:11px;margin-top:6px'},'Tap an area or a point for details, Google Maps and directions. Imagery: Esri World Imagery (needs internet). Colours: fill placed 0 → 100 %.'));
@@ -3690,6 +3739,7 @@ function updatePlanBar(){
     h('button',{'data-m':'6',class:'btn sm'+(plan.pts?' on':''),onclick:()=>{plan.pts=!plan.pts;lsSet('es_pts',plan.pts);updatePlanBar();drawPlan()}},'Points'),
     plan.pts?h('button',{class:'btn sm'+(plan.labels?' on':''),onclick:()=>{plan.labels=!plan.labels;updatePlanBar();drawPlan()}},'Labels'):null,
     DES&&DES.G?h('button',{'data-m':'2',class:'btn sm'+(plan.cf?' on':''),onclick:()=>{plan.cf=!plan.cf;if(plan.cf){plan.showDes=true;plan.status=false;plan.check=[]}updatePlanBar();updatePlanLegend();drawPlan()}},'Cut/Fill'):null,
+    h('button',{class:'btn sm',title:'Open the site plan in Google Earth (3D)',onclick:openGoogleEarth},'🌍 Google Earth'),
     h('button',{'data-m':'1.5',class:'btn sm'+(satOn?' on':''),title:'Satellite picture under the plan (needs internet)',onclick:()=>{satOn=!satOn;lsSet('es_sat',satOn);updatePlanBar();drawPlan()}},'🛰 Satellite'),
     h('button',{'data-m':'4',class:'btn sm'+(plan.bm?' on':''),onclick:()=>{plan.bm=!plan.bm;lsSet('es_bm',plan.bm);updatePlanBar();drawPlan()}},'BM'),
     h('button',{class:'btn sm'+(plan.bm3!==false?' on':''),title:'Khuzam-3 benchmarks (purple)',onclick:()=>{plan.bm3=plan.bm3===false;lsSet('es_bm3',plan.bm3);updatePlanBar();drawPlan()}},'BM K3'),
@@ -3811,6 +3861,7 @@ function show3D(){
         if(!cwSel){const L=cwList();if(!L.length){alert('No WIR layer loaded yet');return}setCw(String(L[0]))}
         cwTerrain=cwTerrain==='status'?'elev':'status';cwMode='dev';dirty3D=true;show3D()}},'Work status'),
       DES&&DES.G?h('span',{id:'surfRow',style:'display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap'},h('b',{style:'font-size:12px'},'Ground:'),...['design','ngl','both','cf'].map(m=>h('button',{class:'btn sm'+(surfMode===m?' on':''),onclick:()=>setSurf(m)},{design:'Design',ngl:'NGL',both:'Both',cf:'Cut/Fill'}[m]))):null,
+      h('button',{class:'btn sm',title:'Open the site plan in Google Earth (3D)',onclick:openGoogleEarth},'🌍 Google Earth'),
       DES?h('button',{class:'btn sm'+(sat3On?' on':''),id:'sat3Btn',title:'Satellite picture on the 3D ground (needs internet)',onclick:e=>{sat3On=!sat3On;lsSet('es_sat3',sat3On);e.currentTarget.classList.toggle('on',sat3On);dirty3D=true;show3D()}},'🛰 Satellite'):null,
       h('button',{class:'btn sm',id:'pkBtn',onclick:e=>{hidePk=!hidePk;lsSet('es_hidepk',hidePk);e.currentTarget.textContent=hidePk?'Show peak':'Hide peak';waterCache=null;dirty3D=true;show3D()}},hidePk?'Show peak':'Hide peak'),
       h('button',{class:'btn sm',id:'pondBtn',onclick:toggleBrook},waterOn?'Brook: on':'Brook: off'),
