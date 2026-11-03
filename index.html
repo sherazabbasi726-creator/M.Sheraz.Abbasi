@@ -601,6 +601,7 @@ td.num,th.num{text-align:right}
 .typebar .n{width:28px;text-align:right;font-family:var(--mono);font-size:12px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
 .frow{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px}.frow .dot{flex:none}
+table.imp{border-collapse:collapse;font-size:12px}.imp td,.imp th{padding:2px}.imp input{width:110px;padding:5px;font-size:12px}.imp select{font-size:11px;padding:4px;width:124px}.imp tr.hd input{font-weight:700;opacity:.65}
 &lt;/style&gt;
 
 &lt;/head&gt;&lt;body&gt;&lt;header&gt;
@@ -652,7 +653,7 @@ const uid=()=&gt;Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const fmt1=x=&gt;(Math.round((+x||0)*10)/10).toString();
 
 /* ================= state ================= */
-const TYPES=[[&#x27;Dozer&#x27;,&#x27;DZ&#x27;],[&#x27;Grader&#x27;,&#x27;GR&#x27;],[&#x27;Excavator / Shovel&#x27;,&#x27;EX&#x27;],[&#x27;Wheel Loader&#x27;,&#x27;LD&#x27;],[&#x27;Roller / Compactor&#x27;,&#x27;RL&#x27;],[&#x27;Dump Truck&#x27;,&#x27;DT&#x27;],[&#x27;Water Tanker&#x27;,&#x27;WT&#x27;],[&#x27;Backhoe&#x27;,&#x27;BH&#x27;],[&#x27;Trailer / Low-bed&#x27;,&#x27;TR&#x27;],[&#x27;Pickup / Car&#x27;,&#x27;PU&#x27;],[&#x27;Generator&#x27;,&#x27;GN&#x27;],[&#x27;Other&#x27;,&#x27;OT&#x27;]];
+const TYPES=[[&#x27;Dozer&#x27;,&#x27;DZ&#x27;],[&#x27;Grader&#x27;,&#x27;GR&#x27;],[&#x27;Excavator / Shovel&#x27;,&#x27;EX&#x27;],[&#x27;Wheel Loader&#x27;,&#x27;LD&#x27;],[&#x27;Roller / Compactor&#x27;,&#x27;RL&#x27;],[&#x27;Dump Truck&#x27;,&#x27;DT&#x27;],[&#x27;Water Tanker&#x27;,&#x27;WT&#x27;],[&#x27;Small Tanker&#x27;,&#x27;ST&#x27;],[&#x27;Big Tanker&#x27;,&#x27;BT&#x27;],[&#x27;Fighter Dumper&#x27;,&#x27;FD&#x27;],[&#x27;Backhoe&#x27;,&#x27;BH&#x27;],[&#x27;Trailer / Low-bed&#x27;,&#x27;TR&#x27;],[&#x27;Pickup / Car&#x27;,&#x27;PU&#x27;],[&#x27;Generator&#x27;,&#x27;GN&#x27;],[&#x27;Other&#x27;,&#x27;OT&#x27;]];
 const TABBR=Object.fromEntries(TYPES);
 const STATUS={work:[&#x27;Working&#x27;,&#x27;--work&#x27;],idle:[&#x27;Idle&#x27;,&#x27;--idle&#x27;],down:[&#x27;Breakdown&#x27;,&#x27;--down&#x27;],maint:[&#x27;Maintenance&#x27;,&#x27;--maint&#x27;],off:[&#x27;Off-site / Demob&#x27;,&#x27;--off&#x27;]};
 const ACTS=[&#x27;Cut / Excavation&#x27;,&#x27;Fill / Spreading&#x27;,&#x27;Grading&#x27;,&#x27;Compaction&#x27;,&#x27;Loading&#x27;,&#x27;Hauling&#x27;,&#x27;Watering&#x27;,&#x27;Stripping&#x27;,&#x27;Trimming&#x27;,&#x27;Standby&#x27;,&#x27;Other&#x27;];
@@ -690,6 +691,11 @@ function makeSample(){
 }
 
 /* ================= helpers ================= */
+
+const CODE_DEF=&#x27;103 = Dump Truck\n104 = Small Tanker\n105 = Big Tanker\n106 = Dozer\n107 = Grader\n108 = Wheel Loader\n111 = Roller / Compactor\n112 = Fighter Dumper\n124 = Excavator / Shovel&#x27;;
+function codeMap(){const t=(M().codes||CODE_DEF);const m={};t.split(/\r?\n/).forEach(l=&gt;{const x=l.match(/^\s*(\d{2,4})\s*[=:\-]\s*(.+?)\s*$/);if(x)m[x[1]]=x[2]});return m}
+function codeType(no){const x=String(no||&#x27;&#x27;).trim().match(/^(\d{2,4})[-_\s.]?\d{1,4}$/);if(!x)return &#x27;&#x27;;const t=codeMap()[x[1]];if(!t)return &#x27;&#x27;;const hit=TYPES.find(y=&gt;y[0].toLowerCase()===t.toLowerCase());return hit?hit[0]:t}
+const normNo=s=&gt;{s=String(s||&#x27;&#x27;).trim();const x=s.match(/^(\d{2,4})\s*[-_.\s]\s*(\d{1,4})$/);return x?x[1]+&#x27;-&#x27;+x[2]:s};
 const eqById=id=&gt;S.equip.find(e=&gt;e.id===id);
 const foreById=id=&gt;S.fore.find(f=&gt;f.id===id);
 const foreName=id=&gt;(foreById(id)||{}).name||&#x27;—&#x27;;
@@ -727,6 +733,7 @@ const EQART={
  &#x27;Other&#x27;:()=&gt;`&lt;rect x=&quot;22&quot; y=&quot;16&quot; width=&quot;70&quot; height=&quot;28&quot; rx=&quot;4&quot; fill=&quot;${EQY}&quot;/&gt;&lt;path d=&quot;M60 6h20v12H60z&quot; fill=&quot;${EQY}&quot;/&gt;&lt;path d=&quot;M63 9h14v7H63z&quot; fill=&quot;${EQG}&quot;/&gt;${wheel(36,50,9)}${wheel(80,50,9)}`
 };
 function eqSvg(type,h,extra){const f=EQART[type]||EQART.Other;return`&lt;svg viewBox=&quot;0 0 120 62&quot; width=&quot;${Math.round(h*120/62)}&quot; height=&quot;${h}&quot; role=&quot;img&quot; aria-label=&quot;${esc(type||&#x27;Machine&#x27;)}&quot; style=&quot;flex:none;display:block${extra?&#x27;;&#x27;+extra:&#x27;&#x27;}&quot;&gt;&lt;ellipse cx=&quot;60&quot; cy=&quot;60&quot; rx=&quot;56&quot; ry=&quot;2&quot; fill=&quot;rgba(0,0,0,.18)&quot;/&gt;${f()}&lt;/svg&gt;`}
+[&#x27;Small Tanker&#x27;,&#x27;Big Tanker&#x27;].forEach(t=&gt;{if(!EQART[t])EQART[t]=EQART[&#x27;Water Tanker&#x27;]});if(!EQART[&#x27;Fighter Dumper&#x27;])EQART[&#x27;Fighter Dumper&#x27;]=EQART[&#x27;Dump Truck&#x27;];
 const EQIMG={};function eqImg(type){if(EQIMG[type])return EQIMG[type];const im=new Image();im.src=&#x27;data:image/svg+xml;charset=utf-8,&#x27;+encodeURIComponent(`&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 120 62&quot;&gt;${(EQART[type]||EQART.Other)()}&lt;/svg&gt;`);EQIMG[type]=im;return im}
 
 /* ================= MORE: shared ================= */
@@ -1036,7 +1043,7 @@ function renderEquip(){
   &lt;div class=&quot;row&quot;&gt;&lt;select id=&quot;eT&quot;&gt;&lt;option value=&quot;&quot;&gt;All types&lt;/option&gt;${types.map(t=&gt;`&lt;option${t===eqF.type?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${esc(t)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;
     &lt;select id=&quot;eS&quot;&gt;&lt;option value=&quot;&quot;&gt;All status&lt;/option&gt;${Object.keys(STATUS).map(k=&gt;`&lt;option value=&quot;${k}&quot;${k===eqF.status?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${STATUS[k][0]}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;
     &lt;select id=&quot;eF&quot;&gt;&lt;option value=&quot;&quot;&gt;All foremen&lt;/option&gt;${S.fore.map(f=&gt;`&lt;option value=&quot;${f.id}&quot;${f.id===eqF.fore?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${esc(f.name)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/div&gt;
-  &lt;div class=&quot;card&quot; style=&quot;padding:4px 14px&quot;&gt;${L.length?`&lt;div class=&quot;list&quot;&gt;${L.map(e=&gt;`&lt;div class=&quot;li tap&quot; tabindex=&quot;0&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;${esc(e.zone||&#x27;—&#x27;)} · ${esc(foreName(e.fore))}${e.operator?&#x27; · &#x27;+esc(e.operator)+(e.opSal?&#x27; (&#x27;+esc(e.opSal)+&#x27;)&#x27;:&#x27;&#x27;):&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;/div&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&lt;div class=&quot;empty&quot;&gt;No equipment matches.&lt;br&gt;Tap “+ Add” to add a machine.&lt;/div&gt;&#x27;}&lt;/div&gt;&lt;/div&gt;`;
+  &lt;div class=&quot;card&quot; style=&quot;padding:4px 14px&quot;&gt;${L.length?`&lt;div class=&quot;list&quot;&gt;${L.map(e=&gt;`&lt;div class=&quot;li tap&quot; tabindex=&quot;0&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;👤 ${esc(e.fore&amp;&amp;foreById(e.fore)?foreName(e.fore):&#x27;No foreman&#x27;)} · ${esc(e.zone||&#x27;—&#x27;)}${e.operator?&#x27; · 👷 &#x27;+esc(e.operator)+(e.opSal?&#x27; (&#x27;+esc(e.opSal)+&#x27;)&#x27;:&#x27;&#x27;):&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;/div&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;`:&#x27;&lt;div class=&quot;empty&quot;&gt;No equipment matches.&lt;br&gt;Tap “+ Add” to add a machine.&lt;/div&gt;&#x27;}&lt;/div&gt;&lt;/div&gt;`;
   $(&#x27;eNew&#x27;).onclick=()=&gt;editEquip(null);
   const q=$(&#x27;eQ&#x27;);q.oninput=()=&gt;{eqF.q=q.value;const p=q.selectionStart;renderEquip();const n=$(&#x27;eQ&#x27;);n.focus();n.setSelectionRange(p,p)};
   $(&#x27;eT&#x27;).onchange=e=&gt;{eqF.type=e.target.value;renderEquip()};$(&#x27;eS&#x27;).onchange=e=&gt;{eqF.status=e.target.value;renderEquip()};$(&#x27;eF&#x27;).onchange=e=&gt;{eqF.fore=e.target.value;renderEquip()};
@@ -1055,6 +1062,7 @@ function openEquip(e){
     &lt;div&gt;&lt;small&gt;OWNER&lt;/small&gt;&lt;b&gt;${esc(e.owner||&#x27;—&#x27;)}&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;small&gt;PLATE / CHASSIS&lt;/small&gt;&lt;b class=&quot;mono&quot;&gt;${esc(e.plate||&#x27;—&#x27;)}&lt;/b&gt;&lt;/div&gt;
     &lt;div&gt;&lt;small&gt;HOUR METER&lt;/small&gt;&lt;b class=&quot;mono&quot;&gt;${esc(e.meter||&#x27;—&#x27;)}&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;small&gt;LAST 30 DAYS&lt;/small&gt;&lt;b class=&quot;mono&quot;&gt;${fmt1(h30.w)} h · ${util(h30).toFixed(0)}%&lt;/b&gt;&lt;/div&gt;
   &lt;/div&gt;
+  &lt;div class=&quot;row&quot; style=&quot;margin-top:10px;gap:8px;align-items:center&quot;&gt;&lt;span class=&quot;small muted&quot;&gt;Foreman&lt;/span&gt;&lt;select id=&quot;qFo&quot; style=&quot;flex:1&quot;&gt;&lt;option value=&quot;&quot;&gt;— no foreman —&lt;/option&gt;${S.fore.map(x=&gt;`&lt;option value=&quot;${x.id}&quot;${x.id===e.fore?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${esc(x.name)}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/div&gt;
   ${e.notes?`&lt;p class=&quot;small&quot; style=&quot;margin:10px 0 0&quot;&gt;&lt;b&gt;Notes:&lt;/b&gt; ${esc(e.notes)}&lt;/p&gt;`:&#x27;&#x27;}
   ${(()=&gt;{const sv=svcInfo(e),fs=fuelStats(e),nm=typeNorm(e.type),ob=openBd(e),hc=e.owner&amp;&amp;e.owner!==&#x27;Own&#x27;?hireCalc(e,ym(today())):null;return`&lt;div class=&quot;dl&quot; style=&quot;margin-top:8px&quot;&gt;
     &lt;div&gt;&lt;small&gt;NEXT SERVICE&lt;/small&gt;&lt;b class=&quot;mono&quot; style=&quot;color:var(${!sv?&#x27;--muted&#x27;:sv.st===&#x27;over&#x27;?&#x27;--down&#x27;:sv.st===&#x27;soon&#x27;?&#x27;--idle&#x27;:&#x27;--ink&#x27;})&quot;&gt;${sv?(sv.left&lt;0?&#x27;overdue &#x27;+fmt0(-sv.left)+&#x27; h&#x27;:fmt0(sv.left)+&#x27; h left&#x27;):&#x27;—&#x27;}&lt;/b&gt;&lt;/div&gt;
@@ -1083,6 +1091,7 @@ function openEquip(e){
   const after=()=&gt;{save();openEquip(e);RENDER[curTab]()};
   sheet.querySelectorAll(&#x27;[data-st]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{const was=e.status;e.status=b.dataset.st;if(e.status===&#x27;down&#x27;&amp;&amp;was!==&#x27;down&#x27;)startBreakdown(e);if(e.status!==&#x27;down&#x27;&amp;&amp;was===&#x27;down&#x27;)endBreakdown(e);touch(e);toast(e.no+&#x27; → &#x27;+st(e.status)[0]);after()});
   const setLoc=(E_,N_,lat,lon)=&gt;{e.loc={e:+E_.toFixed(2),n:+N_.toFixed(2),lat,lon,date:today()};touch(e);save();toast(&#x27;Location saved for &#x27;+e.no);openEquip(e)};
+  {const q=$(&#x27;qFo&#x27;);if(q)q.onchange=()=&gt;{e.fore=q.value;touch(e);save();toast(e.no+&#x27; → &#x27;+(q.value?foreName(q.value):&#x27;no foreman&#x27;));openEquip(e);RENDER[curTab]()}}
   $(&#x27;lcSet&#x27;).onclick=()=&gt;{let E_=parseFloat($(&#x27;lcE&#x27;).value),N_=parseFloat($(&#x27;lcN&#x27;).value);if(isNaN(E_)||isNaN(N_)){toast(&#x27;Enter E and N&#x27;);return}if(E_&gt;1e6&amp;&amp;N_&lt;1e6){const t=E_;E_=N_;N_=t}setLoc(E_,N_)};
   $(&#x27;lcGps&#x27;).onclick=()=&gt;{if(!navigator.geolocation){toast(&#x27;GPS is not available&#x27;);return}toast(&#x27;Finding your position…&#x27;);try{navigator.geolocation.getCurrentPosition(pos=&gt;{const q=qaData(),z=(q&amp;&amp;q.meta&amp;&amp;+q.meta.utm)||38;const[E_,N_]=ll2utm(pos.coords.latitude,pos.coords.longitude,z);setLoc(E_,N_,pos.coords.latitude,pos.coords.longitude)},()=&gt;toast(&#x27;GPS not allowed here. Open the app from your own site link.&#x27;),{enableHighAccuracy:true,timeout:20000})}catch(err){toast(&#x27;GPS not allowed here&#x27;)}};
   $(&#x27;mvGo&#x27;).onclick=()=&gt;{const z=$(&#x27;mvZ&#x27;).value,nf=$(&#x27;mvF&#x27;).value;if(z===e.zone&amp;&amp;!nf){toast(&#x27;Pick a different zone or foreman&#x27;);return}
@@ -1092,11 +1101,11 @@ function openEquip(e){
   $(&#x27;eEd&#x27;).onclick=()=&gt;editEquip(e);$(&#x27;eCl&#x27;).onclick=closeSheet;
   $(&#x27;eDel&#x27;).onclick=()=&gt;confirmBox($(&#x27;eBox&#x27;),`Delete ${esc(e.no)} and its hours?`,&#x27;Delete&#x27;,()=&gt;{delItem(&#x27;equip&#x27;,e);S.logs.filter(l=&gt;l.eq===e.id).forEach(l=&gt;delItem(&#x27;logs&#x27;,l));save();closeSheet();RENDER[curTab]();toast(&#x27;Deleted&#x27;)});
 }
-function editEquip(e){
-  const v=e||{no:&#x27;&#x27;,type:&#x27;Dozer&#x27;,model:&#x27;&#x27;,zone:zoneList()[0]||&#x27;&#x27;,fore:(S.fore[0]||{}).id||&#x27;&#x27;,status:&#x27;work&#x27;,operator:&#x27;&#x27;,opSal:&#x27;&#x27;,owner:&#x27;Own&#x27;,plate:&#x27;&#x27;,meter:&#x27;&#x27;,notes:&#x27;&#x27;};
+function editEquip(e,pre){
+  const v=e||Object.assign({no:&#x27;&#x27;,type:&#x27;Dozer&#x27;,model:&#x27;&#x27;,zone:zoneList()[0]||&#x27;&#x27;,fore:(S.fore[0]||{}).id||&#x27;&#x27;,status:&#x27;work&#x27;,operator:&#x27;&#x27;,opSal:&#x27;&#x27;,owner:&#x27;Own&#x27;,plate:&#x27;&#x27;,meter:&#x27;&#x27;,notes:&#x27;&#x27;},pre||{});
   openSheet(`&lt;h2 style=&quot;font-size:24px;margin-bottom:12px&quot;&gt;${e?&#x27;Edit &#x27;+esc(e.no):&#x27;Add equipment&#x27;}&lt;/h2&gt;
   &lt;div class=&quot;fgrid&quot;&gt;
-    &lt;label class=&quot;f&quot;&gt;Equipment no.&lt;input id=&quot;xNo&quot; value=&quot;${esc(v.no)}&quot; placeholder=&quot;DZ-101&quot;&gt;&lt;/label&gt;
+    &lt;label class=&quot;f&quot;&gt;Equipment no.&lt;input id=&quot;xNo&quot; value=&quot;${esc(v.no)}&quot; placeholder=&quot;106-045&quot;&gt;&lt;/label&gt;
     &lt;label class=&quot;f&quot;&gt;Type&lt;select id=&quot;xTy&quot;&gt;${TYPES.map(t=&gt;`&lt;option${t[0]===v.type?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${t[0]}&lt;/option&gt;`).join(&#x27;&#x27;)}${TYPES.some(t=&gt;t[0]===v.type)?&#x27;&#x27;:`&lt;option selected&gt;${esc(v.type)}&lt;/option&gt;`}&lt;/select&gt;&lt;/label&gt;
     &lt;label class=&quot;f&quot;&gt;Make / model&lt;input id=&quot;xMo&quot; value=&quot;${esc(v.model)}&quot; placeholder=&quot;CAT D8T&quot;&gt;&lt;/label&gt;
     &lt;label class=&quot;f&quot;&gt;Plate / chassis no.&lt;input id=&quot;xPl&quot; value=&quot;${esc(v.plate)}&quot;&gt;&lt;/label&gt;
@@ -1126,6 +1135,7 @@ function editEquip(e){
   &lt;label class=&quot;f&quot; style=&quot;margin-top:10px&quot;&gt;Notes&lt;input id=&quot;xNt&quot; value=&quot;${esc(v.notes)}&quot; placeholder=&quot;e.g. waiting for spare part&quot;&gt;&lt;/label&gt;
   &lt;div class=&quot;ur&quot; style=&quot;margin-top:6px&quot;&gt;Zone ka format: Project · Phase · Zone. Naya zone likhenge to list mein khud aa jayega.&lt;/div&gt;
   &lt;div class=&quot;row&quot; style=&quot;margin-top:12px&quot;&gt;&lt;button class=&quot;btn pri&quot; id=&quot;xSave&quot;&gt;${e?&#x27;Save changes&#x27;:&#x27;Add equipment&#x27;}&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;xCan&quot; style=&quot;margin-left:auto&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`);
+  $(&#x27;xNo&#x27;).oninput=()=&gt;{const t=codeType($(&#x27;xNo&#x27;).value);if(t){if(![...$(&#x27;xTy&#x27;).options].some(o=&gt;o.value===t))$(&#x27;xTy&#x27;).append(new Option(t,t));$(&#x27;xTy&#x27;).value=t}};
   $(&#x27;xOp&#x27;).onchange=()=&gt;{const op=S.ops.find(x=&gt;x.name.toLowerCase()===$(&#x27;xOp&#x27;).value.trim().toLowerCase());if(op&amp;&amp;op.sal&amp;&amp;!$(&#x27;xSa&#x27;).value)$(&#x27;xSa&#x27;).value=op.sal};
   $(&#x27;xCan&#x27;).onclick=()=&gt;e?openEquip(e):closeSheet();
   $(&#x27;xSave&#x27;).onclick=()=&gt;{const no=$(&#x27;xNo&#x27;).value.trim();if(!no){toast(&#x27;Enter the equipment number&#x27;);return}
@@ -1190,12 +1200,28 @@ function openFore(f){
   const es=S.equip.filter(e=&gt;e.fore===f.id);
   openSheet(`&lt;h2 style=&quot;font-size:26px&quot;&gt;${esc(f.name)}&lt;/h2&gt;&lt;div class=&quot;small muted mono&quot;&gt;Salary no. ${esc(f.sal||&#x27;—&#x27;)}${f.phone?&#x27; · &#x27;+esc(f.phone):&#x27;&#x27;}&lt;/div&gt;
   &lt;div class=&quot;ch&quot; style=&quot;margin:14px 0 6px&quot;&gt;&lt;h2 style=&quot;font-size:16px&quot;&gt;Machines&lt;/h2&gt;&lt;small&gt;${es.length}&lt;/small&gt;&lt;/div&gt;
-  &lt;div class=&quot;list&quot;&gt;${es.map(e=&gt;`&lt;div class=&quot;li&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;${esc(e.zone||&#x27;—&#x27;)} · 👷 ${esc(e.operator||&#x27;no operator&#x27;)}${e.opSal?&#x27; (&#x27;+esc(e.opSal)+&#x27;)&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;/div&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No machines assigned&lt;/div&gt;&#x27;}&lt;/div&gt;
+  &lt;div class=&quot;list&quot;&gt;${es.map(e=&gt;`&lt;div class=&quot;li&quot; data-e=&quot;${e.id}&quot;&gt;${eqSvg(e.type,30)}&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;${esc(e.zone||&#x27;—&#x27;)} · 👷 ${esc(e.operator||&#x27;no operator&#x27;)}${e.opSal?&#x27; (&#x27;+esc(e.opSal)+&#x27;)&#x27;:&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;${pill(st(e.status))}&lt;button class=&quot;btn sm&quot; data-rm=&quot;${e.id}&quot; title=&quot;Remove from this foreman&quot; style=&quot;margin-left:6px;padding:4px 9px&quot;&gt;✕&lt;/button&gt;&lt;/div&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No machines assigned&lt;/div&gt;&#x27;}&lt;/div&gt;
+  &lt;div class=&quot;row&quot; style=&quot;margin-top:10px;gap:8px;flex-wrap:wrap&quot;&gt;&lt;button class=&quot;btn pri sm&quot; id=&quot;fAddEx&quot;&gt;+ Add machines from the list&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fAddNew&quot;&gt;+ New machine for ${esc(f.name.split(&#x27; &#x27;)[0])}&lt;/button&gt;&lt;/div&gt;
   &lt;div class=&quot;row&quot; style=&quot;margin-top:12px&quot;&gt;&lt;button class=&quot;btn acc sm&quot; id=&quot;fShare&quot;&gt;Share list (WhatsApp)&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fEd&quot;&gt;Edit&lt;/button&gt;&lt;button class=&quot;btn warn sm&quot; id=&quot;fDel&quot;&gt;Delete&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;fCl&quot; style=&quot;margin-left:auto&quot;&gt;Close&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;fBox&quot;&gt;&lt;/div&gt;`);
   sheet.querySelectorAll(&#x27;[data-e]&#x27;).forEach(r=&gt;r.onclick=()=&gt;openEquip(eqById(r.dataset.e)));
+  sheet.querySelectorAll(&#x27;[data-rm]&#x27;).forEach(b=&gt;b.onclick=ev=&gt;{ev.stopPropagation();const e=eqById(b.dataset.rm);if(!e)return;e.fore=&#x27;&#x27;;touch(e);save();toast(e.no+&#x27; removed from &#x27;+f.name);openFore(f);if(curTab!==&#x27;fore&#x27;)RENDER[curTab]();else renderFore()});
+  $(&#x27;fAddEx&#x27;).onclick=()=&gt;pickForFore(f);$(&#x27;fAddNew&#x27;).onclick=()=&gt;editEquip(null,{fore:f.id});
   $(&#x27;fEd&#x27;).onclick=()=&gt;editFore(f);$(&#x27;fCl&#x27;).onclick=closeSheet;
   $(&#x27;fShare&#x27;).onclick=()=&gt;{const L=[&#x27;*Foreman: &#x27;+f.name+&#x27;*&#x27;+(f.sal?&#x27; (&#x27;+f.sal+&#x27;)&#x27;:&#x27;&#x27;),&#x27;Date: &#x27;+new Date().toLocaleDateString(&#x27;en-GB&#x27;),&#x27;Machines: &#x27;+es.length,&#x27;&#x27;];es.forEach((e,i)=&gt;L.push((i+1)+&#x27;. &#x27;+e.no+&#x27; – &#x27;+(e.model||e.type)+&#x27; – Op: &#x27;+(e.operator||&#x27;—&#x27;)+(e.opSal?&#x27; (&#x27;+e.opSal+&#x27;)&#x27;:&#x27;&#x27;)+&#x27; – &#x27;+(e.zone||&#x27;—&#x27;)+&#x27; – &#x27;+st(e.status)[0]));L.push(&#x27;&#x27;,&#x27;— &#x27;+M().eng);const t=L.join(&#x27;\n&#x27;);if(navigator.share){navigator.share({text:t}).catch(()=&gt;{})}else window.open(&#x27;https://wa.me/?text=&#x27;+encodeURIComponent(t),&#x27;_blank&#x27;)};
   $(&#x27;fDel&#x27;).onclick=()=&gt;confirmBox($(&#x27;fBox&#x27;),`Delete ${esc(f.name)}? His ${es.length} machines will have no foreman.`,&#x27;Delete&#x27;,()=&gt;{es.forEach(e=&gt;{e.fore=&#x27;&#x27;;touch(e)});delItem(&#x27;fore&#x27;,f);save();closeSheet();renderFore();toast(&#x27;Foreman deleted&#x27;)});
+}
+
+function pickForFore(f){
+  let q=&#x27;&#x27;;const sel=new Set();
+  const draw=()=&gt;{const L=S.equip.filter(e=&gt;e.fore!==f.id&amp;&amp;(!q||[e.no,e.model,e.type,e.operator,e.opSal,foreName(e.fore)].join(&#x27; &#x27;).toLowerCase().includes(q.toLowerCase()))).sort((a,b)=&gt;a.no.localeCompare(b.no,undefined,{numeric:true}));
+    $(&#x27;pkL&#x27;).innerHTML=L.map(e=&gt;`&lt;label class=&quot;li&quot; style=&quot;cursor:pointer&quot;&gt;&lt;input type=&quot;checkbox&quot; data-p=&quot;${e.id}&quot; ${sel.has(e.id)?&#x27;checked&#x27;:&#x27;&#x27;} style=&quot;width:22px;height:22px;flex:none&quot;&gt;&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(e.no)} · ${esc(e.model||e.type)}&lt;/b&gt;&lt;span&gt;Now: ${e.fore&amp;&amp;foreById(e.fore)?&#x27;👤 &#x27;+esc(foreName(e.fore)):&#x27;no foreman&#x27;}${e.operator?&#x27; · 👷 &#x27;+esc(e.operator):&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;`).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty small&quot;&gt;No other machines&#x27;+(q?&#x27; match&#x27;:&#x27;&#x27;)+&#x27;.&lt;/div&gt;&#x27;;
+    $(&#x27;pkL&#x27;).querySelectorAll(&#x27;[data-p]&#x27;).forEach(c=&gt;c.onchange=()=&gt;{c.checked?sel.add(c.dataset.p):sel.delete(c.dataset.p);$(&#x27;pkGo&#x27;).textContent=&#x27;Add &#x27;+sel.size+&#x27; to &#x27;+f.name});};
+  openSheet(`&lt;h2 style=&quot;font-size:22px&quot;&gt;Add machines to ${esc(f.name)}&lt;/h2&gt;&lt;div class=&quot;small muted&quot; style=&quot;margin-bottom:8px&quot;&gt;Tick the machines. A machine with another foreman moves to ${esc(f.name)}.&lt;/div&gt;
+  &lt;input id=&quot;pkQ&quot; placeholder=&quot;Search no., type, operator, foreman&quot;&gt;&lt;div class=&quot;list&quot; id=&quot;pkL&quot; style=&quot;max-height:52vh;overflow:auto;margin-top:8px&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;row&quot; style=&quot;margin-top:10px&quot;&gt;&lt;button class=&quot;btn pri&quot; id=&quot;pkGo&quot;&gt;Add 0 to ${esc(f.name)}&lt;/button&gt;&lt;button class=&quot;btn sm&quot; id=&quot;pkCan&quot; style=&quot;margin-left:auto&quot;&gt;Cancel&lt;/button&gt;&lt;/div&gt;`);
+  $(&#x27;pkQ&#x27;).oninput=e=&gt;{q=e.target.value;draw()};draw();
+  $(&#x27;pkCan&#x27;).onclick=()=&gt;openFore(f);
+  $(&#x27;pkGo&#x27;).onclick=()=&gt;{if(!sel.size){toast(&#x27;Tick at least one machine&#x27;);return}sel.forEach(id=&gt;{const e=eqById(id);if(e){e.fore=f.id;touch(e)}});save();toast(sel.size+&#x27; machine(s) added to &#x27;+f.name);openFore(f);if(curTab===&#x27;fore&#x27;)renderFore();else RENDER[curTab]()};
 }
 function editFore(f){
   const v=f||{name:&#x27;&#x27;,sal:&#x27;&#x27;,phone:&#x27;&#x27;};
@@ -1284,14 +1310,105 @@ function downloadApp(){
   toast(&#x27;App file download started&#x27;);
 }
 
-function renderData(){
+/* ================= IMPORT FROM PHOTO / PDF / GALLERY ================= */
+let IMP={type:&#x27;equip&#x27;,rows:[],head:true,map:[],busy:false,msg:&#x27;&#x27;,clear:true};
+const IMP_T=[[&#x27;equip&#x27;,&#x27;Machines list&#x27;],[&#x27;logs&#x27;,&#x27;Daily hours&#x27;],[&#x27;fuel&#x27;,&#x27;Diesel / fuel&#x27;],[&#x27;ops&#x27;,&#x27;Operators&#x27;],[&#x27;fore&#x27;,&#x27;Foremen&#x27;]];
+const IMP_F={equip:[[&#x27;no&#x27;,&#x27;Equipment no.&#x27;],[&#x27;type&#x27;,&#x27;Type&#x27;],[&#x27;model&#x27;,&#x27;Model&#x27;],[&#x27;plate&#x27;,&#x27;Plate&#x27;],[&#x27;owner&#x27;,&#x27;Own / Rental&#x27;],[&#x27;zone&#x27;,&#x27;Zone&#x27;],[&#x27;fore&#x27;,&#x27;Foreman&#x27;],[&#x27;foreSal&#x27;,&#x27;Foreman salary no.&#x27;],[&#x27;operator&#x27;,&#x27;Operator&#x27;],[&#x27;opSal&#x27;,&#x27;Operator salary no.&#x27;],[&#x27;status&#x27;,&#x27;Status&#x27;],[&#x27;meter&#x27;,&#x27;Hour meter&#x27;]],
+ logs:[[&#x27;date&#x27;,&#x27;Date&#x27;],[&#x27;no&#x27;,&#x27;Equipment no.&#x27;],[&#x27;work&#x27;,&#x27;Work hours&#x27;],[&#x27;idle&#x27;,&#x27;Idle hours&#x27;],[&#x27;down&#x27;,&#x27;Breakdown hours&#x27;],[&#x27;act&#x27;,&#x27;Activity&#x27;],[&#x27;zone&#x27;,&#x27;Zone&#x27;],[&#x27;note&#x27;,&#x27;Note&#x27;]],
+ fuel:[[&#x27;date&#x27;,&#x27;Date&#x27;],[&#x27;no&#x27;,&#x27;Equipment no.&#x27;],[&#x27;liters&#x27;,&#x27;Liters&#x27;],[&#x27;meter&#x27;,&#x27;Meter&#x27;],[&#x27;by&#x27;,&#x27;Filled by&#x27;],[&#x27;note&#x27;,&#x27;Note&#x27;]],
+ ops:[[&#x27;name&#x27;,&#x27;Name&#x27;],[&#x27;sal&#x27;,&#x27;Salary no.&#x27;],[&#x27;phone&#x27;,&#x27;Phone&#x27;],[&#x27;iqama&#x27;,&#x27;Iqama&#x27;],[&#x27;lic&#x27;,&#x27;License no.&#x27;],[&#x27;licType&#x27;,&#x27;License type&#x27;]],
+ fore:[[&#x27;name&#x27;,&#x27;Name&#x27;],[&#x27;sal&#x27;,&#x27;Salary no.&#x27;],[&#x27;phone&#x27;,&#x27;Phone&#x27;]]};
+const IMP_RX={no:/(equip|machine|unit|asset|fleet|eq\.?\s*no|code|plant)/i,type:/^(type|category|class)/i,model:/(model|make|brand)/i,plate:/(plate|reg)/i,owner:/(own|rent|hire)/i,zone:/(zone|location|area|site)/i,fore:/(fore\s*man|supervisor)/i,
+ opSal:/(operator|driver).*(sal|id|no)|sal(ary)?\s*no|emp/i,operator:/(operator|driver)/i,status:/(status|condition)/i,meter:/(meter|smr|odo|reading)/i,date:/(date|day)/i,work:/(work|working|operat)/i,idle:/(idle|stand\s*by)/i,down:/(down|break)/i,act:/(activit|task|job)/i,
+ liters:/(lit|ltr|qty|quantity|fuel|diesel)/i,by:/(by|tanker|issued)/i,note:/(note|remark)/i,name:/name/i,sal:/(sal|emp|staff|badge|id\s*no)/i,phone:/(phone|mob|contact)/i,iqama:/(iqama|resid)/i,licType:/licen.*(type|class)/i,lic:/licen/i};
+function impGuess(){const F=IMP_F[IMP.type],R=IMP.rows,n=Math.max(0,...R.map(r=&gt;r.length));const used=new Set(),map=Array(n).fill(&#x27;&#x27;);
+  if(IMP.head&amp;&amp;R[0])R[0].forEach((h,i)=&gt;{for(const [k] of F){if(used.has(k))continue;const rx=IMP_RX[k];if(rx&amp;&amp;rx.test(h)&amp;&amp;!(k===&#x27;operator&#x27;&amp;&amp;IMP_RX.opSal.test(h))){map[i]=k;used.add(k);break}}});
+  const body=IMP.head?R.slice(1):R;
+  if(!used.has(&#x27;no&#x27;)&amp;&amp;F.some(f=&gt;f[0]===&#x27;no&#x27;)){for(let i=0;i&lt;n;i++){if(map[i])continue;const v=body.map(r=&gt;r[i]||&#x27;&#x27;).filter(Boolean);if(v.length&amp;&amp;v.filter(x=&gt;/^[A-Za-z]{1,4}[-\s]?\d{2,5}$/.test(x)||/^\d{3}\s*[-_.\s]\s*\d{3}$/.test(x)).length&gt;=v.length*.6){map[i]=&#x27;no&#x27;;used.add(&#x27;no&#x27;);break}}}
+  if(IMP.type===&#x27;equip&#x27;&amp;&amp;!used.has(&#x27;opSal&#x27;)){for(let i=0;i&lt;n;i++){if(map[i])continue;const v=body.map(r=&gt;r[i]||&#x27;&#x27;).filter(Boolean);if(v.length&amp;&amp;v.filter(x=&gt;/^\d{3,7}$/.test(x.replace(/\s/g,&#x27;&#x27;))).length&gt;=v.length*.6){map[i]=&#x27;opSal&#x27;;used.add(&#x27;opSal&#x27;);break}}}
+  if(!used.has(&#x27;name&#x27;)&amp;&amp;F.some(f=&gt;f[0]===&#x27;name&#x27;)){for(let i=0;i&lt;n;i++){if(map[i])continue;const v=body.map(r=&gt;r[i]||&#x27;&#x27;).filter(Boolean);if(v.length&amp;&amp;v.filter(x=&gt;/^[A-Za-z][A-Za-z .&#x27;-]{2,}$/.test(x)).length&gt;=v.length*.6){map[i]=&#x27;name&#x27;;used.add(&#x27;name&#x27;);break}}}
+  try{const s=JSON.parse(localStorage.getItem(&#x27;eq_impmap_&#x27;+IMP.type)||&#x27;null&#x27;);if(s&amp;&amp;s.n===n&amp;&amp;!used.size)return s.map}catch(e){}
+  return map}
+function impDate(s){s=String(s||&#x27;&#x27;).trim();let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);if(m)return m[1]+&#x27;-&#x27;+m[2].padStart(2,&#x27;0&#x27;)+&#x27;-&#x27;+m[3].padStart(2,&#x27;0&#x27;);
+  m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/);if(m){const y=m[3].length===2?&#x27;20&#x27;+m[3]:m[3];return y+&#x27;-&#x27;+m[2].padStart(2,&#x27;0&#x27;)+&#x27;-&#x27;+m[1].padStart(2,&#x27;0&#x27;)}return &#x27;&#x27;}
+const impNum=s=&gt;{const v=parseFloat(String(s||&#x27;&#x27;).replace(/,/g,&#x27;&#x27;).replace(/[^0-9.\-]/g,&#x27;&#x27;));return isFinite(v)?v:0};
+const impKey=s=&gt;String(s||&#x27;&#x27;).toUpperCase().replace(/[^A-Z0-9]/g,&#x27;&#x27;);
+function impType(t,no){const ct=codeType(no);if(!t&amp;&amp;ct)return ct;t=String(t||&#x27;&#x27;).toLowerCase();const hit=TYPES.find(([n,a])=&gt;t&amp;&amp;(n.toLowerCase().startsWith(t)||t.includes(n.toLowerCase().split(&#x27; &#x27;)[0])||t===a.toLowerCase()));if(hit)return hit[0];
+  const a=impKey(no).replace(/[^A-Z]/g,&#x27;&#x27;).slice(0,2);const h2=TYPES.find(x=&gt;x[1]===a);return h2?h2[0]:&#x27;Other&#x27;}
+function impStatus(s){s=String(s||&#x27;&#x27;).toLowerCase();if(/break|down|repair/.test(s))return &#x27;down&#x27;;if(/maint|service/.test(s))return &#x27;maint&#x27;;if(/idle|stand/.test(s))return &#x27;idle&#x27;;if(/off|return|demob/.test(s))return &#x27;off&#x27;;return &#x27;work&#x27;}
+function impForeId(name){name=String(name||&#x27;&#x27;).trim();if(!name)return &#x27;&#x27;;let f=S.fore.find(x=&gt;x.name.toLowerCase()===name.toLowerCase());if(!f){f=touch({id:uid(),name,sal:&#x27;&#x27;,phone:&#x27;&#x27;});S.fore.push(f)}return f.id}
+function impSave(){
+  const body=(IMP.head?IMP.rows.slice(1):IMP.rows),map=IMP.map;let add=0,upd=0,skip=0;
+  if(S.sample&amp;&amp;IMP.clear){[&#x27;equip&#x27;,&#x27;fore&#x27;,&#x27;logs&#x27;,&#x27;moves&#x27;,&#x27;fuel&#x27;,&#x27;maint&#x27;,&#x27;trips&#x27;,&#x27;ops&#x27;,&#x27;opHist&#x27;].forEach(k=&gt;S[k]=[]);S.sample=false}
+  S.sample=false;
+  for(const r of body){const o={};map.forEach((k,i)=&gt;{if(k&amp;&amp;r[i]!=null&amp;&amp;String(r[i]).trim()!==&#x27;&#x27;)o[k]=String(r[i]).trim()});
+    if(IMP.type===&#x27;equip&#x27;){if(!o.no){skip++;continue}o.no=normNo(o.no);let e=S.equip.find(x=&gt;impKey(x.no)===impKey(o.no));const isNew=!e;
+      if(!e)e={id:uid(),no:o.no,type:&#x27;&#x27;,model:&#x27;&#x27;,zone:&#x27;&#x27;,fore:&#x27;&#x27;,status:&#x27;work&#x27;,operator:&#x27;&#x27;,opSal:&#x27;&#x27;,owner:&#x27;Own&#x27;,plate:&#x27;&#x27;,meter:&#x27;&#x27;,notes:&#x27;&#x27;};
+      if(o.type||isNew)e.type=impType(o.type,o.no);for(const k of [&#x27;model&#x27;,&#x27;plate&#x27;,&#x27;zone&#x27;,&#x27;operator&#x27;,&#x27;opSal&#x27;,&#x27;meter&#x27;])if(o[k])e[k]=o[k];
+      if(o.owner)e.owner=/rent|hire/i.test(o.owner)?&#x27;Rental&#x27;:&#x27;Own&#x27;;if(o.status)e.status=impStatus(o.status);if(o.fore)e.fore=impForeId(o.fore);
+      if(o.opSal&amp;&amp;!o.operator){const op=S.ops.find(x=&gt;String(x.sal||&#x27;&#x27;).trim()===o.opSal);if(op)e.operator=op.name}
+      if(o.foreSal&amp;&amp;!o.fore){const f=S.fore.find(x=&gt;String(x.sal||&#x27;&#x27;).trim()===o.foreSal);if(f)e.fore=f.id}
+      if(e.zone&amp;&amp;!M().zones.includes(e.zone)){M().zones.push(e.zone);S.metaUpd=Date.now()}
+      touch(e);if(isNew){S.equip.push(e);add++}else upd++}
+    else if(IMP.type===&#x27;logs&#x27;||IMP.type===&#x27;fuel&#x27;){const e=o.no&amp;&amp;S.equip.find(x=&gt;impKey(x.no)===impKey(o.no));if(!e){skip++;continue}const d=impDate(o.date)||IMP.date||today();
+      if(IMP.type===&#x27;logs&#x27;){let L=S.logs.find(x=&gt;x.eq===e.id&amp;&amp;x.date===d);const isNew=!L;if(!L)L={id:uid(),date:d,eq:e.id,zone:o.zone||e.zone,work:0,idle:0,down:0,act:&#x27;&#x27;,note:&#x27;&#x27;};
+        for(const k of [&#x27;work&#x27;,&#x27;idle&#x27;,&#x27;down&#x27;])if(o[k]!=null)L[k]=impNum(o[k]);if(o.act)L.act=o.act;if(o.note)L.note=o.note;touch(L);if(isNew){S.logs.push(L);add++}else upd++}
+      else{const lit=impNum(o.liters);if(!lit){skip++;continue}if(S.fuel.some(x=&gt;x.eq===e.id&amp;&amp;x.date===d&amp;&amp;+x.liters===lit)){upd++;continue}
+        S.fuel.push(touch({id:uid(),date:d,eq:e.id,liters:lit,meter:o.meter||&#x27;&#x27;,by:o.by||&#x27;&#x27;,note:o.note||&#x27;&#x27;}));add++}}
+    else{const coll=IMP.type===&#x27;ops&#x27;?&#x27;ops&#x27;:&#x27;fore&#x27;;if(!o.name){skip++;continue}let x=S[coll].find(y=&gt;y.name.toLowerCase()===o.name.toLowerCase());const isNew=!x;
+      if(!x)x=coll===&#x27;ops&#x27;?{id:uid(),name:o.name,sal:&#x27;&#x27;,phone:&#x27;&#x27;,iqama:&#x27;&#x27;,lic:&#x27;&#x27;,licType:&#x27;&#x27;}:{id:uid(),name:o.name,sal:&#x27;&#x27;,phone:&#x27;&#x27;};
+      for(const k of Object.keys(o))if(k!==&#x27;name&#x27;)x[k]=o[k];touch(x);if(isNew){S[coll].push(x);add++}else upd++}
+  }
+  try{localStorage.setItem(&#x27;eq_impmap_&#x27;+IMP.type,JSON.stringify({n:map.length,map}))}catch(e){}
+  save();IMP.rows=[];IMP.msg=&#x27;Saved: &#x27;+add+&#x27; added, &#x27;+upd+&#x27; updated&#x27;+(skip?&#x27;, &#x27;+skip+&#x27; rows skipped (missing &#x27;+(IMP.type===&#x27;equip&#x27;||IMP.type===&#x27;logs&#x27;||IMP.type===&#x27;fuel&#x27;?&#x27;equipment no. or unknown machine&#x27;:&#x27;name&#x27;)+&#x27;)&#x27;:&#x27;&#x27;)+&#x27;.&#x27;;
+  toast(IMP.msg);renderData();
+}
+async function impRun(files){if(!files.length)return;IMP.busy=true;IMP.msg=&#x27;Starting…&#x27;;renderImp();
+  try{const rows=await window.parent.docToRows(files,m=&gt;{IMP.msg=m;const el=$(&#x27;impMsg&#x27;);if(el)el.textContent=m},{digits:!!IMP.digits});
+    if(!IMP.rows.length&amp;&amp;rows[0]&amp;&amp;rows[0].some(c=&gt;/^\d{3}\s*[-_.\s]\s*\d{1,4}$/.test(c)||/^[A-Za-z]{1,4}-?\d{2,5}$/.test(c)))IMP.head=false;
+    IMP.rows=IMP.rows.concat(rows);IMP.map=impGuess();IMP.msg=rows.length?(&#x27;Read &#x27;+rows.length+&#x27; rows. Choose what each column is, check the rows, then Save.&#x27;):&#x27;No table rows found. Try a straighter, closer photo, or a PDF.&#x27;}
+  catch(e){IMP.msg=&#x27;Error: &#x27;+((e&amp;&amp;e.message)||&#x27;the reader could not start – check the internet and try again&#x27;)}
+  IMP.busy=false;renderImp()}
+function renderImp(){const host=$(&#x27;impHost&#x27;);if(!host)return;const F=IMP_F[IMP.type],n=Math.max(0,...IMP.rows.map(r=&gt;r.length));
+  if(IMP.map.length!==n)IMP.map=impGuess();
+  let h=`&lt;div class=&quot;row&quot; style=&quot;gap:8px;flex-wrap:wrap&quot;&gt;&lt;label class=&quot;f&quot; style=&quot;flex:1;min-width:180px&quot;&gt;What is this sheet?&lt;select id=&quot;impT&quot;&gt;${IMP_T.map(([k,l])=&gt;`&lt;option value=&quot;${k}&quot;${k===IMP.type?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/label&gt;
+    ${IMP.type===&#x27;logs&#x27;||IMP.type===&#x27;fuel&#x27;?`&lt;label class=&quot;f&quot; style=&quot;width:150px&quot;&gt;Date if not in sheet&lt;input type=&quot;date&quot; id=&quot;impD&quot; value=&quot;${IMP.date||today()}&quot;&gt;&lt;/label&gt;`:&#x27;&#x27;}&lt;/div&gt;
+    &lt;label class=&quot;row small&quot; style=&quot;gap:6px;margin-top:6px&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;impDg&quot;${IMP.digits?&#x27; checked&#x27;:&#x27;&#x27;} style=&quot;width:auto&quot;&gt; Only numbers on the paper (e.g. equipment no. + salary no.) – reads numbers better&lt;/label&gt;
+    &lt;div class=&quot;row&quot; style=&quot;gap:8px;margin-top:8px;flex-wrap:wrap&quot;&gt;&lt;button class=&quot;btn pri&quot; id=&quot;impCam&quot;${IMP.busy?&#x27; disabled&#x27;:&#x27;&#x27;}&gt;📷 Camera&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;impGal&quot;${IMP.busy?&#x27; disabled&#x27;:&#x27;&#x27;}&gt;🖼 Gallery&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;impPdf&quot;${IMP.busy?&#x27; disabled&#x27;:&#x27;&#x27;}&gt;📄 PDF&lt;/button&gt;
+    &lt;input type=&quot;file&quot; id=&quot;impFC&quot; accept=&quot;image/*&quot; capture=&quot;environment&quot; hidden&gt;&lt;input type=&quot;file&quot; id=&quot;impFG&quot; accept=&quot;image/*&quot; multiple hidden&gt;&lt;input type=&quot;file&quot; id=&quot;impFP&quot; accept=&quot;application/pdf,.pdf&quot; multiple hidden&gt;&lt;/div&gt;
+    &lt;div id=&quot;impMsg&quot; class=&quot;small&quot; style=&quot;margin-top:8px;color:var(--move)&quot;&gt;${esc(IMP.msg)}&lt;/div&gt;`;
+  if(IMP.rows.length){
+    h+=`&lt;label class=&quot;row small&quot; style=&quot;gap:6px;margin-top:8px&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;impH&quot;${IMP.head?&#x27; checked&#x27;:&#x27;&#x27;} style=&quot;width:auto&quot;&gt; First row is the column names (not saved)&lt;/label&gt;
+    ${S.sample?`&lt;label class=&quot;row small&quot; style=&quot;gap:6px;margin-top:4px&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;impC&quot;${IMP.clear?&#x27; checked&#x27;:&#x27;&#x27;} style=&quot;width:auto&quot;&gt; Remove the sample data first&lt;/label&gt;`:&#x27;&#x27;}
+    &lt;div style=&quot;overflow-x:auto;margin-top:8px&quot;&gt;&lt;table class=&quot;imp&quot;&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;${Array.from({length:n},(_,i)=&gt;`&lt;th&gt;&lt;select data-c=&quot;${i}&quot;&gt;&lt;option value=&quot;&quot;&gt;— skip —&lt;/option&gt;${F.map(([k,l])=&gt;`&lt;option value=&quot;${k}&quot;${IMP.map[i]===k?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${l}&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/th&gt;`).join(&#x27;&#x27;)}&lt;/tr&gt;
+    ${IMP.rows.map((r,ri)=&gt;`&lt;tr class=&quot;${IMP.head&amp;&amp;ri===0?&#x27;hd&#x27;:&#x27;&#x27;}&quot;&gt;&lt;td&gt;&lt;button class=&quot;btn sm&quot; data-x=&quot;${ri}&quot;&gt;✕&lt;/button&gt;&lt;/td&gt;${Array.from({length:n},(_,i)=&gt;`&lt;td&gt;&lt;input data-r=&quot;${ri}&quot; data-i=&quot;${i}&quot; value=&quot;${esc(r[i]||&#x27;&#x27;)}&quot;&gt;&lt;/td&gt;`).join(&#x27;&#x27;)}&lt;/tr&gt;`).join(&#x27;&#x27;)}&lt;/table&gt;&lt;/div&gt;
+    &lt;div class=&quot;row&quot; style=&quot;margin-top:10px;gap:8px&quot;&gt;&lt;button class=&quot;btn pri&quot; id=&quot;impSave&quot;&gt;Save ${(IMP.head?IMP.rows.length-1:IMP.rows.length)} rows&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;impClr&quot;&gt;Clear&lt;/button&gt;&lt;/div&gt;`}
+  host.innerHTML=h;
+  $(&#x27;impT&#x27;).onchange=e=&gt;{IMP.type=e.target.value;IMP.map=impGuess();renderImp()};
+  if($(&#x27;impD&#x27;))$(&#x27;impD&#x27;).onchange=e=&gt;{IMP.date=e.target.value};
+  $(&#x27;impDg&#x27;).onchange=e=&gt;{IMP.digits=e.target.checked};
+  $(&#x27;impCam&#x27;).onclick=()=&gt;$(&#x27;impFC&#x27;).click();$(&#x27;impGal&#x27;).onclick=()=&gt;$(&#x27;impFG&#x27;).click();$(&#x27;impPdf&#x27;).onclick=()=&gt;$(&#x27;impFP&#x27;).click();
+  [&#x27;impFC&#x27;,&#x27;impFG&#x27;,&#x27;impFP&#x27;].forEach(id=&gt;$(id).onchange=e=&gt;impRun([...e.target.files]));
+  if(!IMP.rows.length)return;
+  $(&#x27;impH&#x27;).onchange=e=&gt;{IMP.head=e.target.checked;IMP.map=impGuess();renderImp()};if($(&#x27;impC&#x27;))$(&#x27;impC&#x27;).onchange=e=&gt;{IMP.clear=e.target.checked};
+  host.querySelectorAll(&#x27;select[data-c]&#x27;).forEach(s=&gt;s.onchange=()=&gt;{IMP.map[+s.dataset.c]=s.value});
+  host.querySelectorAll(&#x27;input[data-r]&#x27;).forEach(i=&gt;i.onchange=()=&gt;{const r=IMP.rows[+i.dataset.r];r[+i.dataset.i]=i.value});
+  host.querySelectorAll(&#x27;button[data-x]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{IMP.rows.splice(+b.dataset.x,1);renderImp()});
+  $(&#x27;impSave&#x27;).onclick=()=&gt;{const need=IMP.type===&#x27;equip&#x27;||IMP.type===&#x27;logs&#x27;||IMP.type===&#x27;fuel&#x27;?&#x27;no&#x27;:&#x27;name&#x27;;if(!IMP.map.includes(need)){toast(&#x27;Choose which column is the &#x27;+(need===&#x27;no&#x27;?&#x27;Equipment no.&#x27;:&#x27;Name&#x27;));return}if(IMP.type===&#x27;fuel&#x27;&amp;&amp;!IMP.map.includes(&#x27;liters&#x27;)){toast(&#x27;Choose the Liters column&#x27;);return}impSave()};
+  $(&#x27;impClr&#x27;).onclick=()=&gt;{IMP.rows=[];IMP.msg=&#x27;&#x27;;renderImp()};
+}
+
+function renderData(){renderData0();try{renderImp()}catch(e){console.warn(e)}}
+function renderData0(){
   const m=M();
   $(&#x27;v-data&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;
   &lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Data &amp;amp; settings&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;${S.equip.length} machines · ${S.fore.length} foremen · ${S.logs.length} hour entries${S.sample?&#x27; · sample data loaded&#x27;:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;card&quot; style=&quot;border-top:5px solid var(--accent)&quot;&gt;&lt;div class=&quot;ch&quot;&gt;&lt;h2&gt;Import from photo / PDF&lt;/h2&gt;&lt;small&gt;machines · hours · diesel · operators · foremen&lt;/small&gt;&lt;/div&gt;&lt;div id=&quot;impHost&quot;&gt;&lt;/div&gt;&lt;/div&gt;
   ${syncCard()}
   &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;ch&quot;&gt;&lt;h2&gt;Settings&lt;/h2&gt;&lt;/div&gt;&lt;div class=&quot;fgrid&quot;&gt;
     &lt;label class=&quot;f&quot;&gt;Engineer name&lt;input id=&quot;sE&quot; value=&quot;${esc(m.eng)}&quot;&gt;&lt;/label&gt;&lt;label class=&quot;f&quot;&gt;Designation&lt;input id=&quot;sR&quot; value=&quot;${esc(m.role)}&quot;&gt;&lt;/label&gt;&lt;label class=&quot;f&quot;&gt;Company&lt;input id=&quot;sC&quot; value=&quot;${esc(m.company||&#x27;&#x27;)}&quot;&gt;&lt;/label&gt;&lt;/div&gt;
     &lt;label class=&quot;f&quot; style=&quot;margin-top:10px&quot;&gt;Zones — one per line (Project · Phase · Zone)&lt;textarea id=&quot;sZ&quot; style=&quot;min-height:120px&quot;&gt;${esc(m.zones.join(&#x27;\n&#x27;))}&lt;/textarea&gt;&lt;/label&gt;
+    &lt;label class=&quot;f&quot; style=&quot;margin-top:10px&quot;&gt;Equipment codes — first part of the number tells the type (one per line)&lt;textarea id=&quot;sCd&quot; style=&quot;min-height:120px&quot;&gt;${esc(m.codes||CODE_DEF)}&lt;/textarea&gt;&lt;/label&gt;
     &lt;button class=&quot;btn pri&quot; id=&quot;sSave&quot; style=&quot;margin-top:10px&quot;&gt;Save settings&lt;/button&gt;&lt;/div&gt;
   &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;ch&quot;&gt;&lt;h2&gt;Import equipment&lt;/h2&gt;&lt;small&gt;paste from Excel&lt;/small&gt;&lt;/div&gt;
     &lt;div class=&quot;ur&quot; style=&quot;margin-bottom:8px&quot;&gt;Columns: Equipment no, Type, Model, Plate, Owner, Zone, Foreman name, Operator, Operator salary no, Status. Foreman naam se khud jud jayega.&lt;/div&gt;
@@ -1308,7 +1425,7 @@ function renderData(){
   &lt;div class=&quot;foot&quot;&gt;Data isi device par save hota hai, aur Auto sync on ho to doosre devices par bhi.&lt;br&gt;© ${new Date().getFullYear()} ${esc(m.eng)}&lt;/div&gt;&lt;/div&gt;`;
   bindSyncCard();
   const leaveSample=()=&gt;{if(S.sample){S.equip=[];S.fore=[];S.logs=[];S.moves=[];S.fuel=[];S.maint=[];S.trips=[];S.ops=[];S.opHist=[];S.sample=false;M().zones=[]}};
-  $(&#x27;sSave&#x27;).onclick=()=&gt;{m.eng=$(&#x27;sE&#x27;).value.trim()||&#x27;Eng Sheraz Abbasi&#x27;;m.role=$(&#x27;sR&#x27;).value.trim()||&#x27;Site Engineer&#x27;;m.company=$(&#x27;sC&#x27;).value.trim();m.zones=$(&#x27;sZ&#x27;).value.split(/\r?\n/).map(s=&gt;s.trim()).filter(Boolean);S.metaUpd=Date.now();save();brand();toast(&#x27;Settings saved&#x27;)};
+  $(&#x27;sSave&#x27;).onclick=()=&gt;{m.eng=$(&#x27;sE&#x27;).value.trim()||&#x27;Eng Sheraz Abbasi&#x27;;m.role=$(&#x27;sR&#x27;).value.trim()||&#x27;Site Engineer&#x27;;m.company=$(&#x27;sC&#x27;).value.trim();m.zones=$(&#x27;sZ&#x27;).value.split(/\r?\n/).map(s=&gt;s.trim()).filter(Boolean);m.codes=$(&#x27;sCd&#x27;).value.trim()||CODE_DEF;S.metaUpd=Date.now();save();brand();toast(&#x27;Settings saved&#x27;)};
   const rf=(i,t)=&gt;{$(i).onchange=e=&gt;{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=&gt;{$(t).value=r.result;toast(&#x27;File loaded — tap the button&#x27;)};r.readAsText(f)}};rf(&#x27;iEF&#x27;,&#x27;iE&#x27;);rf(&#x27;bF&#x27;,&#x27;bTx&#x27;);
   const stKey=s=&gt;{s=String(s||&#x27;&#x27;).toLowerCase();if(/break|down|repair/.test(s))return&#x27;down&#x27;;if(/maint|service/.test(s))return&#x27;maint&#x27;;if(/idle|stand/.test(s))return&#x27;idle&#x27;;if(/off|demob|return/.test(s))return&#x27;off&#x27;;return&#x27;work&#x27;};
   $(&#x27;iFGo&#x27;).onclick=()=&gt;{let a=0,u=0;$(&#x27;iF&#x27;).value.split(/\r?\n/).forEach(l=&gt;{const c=l.split(/\t|,|;/).map(s=&gt;s.trim());if(!c[0])return;leaveSample();let f=S.fore.find(x=&gt;x.name.toLowerCase()===c[0].toLowerCase());if(f)u++;else{f={id:uid(),name:c[0]};S.fore.push(f);a++}f.sal=c[1]||f.sal||&#x27;&#x27;;f.phone=c[2]||f.phone||&#x27;&#x27;;touch(f)});save();toast(`${a} added, ${u} updated`);renderData()};
@@ -2205,6 +2322,7 @@ function renderSatView(el){
       poly.addTo(map)}}
     if(satLayers.pts){const kc={strip:'#e0b25a',fill:'#4f8ff7',waste:'#c77dff',final:'#58c487'};
       for(const no of cwList()){const w=S.wirs[no]||{no},k=wirKind(no),col=kc[k]||kc.fill;
+        const bd=cwBorder(no);if(bd)L.polygon(bd.map(([n,e])=>ll([e,n])),{color:col,weight:2.5,fill:false,dashArray:'6 4',interactive:false}).addTo(map);
         for(const p of cwirPts(no)){if(!isFinite(p.E)||!isFinite(p.N))continue;
           L.circleMarker(ll([p.E,p.N]),{radius:3,color:col,weight:1,fillColor:col,fillOpacity:.9}).bindPopup(()=>
             '<b>WIR '+no+(w.cno?' ('+w.cno+')':'')+'</b><div>'+(w.ref||'')+(w.layer?' · layer '+w.layer:'')+'</div><div>'+subTxt(w)+'</div><div class="mono" style="margin-top:4px">Pt '+p.id+'<br>N '+p.N.toFixed(3)+'  E '+p.E.toFixed(3)+'<br>Design '+(isFinite(p.A)?p.A.toFixed(3):'–')+' · Finished '+(isFinite(p.C)?p.C.toFixed(3):'–')+'</div>'+gmButtons(p.E,p.N)).addTo(map)}}}
@@ -2251,6 +2369,115 @@ function renderSimpleSat(box,win){
     setTimeout(()=>map.invalidateSize(),80);
   }).catch(e=>{box.textContent=e.message||String(e);box.style.color='#e5645f'});
 }
+
+/* ---------- read tables from photos / PDF (used by the Equipment importer) ---------- */
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function loadPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve();
+  return new Promise((res,rej)=>{const s=document.createElement('script');s.src=PDFJS_URL;s.onload=async()=>{try{
+      try{const t=await (await fetch(PDFJS_WORKER)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([t],{type:'text/javascript'}))}catch(e){pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER}
+      res()}catch(e){rej(e)}};s.onerror=()=>rej(new Error('Could not load the PDF reader. It needs internet the first time.'));document.head.append(s)});
+}
+function splitLine(l){l=l.replace(/ /g,' ').trim();if(!l)return null;
+  let c=l.includes('\t')?l.split('\t'):l.includes('|')?l.split('|'):l.split(/\s{2,}/);
+  c=c.map(x=>x.trim()).filter((x,i,a)=>x!==''||(i>0&&i<a.length-1));return c.length?c:null}
+function textToRows(t){return String(t||'').split(/\r?\n/).map(splitLine).filter(r=>r&&r.join('').replace(/[^0-9A-Za-z؀-ۿ]/g,'').length>1)}
+function pdfItemsToRows(items){
+  const it=items.filter(i=>i.str&&i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],y:i.transform[5],w:i.width||i.str.length*5,h:Math.abs(i.transform[3])||8}));
+  it.sort((a,b)=>b.y-a.y||a.x-b.x);const lines=[];
+  for(const i of it){const L=lines.find(l=>Math.abs(l.y-i.y)<=Math.max(2,i.h*.45));if(L)L.items.push(i);else lines.push({y:i.y,items:[i]})}
+  return lines.map(l=>{l.items.sort((a,b)=>a.x-b.x);const cells=[];let cur=null,end=0;
+    for(const i of l.items){const gap=i.x-end;if(cur&&gap<Math.max(3,i.h*.6)){cur.push(i.s)}else{cur=[i.s];cells.push(cur)}end=i.x+i.w}
+    return cells.map(c=>c.join(' '))}).filter(r=>r.length)}
+async function ocrRows(sources,say,opt){
+  await loadTess();
+  const worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')say('Reading… '+Math.round(m.progress*100)+'%')}});
+  await worker.setParameters(Object.assign({preserve_interword_spaces:'1',tessedit_pageseg_mode:'6'},opt&&opt.digits?{tessedit_char_whitelist:'0123456789-_/.: '}:{}));
+  let rows=[];for(let i=0;i<sources.length;i++){say('Page '+(i+1)+' of '+sources.length+'…');const r=await worker.recognize(sources[i]);rows=rows.concat(textToRows(r.data.text))}
+  await worker.terminate();return rows}
+async function docToRows(files,say,opt){
+  say=say||(()=>{});const imgs=[];let rows=[];
+  for(const f of files){
+    if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){
+      say('Opening the PDF…');await loadPdfJs();
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+      for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
+        if(tc.items.filter(i=>i.str&&i.str.trim()).length>=5){rows=rows.concat(pdfItemsToRows(tc.items));say('PDF page '+p+' read')}
+        else{const vp=pg.getViewport({scale:2.2}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;imgs.push(cv)}}
+    }else imgs.push(await prepImage(f));
+  }
+  if(imgs.length)rows=rows.concat(await ocrRows(imgs,say,opt));
+  return rows;
+}
+
+/* ---------- automatic WIR border from the outer points (concave hull, k-nearest) ---------- */
+function _hullConvex(P){const p=[...P].sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];
+  for(const q of p){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q)}
+  for(const q of p.slice().reverse()){while(up.length>=2&&cr(up[up.length-2],up[up.length-1],q)<=0)up.pop();up.push(q)}
+  return lo.slice(0,-1).concat(up.slice(0,-1))}
+function _segX(a,b,c,d){const o=(p,q,r)=>Math.sign((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]));
+  if(a===c||a===d||b===c||b===d)return false;return o(a,b,c)!==o(a,b,d)&&o(c,d,a)!==o(c,d,b)}
+function _inPoly(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>pt[1])!==(b[1]>pt[1])&&pt[0]<(b[0]-a[0])*(pt[1]-a[1])/(b[1]-a[1])+a[0])c=!c}return c}
+function _onEdge(pt,poly,tol){for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy;let t=L?((pt[0]-a[0])*dx+(pt[1]-a[1])*dy)/L:0;t=Math.max(0,Math.min(1,t));if(Math.hypot(a[0]+t*dx-pt[0],a[1]+t*dy-pt[1])<=tol)return true}return false}
+function _concave(P,k){
+  const n=P.length;if(n<4)return P.slice();k=Math.min(Math.max(k,3),n-1);
+  let ds=P.slice();const first=ds.reduce((m,p)=>p[1]<m[1]||(p[1]===m[1]&&p[0]<m[0])?p:m,ds[0]);
+  const hull=[first];let cur=first,prevAng=Math.PI,step=2;ds=ds.filter(p=>p!==first);
+  const ang=(a,b)=>Math.atan2(b[1]-a[1],b[0]-a[0]);
+  while((cur!==first||step===2)&&ds.length){
+    if(step===5)ds.push(first);
+    const kn=ds.map(p=>[p,(p[0]-cur[0])**2+(p[1]-cur[1])**2]).sort((a,b)=>a[1]-b[1]).slice(0,k).map(x=>x[0]);
+    const turn=p=>{let a=ang(cur,p)-prevAng;while(a<=0)a+=2*Math.PI;while(a>2*Math.PI)a-=2*Math.PI;return a};
+    const cp=kn.sort((a,b)=>turn(b)-turn(a));
+    let its=true,i=-1;
+    while(its&&i<cp.length-1){i++;const last=cp[i]===first?1:0;let j=2;its=false;
+      while(!its&&j<hull.length-last){its=_segX(hull[step-2],cp[i],hull[step-2-j],hull[step-1-j]);j++}}
+    if(its)return null;
+    cur=cp[i];hull.push(cur);prevAng=ang(cur,hull[step-2]);ds=ds.filter(p=>p!==cur);step++;
+    if(step>n+5)return null;
+  }
+  if(hull[hull.length-1]===first)hull.pop();
+  return hull;
+}
+function _simplify(ring,tol){ // drop near-collinear vertices so only real corners stay
+  let r=ring.slice(),ch=true;
+  while(ch&&r.length>4){ch=false;for(let i=0;i<r.length;i++){const a=r[(i-1+r.length)%r.length],b=r[i],c=r[(i+1)%r.length];
+    const L=Math.hypot(c[0]-a[0],c[1]-a[1]);if(!L)continue;const d=Math.abs((c[0]-a[0])*(a[1]-b[1])-(a[0]-b[0])*(c[1]-a[1]))/L;
+    if(d<tol){r.splice(i,1);ch=true;break}}}
+  return r}
+function autoBorder(P){ // P: [{E,N}] -> [[N,E],...] corners, or null
+  const pts=[];const seen=new Set();for(const p of P){if(!isFinite(p.E)||!isFinite(p.N))continue;const key=p.E.toFixed(2)+','+p.N.toFixed(2);if(seen.has(key))continue;seen.add(key);pts.push([p.E,p.N])}
+  if(pts.length<4)return null;
+  let ring=null;
+  for(let k=4;k<=Math.min(30,pts.length-1);k++){const h=_concave(pts,k);if(h&&h.length>=3&&pts.every(q=>h.includes(q)||_inPoly(q,h)||_onEdge(q,h,0.05))){ring=h;break}}
+  if(!ring)ring=_hullConvex(pts);
+  ring=_simplify(ring,0.8);
+  return ring.length>=3?ring.map(([e,n])=>[+n.toFixed(3),+e.toFixed(3)]):null;
+}
+function borderArea(b){return polyArea(b.map(([n,e])=>[e,n]))}
+
+/* ---------- WIR points from CSV / Excel / text ---------- */
+function parsePointsText(text){
+  const lines=String(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const cellsOf=l=>l.includes('\t')?l.split('\t'):((l.match(/[,;]/g)||[]).length>=3?l.split(/[,;]/):l.split(/\s+/));
+  let map=null,start=0;
+  for(let i=0;i<Math.min(5,lines.length);i++){const c=cellsOf(lines[i]).map(x=>x.trim());if(c.filter(x=>/[A-Za-z]/.test(x)).length<2)continue;
+    const m={};const rx={id:/^(pt|point|p\.?\s*no|no\.?|id|stn|station|sr)/i,N:/(north|^n$|^y$)/i,E:/(east|^e$|^x$)/i,A:/(design|dsgn|fgl|propos|req|dl)/i,B:/(before|prev|old|ngl|exist|initial|original|og)/i,C:/(finish|new|actual|after|current|as.?built|executed|fl|rl|level|^z$)/i};
+    c.forEach((h,j)=>{for(const k of ['N','E','A','B','C','id'])if(m[k]==null&&rx[k].test(h)&&!Object.values(m).includes(j)){m[k]=j;break}});
+    if(m.N!=null&&m.E!=null&&m.A!=null&&m.B!=null&&m.C!=null){map=m;start=i+1}break}
+  if(!map)return parseScanText(lines.map(l=>cellsOf(l).join(' ')).join('\n'));
+  const out=[];const n0=DES?DES.n0-20000:2e6,n1=DES?DES.n1+20000:3.5e6;
+  lines.slice(start).forEach((l,i)=>{const c=cellsOf(l),v=k=>fixTok(String(c[map[k]]||'').trim());
+    let N=v('N'),E=v('E');if(!(N>=n0&&N<=n1)&&E>=n0&&E<=n1){const t=N;N=E;E=t}
+    const r={id:String(map.id!=null?String(c[map.id]||'').trim():i+1),N,E,A:v('A'),B:v('B'),C:v('C'),dif:null,rf:null};
+    if([N,E,r.A,r.B,r.C].every(x=>typeof x==='number'&&isFinite(x)))out.push(r)});
+  return out;
+}
+function scanAddRows(rows,label,done){const m=new Map(scan.rows.map(r=>[r.id,r]));for(const r of rows)m.set(r.id,r);
+  scan.rows=[...m.values()].sort((a,b)=>+a.id-+b.id);scan.msg=rows.length?('Read '+rows.length+' points from '+label+'. Check the red rows, then Save.'):'No points found in '+label+'. Columns needed: point, northing, easting, design, before, finished.';done()}
+function scanFromFile(file,done){
+  if(/\.xlsx?$/i.test(file.name)){scan.msg='Reading the Excel file…';done();ngcLoadXlsx(file,t=>scanAddRows(parsePointsText(t),file.name,done));return}
+  const r=new FileReader();r.onload=()=>scanAddRows(parsePointsText(String(r.result)),file.name,done);r.readAsText(file)}
 
 function homeT(){return homeT0().filter(t=>t[1]!=='Site refusals'&&t[1]!=='Remarks')}
 function homeT0(){
@@ -2414,9 +2641,10 @@ function scanSave(){
   const L=[...m.values()].sort((a,b)=>+a.id-+b.id);
   const pts=L.map(p=>[p.id,(+p.N).toFixed(3),(+p.E).toFixed(3),(+p.A).toFixed(3),(+p.B).toFixed(3),(+p.C).toFixed(3)].join(',')).join(';');
   if(!S.wirs[no])put('wirs/'+no,{no,date:today(),activity:'Grading / trimming',phase:1,loc:'',status:'pending',mine:true,notes:'',items:{}});
-  put('cwir/'+no,{src:'Scanned from photos '+today()+', '+L.length+' points',pts});
+  let bd=null;try{if(wirKind(no)!=='waste')bd=autoBorder(L)}catch(e){console.warn(e)}
+  put('cwir/'+no,Object.assign({src:'Entered '+today()+', '+L.length+' points',pts},bd?{border:bd,autoBorder:true}:{}));
   cwvNo=no;scan.rows=[];scan.msg='';homeView='cw';renderHome();
-  alert('Saved '+L.length+' points for WIR '+no);
+  alert('Saved '+L.length+' points for WIR '+no+(bd?'.\nArea border made automatically from the outer points: '+bd.length+' corners, '+fmt(Math.round(borderArea(bd)))+' m².':''));
 }
 function renderScanView(el){
   const nos=Object.keys(S.wirs).map(Number).sort((a,b)=>b-a);
@@ -2433,7 +2661,10 @@ function renderScanView(el){
       scan.no=+e.target.value;rerender()}},h('option',{value:'new'},'+ New WIR…'),...(nos.includes(scan.no)?nos:[scan.no,...nos]).map(n=>h('option',{value:n,selected:n===scan.no},'WIR '+n+(S.wirs[n]?'':' (new)'))))),
     h('label',{style:'display:flex;gap:8px;align-items:center;margin:8px 0;font-size:13px'},h('input',{type:'checkbox',style:'width:auto;flex:none',checked:scan.merge,onchange:e=>{scan.merge=e.target.checked}}),h('span',{},'Add to points already in this WIR (same point numbers are replaced)')),
     (()=>{const fc=h('input',{type:'file',accept:'image/*',capture:'environment',style:'display:none',onchange:e=>{const f=[...e.target.files];if(f.length)scanRun(f,rerender)}});
-      return h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},h('button',{class:'btn pri',disabled:scan.busy,onclick:()=>fc.click()},scan.busy?'Reading…':'📷 Camera'),h('button',{class:'btn',disabled:scan.busy,onclick:()=>fi.click()},'🖼 Gallery (several pages)'),fi,fc)})(),
+      const ff=h('input',{type:'file',accept:'.csv,.txt,.xlsx,.xls,text/csv,text/plain',style:'display:none',onchange:e=>{const f=e.target.files[0];if(f)scanFromFile(f,rerender);e.target.value=''}});
+      const ta=h('textarea',{placeholder:'Paste the points here: point, northing, easting, design, before, finished (one point per line)',style:'min-height:90px;margin-top:8px;display:'+(scan.paste?'block':'none')});
+      return h('div',{},h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},h('button',{class:'btn pri',disabled:scan.busy,onclick:()=>fc.click()},scan.busy?'Reading…':'📷 Camera'),h('button',{class:'btn',disabled:scan.busy,onclick:()=>fi.click()},'🖼 Gallery (several pages)'),h('button',{class:'btn',onclick:()=>ff.click()},'📄 CSV / Excel / Text file'),h('button',{class:'btn',onclick:()=>{scan.paste=!scan.paste;rerender()}},'✎ Paste text'),fi,fc,ff),
+        ta,scan.paste?h('button',{class:'btn sm pri',style:'margin-top:6px',onclick:()=>{scanAddRows(parsePointsText(ta.value),'the pasted text',rerender)}},'Read the pasted text'):null)})(),
     scan.msg?h('div',{class:'mono',style:'font-size:12px;margin-top:8px;color:var(--info)'},scan.msg):null,
     scan.busy?h('div',{class:'bar fill'},h('i',{style:'width:'+scan.prog+'%'})):null));
   if(!scan.rows.length)return;
@@ -2491,6 +2722,10 @@ function renderCwView(el){
       const out=[['Point','Northing','Easting','Design A','Before B','Finished C','Thickness C-B','Dev C-A','Status']];
       for(const r of shown){const p=byId.get(String(r.n));out.push([r.n,p.N,p.E,p.A,p.B,p.C,(p.C-p.B).toFixed(3),(p.C-p.A).toFixed(3),cls(r)==='ok'?'within 1 cm':cls(r)==='hi'?'cut left':'fill left']);}
       download('WIR-'+no+'-points.csv',out.map(r=>r.map(q).join(',')).join('\n'),'text/csv')}},'CSV')));
+  {const bd=cwBorder(no),cw=S.cwir[no]||{};el.append(h('div',{class:'card',style:'padding:10px 12px;margin-bottom:8px'},h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},
+    h('span',{style:'flex:1;min-width:180px;font-size:13px'},bd?('Area border: '+bd.length+' corners · '+fmt(Math.round(borderArea(bd)))+' m²'+(cw.autoBorder?' (made from the outer points)':' (surveyed)')):'No area border yet – area is counted as points × grid cell.'),
+    canEdit()&&rows.length>=4?h('button',{class:'btn sm',onclick:()=>{const b=autoBorder(cwirPts(no));if(!b){toast('Not enough points for a border');return}if(confirm('Make the area border from the outer points?\n'+b.length+' corners, '+fmt(Math.round(borderArea(b)))+' m².\nArea and quantities of this WIR will be measured inside it.'))put('cwir/'+no,Object.assign({},S.cwir[no]||CWIR_SEED[no],{border:b,autoBorder:true}))}},bd?'↻ Re-make border from outer points':'⬡ Make border from outer points'):null,
+    canEdit()&&cw.border?h('button',{class:'btn sm',onclick:()=>{if(confirm('Remove the area border of WIR '+no+'?')){const c=Object.assign({},S.cwir[no]);delete c.border;delete c.autoBorder;put('cwir/'+no,c)}}},'Remove border'):null)))}
   if(canEdit()&&rows.length)el.append(h('div',{class:'row',style:'margin-bottom:6px;gap:8px'},h('span',{class:'mut',style:'font-size:12px;flex:1'},'Wrong points? Tap ✕ on a row to delete it, or delete them all and scan again.'),h('button',{class:'btn sm dng',onclick:()=>{if(confirm('Delete ALL '+rows.length+' points of WIR '+no+'? The WIR itself stays.'))cwDelAll(no)}},'Delete all points')));
   el.append(h('div',{class:'mut',style:'font-size:12px;margin-bottom:4px'},shown.length+' of '+rows.length+' points · tap a row to see it on the plan'));
   const ed=canEdit();
@@ -4579,7 +4814,8 @@ function cwBorderStats(no){
 /* ---------- deleting wrong contractor points ---------- */
 function cwDelPts(no,ids){const c=S.cwir[no]||CWIR_SEED[no];if(!c)return;const set=new Set(ids.map(String));
   const pts=(c.pts||'').split(';').filter(x=>x&&!set.has(x.split(',')[0].trim())).join(';');
-  put('cwir/'+no,Object.assign({},c,{pts,src:(c.src||'')+' · '+ids.length+' point(s) deleted '+today()}));toast(ids.length+' point(s) deleted from WIR '+no)}
+  const nc=Object.assign({},c,{pts,src:(c.src||'')+' · '+ids.length+' point(s) deleted '+today()});if(c.autoBorder){const P=pts.split(';').filter(Boolean).map(x=>{const a=x.split(',');return{E:+a[2],N:+a[1]}});const b=autoBorder(P);if(b)nc.border=b;else delete nc.border}
+  put('cwir/'+no,nc);toast(ids.length+' point(s) deleted from WIR '+no)}
 function cwDelAll(no){put('cwir/'+no,{pts:'',src:'All points deleted '+today()});toast('All points of WIR '+no+' deleted')}
 function cwList(){
   const k=new Set([...Object.keys(CWIR_SEED),...Object.keys(S.cwir)]);
