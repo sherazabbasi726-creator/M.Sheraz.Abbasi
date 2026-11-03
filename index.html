@@ -2491,14 +2491,17 @@ function renderCwView(el){
       const out=[['Point','Northing','Easting','Design A','Before B','Finished C','Thickness C-B','Dev C-A','Status']];
       for(const r of shown){const p=byId.get(String(r.n));out.push([r.n,p.N,p.E,p.A,p.B,p.C,(p.C-p.B).toFixed(3),(p.C-p.A).toFixed(3),cls(r)==='ok'?'within 1 cm':cls(r)==='hi'?'cut left':'fill left']);}
       download('WIR-'+no+'-points.csv',out.map(r=>r.map(q).join(',')).join('\n'),'text/csv')}},'CSV')));
+  if(canEdit()&&rows.length)el.append(h('div',{class:'row',style:'margin-bottom:6px;gap:8px'},h('span',{class:'mut',style:'font-size:12px;flex:1'},'Wrong points? Tap ✕ on a row to delete it, or delete them all and scan again.'),h('button',{class:'btn sm dng',onclick:()=>{if(confirm('Delete ALL '+rows.length+' points of WIR '+no+'? The WIR itself stays.'))cwDelAll(no)}},'Delete all points')));
   el.append(h('div',{class:'mut',style:'font-size:12px;margin-bottom:4px'},shown.length+' of '+rows.length+' points · tap a row to see it on the plan'));
-  const tb=h('table',{style:'font-size:11px;white-space:nowrap'},h('tr',{},...['Pt','Dev cm','Thick','Design','Finished','Before','N','E'].map((t,i)=>h('th',{class:i?'n':''},t))));
+  const ed=canEdit();
+  const tb=h('table',{style:'font-size:11px;white-space:nowrap'},h('tr',{},...['Pt','Dev cm','Thick','Design','Finished','Before','N','E'].concat(ed?['']:[]).map((t,i)=>h('th',{class:i?'n':''},t))));
   for(const r of shown){
     const p=byId.get(String(r.n));if(!p)continue;
     const k=cls(r),col=k==='ok'?'var(--ok)':k==='hi'?'#f08a3c':'#7aa2f7',dv=(p.C-p.A)*100;
     tb.append(h('tr',{style:'cursor:pointer',onclick:()=>{cwSel=String(no);lsSet('es_cw',cwSel);plan.status=true;plan.showDes=true;focusPlan([r])}},
       h('td',{},p.id),h('td',{class:'n',style:'color:'+col+';font-weight:600'},(dv>=0?'+':'')+dv.toFixed(1)),h('td',{class:'n'},(p.C-p.B).toFixed(3)),
-      h('td',{class:'n'},p.A.toFixed(3)),h('td',{class:'n'},p.C.toFixed(3)),h('td',{class:'n'},p.B.toFixed(3)),h('td',{class:'n'},p.N.toFixed(1)),h('td',{class:'n'},p.E.toFixed(1))));
+      h('td',{class:'n'},p.A.toFixed(3)),h('td',{class:'n'},p.C.toFixed(3)),h('td',{class:'n'},p.B.toFixed(3)),h('td',{class:'n'},p.N.toFixed(1)),h('td',{class:'n'},p.E.toFixed(1)),
+      ed?h('td',{},h('button',{class:'btn sm',title:'Delete this point',style:'padding:2px 8px;color:var(--bad)',onclick:ev=>{ev.stopPropagation();if(confirm('Delete point '+p.id+' from WIR '+no+'?'))cwDelPts(no,[p.id])}},'✕')):null));
   }
   el.append(h('div',{class:'tbl card',style:'padding:6px'},tb));
   el.append(h('div',{class:'mut',style:'font-size:11px'},'Thick = finished − before. Dev = finished − design: + means cut left, − means fill left.'));
@@ -3167,12 +3170,13 @@ function editWir(w){
       }
       let status=f.status.value;
       if(status==='approved'&&Object.values(items).some(i=>!i.done))status='approved_open';
+      if(S.meta&&S.meta.delWirs&&S.meta.delWirs[n])put('meta/delWirs/'+n,null);
       put('wirs/'+n,{no:n,ref:f.ref.value.trim(),cno:f.cno.value.trim(),desc:f.desc.value.trim(),sub:f.sub.value,fx:w.fx||0,layer:f.layer.value.trim(),date:f.date.value,target:f.target.value,activity:f.activity.value,phase:+f.phase.value,loc:f.loc.value,status,mine:f.mine.checked,notes:f.notes.value,items,link:safeUrl(f.link.value),rmk:w.rmk||{},photos:w.photos||{}});
       if(n!==w.no&&!isNew)put('wirs/'+w.no,null);
       close();
     }},'Save'),
     h('button',{class:'btn',onclick:close},'Cancel'),
-    isNew?null:h('button',{class:'btn dng',onclick:()=>{if(confirm('Delete WIR '+w.no+'?')){put('wirs/'+w.no,null);close()}}},'Delete')]);
+    isNew?null:h('button',{class:'btn dng',onclick:()=>{const np=cwirPts(w.no).length;if(confirm('Delete WIR '+w.no+(np?' and its '+np+' contractor points':'')+'?\nThis cannot be undone (keep a backup).')){if(np)cwDelAll(w.no);put('meta/delWirs/'+w.no,today());put('wirs/'+w.no,null);close()}}},'Delete')]);
 }
 
 /* =====================================================================
@@ -4571,6 +4575,12 @@ function cwBorderStats(no){
   const v={area,aD,remFill:remF*(area/(aD||1)),remCut:remC*(area/(aD||1)),placed:placed*(area/(aD||1)),need:aG?need*(area/aG):null};
   BC.set(key,v);return v;
 }
+
+/* ---------- deleting wrong contractor points ---------- */
+function cwDelPts(no,ids){const c=S.cwir[no]||CWIR_SEED[no];if(!c)return;const set=new Set(ids.map(String));
+  const pts=(c.pts||'').split(';').filter(x=>x&&!set.has(x.split(',')[0].trim())).join(';');
+  put('cwir/'+no,Object.assign({},c,{pts,src:(c.src||'')+' · '+ids.length+' point(s) deleted '+today()}));toast(ids.length+' point(s) deleted from WIR '+no)}
+function cwDelAll(no){put('cwir/'+no,{pts:'',src:'All points deleted '+today()});toast('All points of WIR '+no+' deleted')}
 function cwList(){
   const k=new Set([...Object.keys(CWIR_SEED),...Object.keys(S.cwir)]);
   return [...k].map(Number).filter(n=>cwirPts(n).length).sort((a,b)=>b-a);
@@ -4805,10 +4815,11 @@ function seedMerge(){
   migrate21();
   {const w=S.wirs[40],v=WIR_BATCH_1022[40];if(w&&v&&/43 rows on page 1/.test(w.notes||'')){w.notes=v.notes;if(canEdit())try{put('wirs/40/notes',v.notes)}catch(e){}}}
   {const w=S.wirs[40],R={t:"Fill volume of layer 1: 4,395 m³ inside the surveyed border (19,999 m², corners 3682, 3816, 5026, 5010; all 232 points). The quantity is HELD – it is counted in the held column, not in certified fill – because the layer is measured from the WIR-0034 stripping level, which was calculated, not surveyed. Deduct about 6 m³ for the two 2 m-radius tree circles still to be cut out of layer 1 (net about 4,389 m³).",date:'2026-10-31',done:false};if(w&&(!(w.rmk&&w.rmk.r40vol)||/189 of 232/.test(w.rmk.r40vol.t||''))){w.rmk=Object.assign({},w.rmk||{},{r40vol:R});if(canEdit())try{put('wirs/40/rmk/r40vol',R)}catch(e){}}}
-  if(!S.wirs[27]){S.wirs[27]=seedWirs()[27];try{put('wirs/27',S.wirs[27])}catch(e){}}
+  if(!S.wirs[27]&&!((S.meta&&S.meta.delWirs)||{})[27]){S.wirs[27]=seedWirs()[27];try{put('wirs/27',S.wirs[27])}catch(e){}}
   for(const [o,n] of [[101,16],[102,24],[103,25],[104,26],[105,28]]){const c=S.wirs[o];if(c&&/^\(/.test(c.cno||'')){delete S.wirs[o];if(canEdit())try{put('wirs/'+o,null)}catch(e){}}
     if(S.cwir&&S.cwir[o]&&!S.cwir[n]){S.cwir[n]=S.cwir[o];delete S.cwir[o];if(canEdit())try{put('cwir/'+n,S.cwir[n]);put('cwir/'+o,null)}catch(e){}}}
-  for(const [k,v] of Object.entries(WIR_BATCH_1022)){const c=S.wirs[k];
+  const DELW=(S.meta&&S.meta.delWirs)||{};
+  for(const [k,v] of Object.entries(WIR_BATCH_1022)){const c=S.wirs[k];if(DELW[k])continue;
     if(!c||(c.status==='prior'&&!c.cno&&c.notes!==v.notes)){S.wirs[k]=Object.assign({},v);if(canEdit())try{put('wirs/'+k,S.wirs[k])}catch(e){}}}
   for(const [k,code] of Object.entries(WIR_LOG_CODE)){const c=S.wirs[k],v=WIR_BATCH_1022[k];if(!c)continue;let ch=false;
     if(c.status==='pending'){c.status='approved';ch=true}
