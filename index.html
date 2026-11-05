@@ -2867,6 +2867,7 @@ function renderCwView(el){
   const L=cwList();
   el.append(h('div',{class:'row',style:'margin-bottom:8px;gap:8px'},h('button',{class:'btn pri',onclick:()=>{homeView='scan';renderHome()}},'Scan photo of contractor table'),canEdit()?h('button',{class:'btn pri',onclick:()=>{cwPasteOpen=!cwPasteOpen;renderHome()}},'📋 Paste contractor table'):null));
   if(cwPasteOpen&&canEdit())el.append(cwPasteCard());
+  try{const rc=cwRestoreCard();if(rc)el.append(rc)}catch(e){console.warn(e)}
   if(!L.length){el.append(h('div',{class:'card mut'},'No contractor points loaded yet. Scan a photo, or paste the table.'));return}
   if(!cwvNo||!L.includes(+cwvNo))cwvNo=L[0];
   const no=+cwvNo,w=S.wirs[no]||{no},tol=+S.meta.tol||0.1,st=cwirStats(no,tol),P=cwirPts(no);
@@ -3494,6 +3495,7 @@ function renderHome(){
 let wirFilter='all';
 function renderWir(){
   const el=$('#t-wir');el.replaceChildren();
+  try{const rc=cwRestoreCard();if(rc){rc.querySelectorAll('button').forEach(b=>{const f=b.onclick;b.onclick=e=>{f&&f(e);setTimeout(()=>renderWir(),400)}});el.append(rc)}}catch(e){console.warn(e)}
   const chips=[['all','All'],['prior','Previous work'],['photos','With photos']];
   el.append(h('div',{class:'row',style:'margin-bottom:10px'},
     h('div',{class:'chips sp',style:'margin:0'},...chips.map(([k,l])=>h('button',{class:'btn sm'+(wirFilter===k?' on':''),onclick:()=>{wirFilter=k;renderWir()}},l))),
@@ -5252,6 +5254,23 @@ function cwSuspect(P){const out=new Map();if(!P||P.length<6)return out;
     if(r.length)out.set(String(p.id),r.join('; '))});
   return out}
 function cwDelAll(no){put('cwir/'+no,{pts:'',src:'All points deleted '+today()});toast('All points of WIR '+no+' deleted')}
+
+/* built-in WIR points hidden by an older copy saved on this account (e.g. a scan with missing rows, or 'Delete all points' before the data was added) */
+function cwOverridden(){const out=[],DEL=(S.meta&&S.meta.delWirs)||{};
+  for(const k of Object.keys(CWIR_SEED)){const sd=CWIR_SEED[k];if(!sd||!sd.pts)continue;const n0=sd.pts.split(';').filter(Boolean).length,c=S.cwir[k];
+    const n1=c&&c.pts!=null?String(c.pts).split(';').filter(Boolean).length:null;
+    if((n1!=null&&n1<n0)||DEL[k])out.push({no:+k,seed:n0,mine:n1==null?0:n1,del:!!DEL[k]})}
+  return out.sort((a,b)=>b.no-a.no)}
+function cwRestore(no){const sd=CWIR_SEED[no];if(!sd)return;if(!canEdit()){toast(blockMsg());return}
+  put('cwir/'+no,Object.assign({},sd));if(S.meta&&S.meta.delWirs&&S.meta.delWirs[no])put('meta/delWirs/'+no,null);
+  if(!S.wirs[no]){try{const w=(typeof seedWirs==='function'&&seedWirs()[no])||null;if(w)put('wirs/'+no,w)}catch(e){}}
+  toast('WIR '+no+': '+sd.pts.split(';').filter(Boolean).length+' points restored');setTimeout(()=>renderHome(),300)}
+function cwRestoreCard(){const L=cwOverridden();if(!L.length)return null;
+  return h('div',{class:'card',style:'border:1.5px solid #f0b43c;margin-bottom:10px'},
+    h('b',{},'Full points available for '+L.length+' WIR'+(L.length>1?'s':'')),
+    h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'},'The app has the complete table for these WIRs, but an older copy saved on your account (a scan with missing rows, or deleted points) is hiding it.'),
+    ...L.map(x=>h('div',{class:'row',style:'gap:8px;align-items:center;margin-top:6px'},h('span',{style:'flex:1'},'WIR '+x.no+': '+(x.del?'deleted':x.mine+' points saved')+' · '+x.seed+' points in the app'),
+      canEdit()?h('button',{class:'btn sm pri',onclick:()=>{if(confirm('Replace your saved copy of WIR '+x.no+' with the complete '+x.seed+' points?'))cwRestore(x.no)}},'Restore '+x.seed+' points'):h('span',{class:'mut',style:'font-size:12px'},'owner only'))))}
 function cwList(){
   const k=new Set([...Object.keys(CWIR_SEED),...Object.keys(S.cwir)]);
   return [...k].map(Number).filter(n=>cwirPts(n).length).sort((a,b)=>b-a);
