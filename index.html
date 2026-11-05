@@ -2116,10 +2116,10 @@ function speedData(){
   const finish=actual>0?new Date(now+remain/actual*DAY):null,late=finish?Math.round((finish-T1)/(30.44*DAY)):null;
   return {S0,T1,end:dAdd(S0.start,S0.months),actual,need,avg,done,total,remain,daysLeft,finish,late,win,WIN,nWin,nVol,nW:Object.keys(S.wirs).length}}
 function gaugeSVG(v,need,big){ // car-style instrument: chrome bezel, deep dial, glowing needle, glass cover
-  const max=Math.max(need*2,v*1.15,1),nice=Math.pow(10,Math.floor(Math.log10(max))),mx=Math.ceil(max/nice)*nice;
+  const max=need>0?Math.max(need*2,v*1.15,1):Math.max(v*1.6,1),nice=Math.pow(10,Math.floor(Math.log10(max))),mx=Math.ceil(max/nice)*nice;
   const cx=110,cy=110,R=82,A=a=>(-125+250*Math.min(1,Math.max(0,a/mx)))*Math.PI/180;
   const pt=(a,r)=>[cx+r*Math.sin(a),cy-r*Math.cos(a)],arc=(a0,a1,r)=>{const [x0,y0]=pt(A(a0),r),[x1,y1]=pt(A(a1),r);return 'M'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+((A(a1)-A(a0))>Math.PI?1:0)+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)};
-  const id='g'+Math.random().toString(36).slice(2,7),ok=v>=need,col=ok?'#22c55e':v>=need*.8?'#f5a524':'#ff3b30';
+  const id='g'+Math.random().toString(36).slice(2,7),NN=need>0,ok=v>=need,col=!NN?'#38bdf8':ok?'#22c55e':v>=need*.8?'#f5a524':'#ff3b30';
   const lab=x=>x>=1000?(x/1000).toFixed(mx>=10000?0:1)+'k':String(Math.round(x));
   let ticks='';for(let i=0;i<=50;i++){const a=A(mx*i/50),maj=i%10===0,mid=i%5===0,[x0,y0]=pt(a,R),[x1,y1]=pt(a,R-(maj?13:mid?9:5));
     ticks+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#f2f6fb" stroke-opacity="${maj?1:mid?.8:.45}" stroke-width="${maj?2.6:mid?1.6:1}" stroke-linecap="round"/>`;
@@ -2141,14 +2141,14 @@ function gaugeSVG(v,need,big){ // car-style instrument: chrome bezel, deep dial,
   <circle cx="${cx}" cy="${cy}" r="108" fill="url(#${id}bz)"/>
   <circle cx="${cx}" cy="${cy}" r="102" fill="url(#${id}bz2)"/>
   <circle cx="${cx}" cy="${cy}" r="98" fill="url(#${id}fc)"/>
-  <path d="${arc(0,need*.8,R+6)}" fill="none" stroke="#ff3b30" stroke-opacity=".85" stroke-width="5"/>
+  ${NN?`<path d="${arc(0,need*.8,R+6)}" fill="none" stroke="#ff3b30" stroke-opacity=".85" stroke-width="5"/>
   <path d="${arc(need*.8,need,R+6)}" fill="none" stroke="#f5a524" stroke-opacity=".9" stroke-width="5"/>
-  <path d="${arc(need,mx,R+6)}" fill="none" stroke="#22c55e" stroke-opacity=".85" stroke-width="5"/>
+  <path d="${arc(need,mx,R+6)}" fill="none" stroke="#22c55e" stroke-opacity=".85" stroke-width="5"/>`:`<path d="${arc(0,mx,R+6)}" fill="none" stroke="#38bdf8" stroke-opacity=".35" stroke-width="5"/>`}
   <path d="${arc(0,Math.min(v,mx),R-3)}" fill="none" stroke="${col}" stroke-opacity=".9" stroke-width="3" filter="url(#${id}gw)"/>
   ${ticks}
-  <line x1="${nx0.toFixed(1)}" y1="${ny0.toFixed(1)}" x2="${nx1.toFixed(1)}" y2="${ny1.toFixed(1)}" stroke="#ffd166" stroke-width="3" stroke-linecap="round" filter="url(#${id}gw)"/>
+  ${NN?`<line x1="${nx0.toFixed(1)}" y1="${ny0.toFixed(1)}" x2="${nx1.toFixed(1)}" y2="${ny1.toFixed(1)}" stroke="#ffd166" stroke-width="3" stroke-linecap="round" filter="url(#${id}gw)"/>`:''}
   <text x="${cx}" y="${cy-30}" text-anchor="middle" font-size="9" letter-spacing="2" fill="#8fa2bb" font-family="system-ui">m³ / DAY</text>
-  ${big?`<rect x="${cx-33}" y="${cy+44}" width="66" height="24" rx="5" fill="#05090e" stroke="#2b3a4c"/><text x="${cx}" y="${cy+61.5}" text-anchor="middle" font-size="15.5" font-weight="800" fill="${col}" font-family="ui-monospace,Consolas,monospace" filter="url(#${id}gw)">${fmt(Math.round(v))}</text><text x="${cx}" y="${cy+80}" text-anchor="middle" font-size="8" fill="#8fa2bb" font-family="system-ui">needed ${fmt(Math.round(need))}</text>`
+  ${big?`<rect x="${cx-33}" y="${cy+44}" width="66" height="24" rx="5" fill="#05090e" stroke="#2b3a4c"/><text x="${cx}" y="${cy+61.5}" text-anchor="middle" font-size="15.5" font-weight="800" fill="${col}" font-family="ui-monospace,Consolas,monospace" filter="url(#${id}gw)">${fmt(Math.round(v))}</text>${NN?`<text x="${cx}" y="${cy+80}" text-anchor="middle" font-size="8" fill="#8fa2bb" font-family="system-ui">needed ${fmt(Math.round(need))}</text>`:''}`
       :`<text x="${cx}" y="${cy+56}" text-anchor="middle" font-size="16" font-weight="800" fill="${col}" font-family="ui-monospace,Consolas,monospace">${fmt(Math.round(v))}</text>`}
   <g class="gneedle" style="transform-origin:${cx}px ${cy}px;transform:rotate(-125deg);transition:transform 1.8s cubic-bezier(.22,1.35,.36,1)" data-deg="${deg.toFixed(1)}" filter="url(#${id}sh)">
     <polygon points="${cx-4.2},${cy+16} ${cx-1},${cy-R+6} ${cx+1},${cy-R+6} ${cx+4.2},${cy+16}" fill="url(#${id}nd)" filter="url(#${id}gw)"/>
@@ -2166,21 +2166,23 @@ function speedVerdict(d){
   if(d.late>120)return 'At this speed the earthworks would take more than 10 years longer than planned.';
   const f=d.finish.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   return 'At this speed the earthworks finish in '+f+(d.late>0?', '+d.late+' month'+(d.late>1?'s':'')+' late.':d.late<0?', '+(-d.late)+' month'+(d.late<-1?'s':'')+' early.':', on time.')}
+function speedRates(){const d=speedData(),now=Date.now(),DAY=864e5,ev=[];for(const c of cfList())if(c.date)ev.push([dMs(c.date),+c.vol||0]);
+  const T=cwPhaseTotals();for(const i of [1,2,3,4])for(const [no,w] of Object.entries(T[i].wirs)){const W=S.wirs[no]||{},dd=W.date||W.sub;if(dd)ev.push([dMs(dd),w.cut+w.fill])}
+  const inW=n=>ev.filter(([t])=>now-t<=n*DAY&&t<=now).reduce((a,x)=>a+x[1],0);const wk=[];for(let k=11;k>=0;k--){const a=now-(k+1)*7*DAY,b=now-k*7*DAY;wk.push({b,v:ev.filter(([t])=>t>a&&t<=b).reduce((x,y)=>x+y[1],0)})}
+  const best=Math.max(0,...wk.map(w=>w.v));return {d30:inW(30)/30,d7:inW(7)/7,best:best/7,wk,nWin:d.nWin,nVol:d.nVol,nW:d.nW}}
 function renderSpeedView(el){
-  const d=speedData(),ok=d.actual>=d.need,col=ok?'#22c55e':d.actual>=d.need*.8?'#f5a524':'#ef4444';
-  const g=h('div',{style:'color:var(--txt)'});g.innerHTML=gaugeSVG(d.actual,d.need,true);
-  const dmy2=x=>{const [y,m,dd]=x.split('-');return +dd+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]+' '+y},end=dmy2(d.end);
-  el.append(h('div',{class:'card',style:'text-align:center'},h('div',{class:'mut',style:'font-size:13px'},'Production speed · last '+d.WIN+' days'),g,
-    h('div',{style:'font-size:17px;font-weight:700;margin-top:4px;color:'+col},ok?'Ahead of the required speed':'Behind the required speed'),
-    h('div',{style:'font-size:15px;margin-top:6px'},speedVerdict(d))),
+  const r=speedRates(),g=h('div',{style:'color:var(--txt)'});g.innerHTML=gaugeSVG(r.d30,0,true);
+  const trend=r.d7>r.d30*1.1?['Getting faster this week','#1f8f4e']:r.d7<r.d30*0.9?['Slower this week','#c4372f']:['About the same as the month','#5d6f86'];
+  el.append(h('div',{class:'card',style:'text-align:center'},h('div',{class:'mut',style:'font-size:13px'},'Production speed · cut + fill per day'),g,
+      h('div',{style:'font-size:17px;font-weight:700;margin-top:4px;color:'+trend[1]},trend[0])),
     h('div',{class:'card',style:'font-size:14px;line-height:1.7'},
-      h('div',{class:'row'},h('span',{},'Actual (last '+d.WIN+' days)'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(d.actual))+' m³/day')),
-      h('div',{class:'row'},h('span',{},'Required to finish by '+end),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(d.need))+' m³/day')),
-      h('div',{class:'row'},h('span',{},'Average since start'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(d.avg))+' m³/day')),
-      h('div',{class:'row'},h('span',{},'Remaining (cut + fill)'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(d.remain))+' m³')),
-      h('div',{class:'row'},h('span',{},'Days left'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(d.daysLeft))))),
-    h('div',{class:'card warn',style:'font-size:13px'},h('b',{},'How accurate is this? '),'The speed counts only WIRs that have volumes in the app (contractor points loaded, or cut/fill logged with a date). Right now '+d.nVol+' of '+d.nW+' WIRs have volumes, and '+d.nWin+' fall in the last '+d.WIN+' days. Load the contractor points for every new WIR and the needle will show the real speed.'),
-    h('div',{class:'mut',style:'font-size:12px'},'Start '+dmy2(d.S0.start)+', '+d.S0.months+' months, finish '+end+'. Change the dates on the Progress page.'));
+      h('div',{class:'row'},h('span',{},'Last 7 days'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(r.d7))+' m³/day')),
+      h('div',{class:'row'},h('span',{},'Last 30 days'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(r.d30))+' m³/day')),
+      h('div',{class:'row'},h('span',{},'Best week (last 12 weeks)'),h('span',{class:'sp'}),h('b',{class:'mono'},fmt(Math.round(r.best))+' m³/day'))));
+  const mx=Math.max(1,...r.wk.map(w=>w.v)),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],dm=t=>{const x=new Date(t);return x.getDate()+' '+M[x.getMonth()]};
+  el.append(h('div',{class:'card'},h('b',{},'Cut + fill per week (m³)'),h('div',{style:'display:flex;gap:4px;align-items:flex-end;height:140px;margin-top:10px'},...r.wk.map(w=>h('div',{style:'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%',title:fmt(Math.round(w.v))+' m³'},
+    h('small',{style:'font-size:9.5px;color:var(--mut)'},w.v?fmt(Math.round(w.v/1000))+'k':''),h('i',{style:'display:block;width:100%;border-radius:4px 4px 0 0;background:#4b8bf5;height:'+Math.max(2,w.v/mx*100)+'%'}),h('small',{style:'font-size:9.5px;color:var(--mut);white-space:nowrap'},dm(w.b)))))),
+    h('div',{class:'mut',style:'font-size:12px'},'Counts the WIRs that have volumes in the app ('+r.nVol+' of '+r.nW+' WIRs).'));
   spinNeedles(el)}
 /* ---------- hero: Khuzam site strip, coloured by design level ---------- */
 /* ---------- hero: a small live 3D piece of the site, centred on the open-channel water ---------- */
@@ -2238,13 +2240,13 @@ function heroCard(cut,fill,bt){
   const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],dl=x=>{if(!x)return '–';const [y,m,dd]=x.split('-');return +dd+' '+M[m-1]+' '+y};
   const cv=h('canvas',{'aria-label':'Site plan coloured by design level, with the four phases'});
   const k=(v,l)=>h('div',{class:'kpi'},h('b',{},v),h('span',{},l));
-  const go=()=>{homeView='sched';renderHome()};
+  const go=()=>{homeView='speed';renderHome()};
   const el=h('div',{class:'hero has3',tabindex:'0',role:'button',onclick:e=>{if(e.target.closest&&e.target.closest('.hs')){areaPicker();return}go()},onkeydown:e=>{if(e.key==='Enter')go()}},
     h('div',{class:'htop'},
       h('div',{style:'display:flex;gap:12px;align-items:center'},h('img',{src:ME_SRC,alt:'Engr Muhammad Sheraz Abbasi',style:'width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #f5a524'}),h('div',{},h('div',{class:'hn'},S.meta.name||'Survey Eng Muhammad Sheraz Abbasi'),h('div',{class:'hsub',style:'display:flex;align-items:center;gap:8px'},h('img',{src:LOGO_SRC,alt:'Alomaier',title:'Alomaier Trading & Contracting',style:'width:34px;height:34px;border-radius:50%'}),'Earthworks Records'))),
       h('div',{class:'hasof'},h('span',{class:'hdot'}),'Data as of ',h('b',{},dl(d.last)),' · '+d.n+' WIRs')),
     h('div',{class:'hwrap'},h('div',{class:'hs'},cv),
-      h('div',{class:'kpis'},k('Day '+fmt(day),'of '+fmt(total)),k(cpc.toFixed(1)+'%','earthworks done'),k(fmt(Math.round(d.fill))+' m³','fill placed'),k(String(Object.values(S.wirs).filter(w=>!w.missing&&w.status!=='prior').length),'WIRs submitted'))));
+      h('div',{class:'kpis'},k(fmt(Math.round(d.strip||0))+' m²','stripped'),(()=>{try{const sd=speedData();return k(fmt(Math.round(sd.actual))+' m³','a day (last 30 days)')}catch(e){return null}})(),k(fmt(Math.round(d.fill))+' m³','fill placed'),k(String(Object.values(S.wirs).filter(w=>!w.missing&&w.status!=='prior').length),'WIRs submitted'))));
   requestAnimationFrame(()=>{const hs=el.querySelector('.hs');hs.classList.add('h3');if(!hero3Mount(hs)){hs.classList.remove('h3');hs.replaceChildren(cv);drawHero(cv)}});return el}
 function latestTile(){
   const SC={approved:'#22a35a',approved_open:'#22a35a',pending:'#f5a524',rejected:'#ef4444',prior:'#8a94a0'},M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -2281,7 +2283,7 @@ function drawHero(cv){
   const CD=typeof chanData==='function'?chanData():null;
   if(CD){const qx=Math.max(1.2,4*sc*1.4);for(const [key,cc] of CD.map){const i=key%65536,j=(key-i)/65536,[x,y]=X(CHAN.e0+(i+.5)*CHAN.cs,CHAN.n0+(j+.5)*CHAN.cs);c.fillStyle=col(cc.z);c.fillRect(x-qx/2,y-qx/2,qx,qx)}
     c.fillStyle='rgb(46,132,198)';for(const [key,cc] of CD.map){if(!(cc.l-cc.z>.05))continue;const i=key%65536,j=(key-i)/65536,[x,y]=X(CHAN.e0+(i+.5)*CHAN.cs,CHAN.n0+(j+.5)*CHAN.cs);c.fillRect(x-qx/2,y-qx/2,qx,qx)}}
-  const done={};const bs=k=>i=>boqSum(k,i);for(let i=1;i<=4;i++){const d=phaseDone(i),t=bs('cut')(i)+bs('fill')(i);done[i]=t?(d.cut+d.fill)/t*100:0}
+  const done={};for(let i=1;i<=4;i++){const d=phaseDone(i);done[i]=d.cut+d.fill}
   c.lineJoin='round';
   for(const k in P){c.strokeStyle=COL[k-1];c.lineWidth=2;for(const r of P[k]){c.beginPath();r.forEach((p,j)=>{const [x,y]=X(p[0],p[1]);j?c.lineTo(x,y):c.moveTo(x,y)});c.closePath();c.stroke()}}
   const fam="'Archivo',system-ui,sans-serif",txt=getComputedStyle(document.documentElement).getPropertyValue('--txt').trim()||'#222';
@@ -2289,7 +2291,7 @@ function drawHero(cv){
   for(const k in P){if(!cen[k])continue;const x=cen[k][0]/cen[k][2],y=cen[k][1]/cen[k][2];
     c.textAlign='center';c.shadowColor='rgba(0,0,0,.75)';c.shadowBlur=6;c.fillStyle='#fff';
     c.font='600 '+(W<500?10:12)+'px '+fam;c.fillText('Phase '+k,x,y-4);
-    c.font='800 '+(W<500?14:19)+'px '+fam;c.fillText(done[k].toFixed(1)+'%',x,y+(W<500?11:15));c.shadowBlur=0}
+    c.font='800 '+(W<500?14:19)+'px '+fam;c.fillText((done[k]>=1000?fmt(Math.round(done[k]/1000))+'k':fmt(Math.round(done[k])))+' m³',x,y+(W<500?11:15));c.shadowBlur=0}
   c.font='600 11px '+fam;c.textAlign='left';c.fillStyle=txt;c.globalAlpha=.6;c.fillText(lo.toFixed(0)+' m',pad,H-6);c.textAlign='right';c.fillText(hi.toFixed(0)+' m design level',W-pad,H-6);c.globalAlpha=1}
 addEventListener('resize',()=>{const cv=document.querySelector('.hero .hs:not(.h3) canvas');if(cv)try{drawHero(cv)}catch(e){}});
 /* ---------- home: what the contractor has done ---------- */
@@ -2312,7 +2314,7 @@ function stripZone(){ // area that needs stripping = where the design is above e
 function zPct(a){const z=stripZone();if(!z||!z.tot)return '';const v=a/z.tot*100;return (v<1?v.toFixed(2):v.toFixed(1))+'% of fill zone'}
 function doneTile(){
   const d=doneData(),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],dm=x=>{const [,m,dd]=x.split('-');return +dd+' '+M[m-1]};
-  const pc=(a,b)=>{const v=a/b*100;return (v<1?v.toFixed(2):v.toFixed(1))+'% of BOQ'};
+  const pc=()=>'';
   const row=(col,lab,val,unit,sub)=>h('div',{class:'drow'},h('i',{style:'background:'+col}),h('span',{class:'dl'},lab),h('b',{},fmt(Math.round(val)),h('small',{},' '+unit)),h('span',{class:'ds'},sub));
   const mx=Math.max(1,...d.wk.map(x=>x[1]));
   return h('button',{class:'tile doneT'+(d.waste>0?' r4':''),onclick:()=>{repMode='todate';lsSet('es_repm','todate');repDate=today();showTab('report')}},
@@ -2602,7 +2604,6 @@ function homeT0(){
     ['⌖','Scan photo','Read a contractor table from a photo',null,()=>{homeView='scan';renderHome()}],
     ['✕','Site refusals',refOpen().length?refOpen().length+' open refusal'+(refOpen().length>1?'s':''):'Inspections refused on site',refOpen().length?'warn':'',()=>{homeView='refusals';renderHome()}],
     ['⚑','Remarks',rmkOpenCount()?rmkOpenCount()+' open remark'+(rmkOpenCount()>1?'s':''):'Flag remarks on WIRs',rmkOpenCount()?'warn':'',()=>{homeView='remarks';renderHome()}],
-    ['§','BOQ & quantities','Contract, progress, work areas',null,()=>{homeView='boq';renderHome()}],
     ['📥','Points for QS','2 Excel files: all work + certified · P,N,E,Z',null,()=>qsBoth()],
     ['△','BM check','Static N, E and levelling heights vs BM lists',null,()=>{homeView='bmcheck';renderHome()}],
     ['⌖','Level finder','Design and ground level at N, E',null,()=>{homeView='lvl';renderHome()}],
@@ -2612,7 +2613,7 @@ function homeT0(){
 }
 const GROUPS={areas:['Areas','Site, levels and terrain',['Satellite map','Site map','Work areas','3D terrain','Level finder','BM check']],
   wirs:['WIRs','Every WIR with the date it was submitted',['WIR register','Contractor WIR','Scan photo']],
-  reports:['Reports','Progress, quantities and printable reports',['Daily report','Monthly report','#prog','#speed','BOQ & quantities','Points for QS']],
+  reports:['Reports','Progress, quantities and printable reports',['Daily report','Monthly report','#speed','Points for QS']],
   more:['More','Equipment, data and the app file',['Equipment','Data','Download App']]};
 function renderGroup(el,g){
   const G=GROUPS[g]||GROUPS.more,T=homeT(),by={};T.forEach(t=>by[t[1]]=t);
@@ -2629,11 +2630,11 @@ function homeTiles(el){
   const nChk=Object.keys(S.checks||{}).length,pts=cwList().reduce((a,n)=>a+cwirPts(n).length,0);
   const T=homeT();
   try{const bs=k=>[1,2,3,4].reduce((a,i)=>a+boqSum(k,i),0),bt=bs('cut')+bs('fill');el.append(heroCard(cut,fill,bt))}catch(e){console.warn(e)}
-  const FIG={'Site refusals':refOpen().length||null,'WIR register':W.length,'Remarks':rmkOpenCount()||null,'Daily report':new Date().getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()],'BOQ & quantities':(()=>{try{return ([1,2,3,4].reduce((a,i)=>a+boqSum('cut',i)+boqSum('fill',i),0)/1e6).toFixed(1)+'M'}catch(e){return null}})()};
+  const FIG={'Site refusals':refOpen().length||null,'WIR register':W.length,'Remarks':rmkOpenCount()||null,'Daily report':new Date().getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()]};
   const tiles=T.map(([ic,t,sub,cls,fn])=>h('button',{class:'tile '+(cls||''),onclick:fn},h('div',{class:'tt'},h('span',{class:'ti'},ic),FIG[t]!=null?h('span',{class:'tf'+(t==='Daily report'?' d':'')},String(FIG[t])):null),h('b',{},t),h('small',{},sub)));
   let spT=null;
-  try{const d=speedData(),g=h('div',{style:'color:var(--txt);margin:-4px -4px 0'});g.innerHTML=gaugeSVG(d.actual,d.need,false);
-    spT=(h('button',{class:'tile speedT',onclick:()=>{homeView='speed';renderHome()}},g,h('div',{class:'stx'},h('b',{},'Speed'),h('small',{},d.nWin?'Now: '+fmt(Math.round(d.actual))+' m³ a day  ·  Needed: '+fmt(Math.round(d.need))+' m³ a day':'Needs dated WIR volumes'),d.nWin?h('small',{style:'font-weight:700;color:'+(d.actual>=d.need?'#1f8f4e':'#c4372f')},d.actual>=d.need?'On track to finish on time':'Too slow – about '+Math.max(1,Math.round(d.need/Math.max(1,d.actual)))+' times faster is needed'):null)));tiles.splice(1,0,spT)}catch(e){}
+  try{const d=speedData(),g=h('div',{style:'color:var(--txt);margin:-4px -4px 0'});g.innerHTML=gaugeSVG(d.actual,0,false);
+    spT=(h('button',{class:'tile speedT',onclick:()=>{homeView='speed';renderHome()}},g,h('div',{class:'stx'},h('b',{},'Speed'),h('small',{},d.nWin?'Now: '+fmt(Math.round(d.actual))+' m³ a day (last 30 days)':'Needs dated WIR volumes'))));tiles.splice(1,0,spT)}catch(e){}
   const simple=lsGet('es_home','simple')!=='all',setMode=m=>{lsSet('es_home',m);renderHome()};
   if(simple){
     const MAIN=[],main=T.map((t,i)=>[t,i]).filter(([t])=>MAIN.includes(t[1]));
@@ -6299,16 +6300,15 @@ function repToDate(paper,d,tol,by){
   paper.append(repHead('Progress Report — Total to Date','Up to and including '+dlong(d),by));
   paper.append(repApproved()?h('div',{style:'display:none'}):h('div',{style:'margin-top:10px;padding:8px 12px;border-left:4px solid #c4372f;background:#fdf1f0;color:#8f2a24;font-size:12px'},REP_NOTE));
   const kp=(v,l,c)=>h('div',{class:'kp',style:'--k:'+c},h('b',{},v),h('span',{},l));
-  paper.append(h('div',{class:'kpis'},kp(fmt(Math.round(SA))+' m²','Stripping 30 cm'+(HS?' · certified '+fmt(Math.round(SA-HS))+', held '+fmt(Math.round(HS)):''),'#9a6bd1'),kp(fmt(Math.round(F))+' m³','Fill placed'+(HF?' · certified '+fmt(Math.round(F-HF))+', held '+fmt(Math.round(HF)):''),'#0b5cad'),kp(fmt(Math.round(C))+' m³','Cut executed','#c4372f'),kp(P2(HF?(F-HF+C)/bt*100:pc),HF?'Certified earthworks vs BOQ (reported '+P2(pc)+')':'Earthworks done vs BOQ','#1f8f4e')));
+  paper.append(h('div',{class:'kpis'},kp(fmt(Math.round(SA))+' m²','Stripping 30 cm'+(HS?' · certified '+fmt(Math.round(SA-HS))+', held '+fmt(Math.round(HS)):''),'#9a6bd1'),kp(fmt(Math.round(F))+' m³','Fill placed'+(HF?' · certified '+fmt(Math.round(F-HF))+', held '+fmt(Math.round(HF)):''),'#0b5cad'),kp(fmt(Math.round(C))+' m³','Cut executed','#c4372f')));
   paper.append(h('h2',{},'Summary'),h('table',{class:'rt'},
     h('tr',{},h('th',{style:'width:55%'},'Item'),h('th',{class:'n'},'Value')),
-    ...[['Contract time used','Day '+fmt(day)+' of '+fmt(tot)+' ('+tp.toFixed(1)+'%)'],['Stripping 30 cm (paid as clearing)',fmt(Math.round(SA))+' m²  ·  '+P2(SA/bclr*100)+' of BOQ'+(zPct(SA)?'  ·  '+zPct(SA):'')],
+    ...[['Stripping 30 cm (paid as clearing)',fmt(Math.round(SA))+' m²'],
         ...(()=>{const L=W.filter(w=>wirKind(w.no)==='strip'&&isShortStrip(w.no));if(!L.length)return [];const m=L.reduce((t,w)=>t+((cwirStats(w.no,tol)||{}).stripDone||0),0);return [['Stripping not calculated (less than 30 cm – per instruction, the layers there are measured from the NGL)',fmt(Math.round(m))+' m²  ·  '+L.map(w=>(w.cno||'WIR '+w.no)+(w.ref?' ('+w.ref+')':'')).join(', ')]]})(),
         ['Official site area',fmt(SITE_M2)+' m²  ('+(SITE_M2/1e4).toFixed(0)+' ha)  ·  work-area partition covers '+fmt(PART_M2)+' m² ('+(PART_M2/SITE_M2*100).toFixed(1)+'%)  ·  outside the partition '+fmt(SITE_M2-PART_M2)+' m², mainly a '+fmt(STRIP_M2)+' m² strip along the south-west (Khuzam 3) edge'],
-        ...(stripZone()?[['Area to be stripped (fill zones, design above ground)',fmt(Math.round(stripZone().tot))+' m²  ·  BOQ clearing '+fmt(bclr)+' m²'+(stripZone().tot>bclr?'  ·  BOQ short by '+fmt(Math.round(stripZone().tot-bclr))+' m²':'')]]:[]),
-        ['Fill placed',fmt(Math.round(F))+' m³  ·  '+P2(F/bfill*100)+' of BOQ'],['Cut executed',C>0?fmt(Math.round(C))+' m³':'Not started'],...(()=>{const R=refList().filter(r=>r.date<=d);if(!R.length)return [];const by={};for(const r of R)by[refLabel(r).split(' (')[0]]=(by[refLabel(r).split(' (')[0]]||0)+1;return [['Inspections refused on site',R.length+' ('+Object.entries(by).map(([k,v])=>k+': '+v).join(', ')+') · '+R.filter(r=>r.status==='open').length+' still open']]})(),...(WS>0?[['Waste material removed (covered by clearing item 02.1.2.1, not paid separately)',fmt(Math.round(WS))+' m³']]:[]),
-        ...(HS||HF?[['Held pending verification (not certified)',(HS?fmt(Math.round(HS))+' m² stripping':'')+(HS&&HF?'  ·  ':'')+(HF?fmt(Math.round(HF))+' m³ fill':'')],['Certified to date',fmt(Math.round(SA-HS))+' m² stripping  ·  '+fmt(Math.round(F-HF))+' m³ fill']]:[]),
-        ['Earthworks done (cut + fill) vs BOQ',P2(pc)+' of '+fmt(bt)+' m³'+(HF?'  ·  certified '+P2((F-HF+C)/bt*100):'')]].map(([a,b])=>h('tr',{},h('td',{},a),h('td',{class:'n'},b)))));
+        ...(stripZone()?[['Area to be stripped (fill zones, design above ground)',fmt(Math.round(stripZone().tot))+' m²']]:[]),
+        ['Fill placed',fmt(Math.round(F))+' m³'],['Cut executed',C>0?fmt(Math.round(C))+' m³':'Not started'],...(()=>{const R=refList().filter(r=>r.date<=d);if(!R.length)return [];const by={};for(const r of R)by[refLabel(r).split(' (')[0]]=(by[refLabel(r).split(' (')[0]]||0)+1;return [['Inspections refused on site',R.length+' ('+Object.entries(by).map(([k,v])=>k+': '+v).join(', ')+') · '+R.filter(r=>r.status==='open').length+' still open']]})(),...(WS>0?[['Waste material removed (covered by clearing item 02.1.2.1, not paid separately)',fmt(Math.round(WS))+' m³']]:[]),
+        ...(HS||HF?[['Held pending verification (not certified)',(HS?fmt(Math.round(HS))+' m² stripping':'')+(HS&&HF?'  ·  ':'')+(HF?fmt(Math.round(HF))+' m³ fill':'')],['Certified to date',fmt(Math.round(SA-HS))+' m² stripping  ·  '+fmt(Math.round(F-HF))+' m³ fill']]:[])].map(([a,b])=>h('tr',{},h('td',{},a),h('td',{class:'n'},b)))));
   {const WS_=WASTE_STOCK,ph_=WS_.phases,tot_=Object.values(ph_).reduce((a,x)=>a+x.vol,0);
    paper.append(h('h2',{},'Waste material still on site'),h('div',{style:'font-size:12px;color:#444;margin:-2px 0 6px'},'Contractor topographic survey of the waste stockpiles received '+dmy(WS_.date)+'. Volume = stockpile surface minus the approved NGL of '+WS_.ngl+'. Removal is covered by the clearing item (not paid separately).'),
      h('table',{class:'rt'},h('tr',{},h('th',{},'Phase'),h('th',{class:'n'},'Volume (m³)'),h('th',{class:'n'},'Footprint (m²)'),h('th',{class:'n'},'Max height (m)'),h('th',{},'Main work areas')),
@@ -6322,16 +6322,15 @@ function repToDate(paper,d,tol,by){
     h('div',{style:'font-size:11.5px;color:#555;margin-top:4px'},'Held quantities are released once the consultant survey team verifies them on site (joint check of at least 10% of points).'));
   const tn=v=>h('td',{class:'n'},v);
   paper.append(h('h2',{},'Progress by phase'),h('table',{class:'rt'},
-    h('tr',{},h('th',{style:'width:16%'},'Phase'),h('th',{class:'n'},'Stripping (m²)'),h('th',{class:'n'},'Fill placed (m³)'),h('th',{class:'n'},'BOQ fill (m³)'),h('th',{class:'n',style:'width:24%'},'Fill progress')),
-    ...[1,2,3,4].map(i=>{const b=boqSum('fill',i),v=ph[i].f/b*100;return h('tr',{},h('td',{},'Phase '+i),tn(fmt(Math.round(ph[i].s))),tn(fmt(Math.round(ph[i].f))),tn(fmt(b)),
-      h('td',{class:'n'},P2(v),h('div',{class:'pbar'},h('i',{style:'width:'+Math.min(100,Math.max(v,.5))+'%'}))))}),
+    h('tr',{},h('th',{style:'width:16%'},'Phase'),h('th',{class:'n'},'Stripping (m²)'),h('th',{class:'n'},'Fill placed (m³)')),
+    ...[1,2,3,4].map(i=>{const b=boqSum('fill',i),v=ph[i].f/b*100;return h('tr',{},h('td',{},'Phase '+i),tn(fmt(Math.round(ph[i].s))),tn(fmt(Math.round(ph[i].f))))}),
     h('tr',{class:'tot'},h('td',{},'Total'),tn(fmt(Math.round(SA))),tn(fmt(Math.round(F))),tn(fmt(bfill)),tn(P2(F/bfill*100)))));
   // site plan: every WIR done up to this date, coloured by type, with each phase's fill progress
   if(DES){const hold=h('div',{class:'snaps'},h('div',{style:'color:#555'},'Preparing the site plan…'));
     const KL=[['#d98a2b','Stripping 30 cm'],['#3b82f6','Fill layers'],['#22a35a','Final grading'],['#8b5a2b','Waste removed'],['#ef4444','✕ Inspection refused']];
     paper.append(h('h2',{},'Site plan – work done to date'),hold,h('div',{style:'display:flex;gap:12px;flex-wrap:wrap;font-size:11px;margin:4px 0 0'},...KL.map(([c,l])=>h('span',{},h('i',{style:'display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:'+c}),l))));
-    setTimeout(()=>{let u=null;try{u=snapSite(d,i=>ph[i].f/boqSum('fill',i)*100)}catch(e){console.warn(e)}
-      hold.replaceChildren(u?h('figure',{style:'margin:0'},h('img',{src:u,alt:'Site plan'}),h('figcaption',{style:'font-size:11px;color:#555;margin:2px 0 6px'},'General plan – all contractor work up to '+dmy(d)+' (percentages = fill placed vs BOQ per phase)')):h('div',{style:'color:#555'},'Site plan not available on this device.'))},60)}
+    setTimeout(()=>{let u=null;try{u=snapSite(d,i=>ph[i].f)}catch(e){console.warn(e)}
+      hold.replaceChildren(u?h('figure',{style:'margin:0'},h('img',{src:u,alt:'Site plan'}),h('figcaption',{style:'font-size:11px;color:#555;margin:2px 0 6px'},'General plan – all contractor work up to '+dmy(d))):h('div',{style:'color:#555'},'Site plan not available on this device.'))},60)}
 }
 function repRange(d,kind){const x=new Date(d+'T12:00:00');let s;
   if(kind==='month')s=new Date(x.getFullYear(),x.getMonth(),1,12);
@@ -6358,7 +6357,7 @@ function repPeriod(paper,d,tol,by,kind){
   const kp=(v,l,c)=>h('div',{class:'kp',style:'--k:'+c},h('b',{},v),h('span',{},l));
   paper.append(h('div',{class:'kpis'},kp(String(P.W.length),'WIRs this '+(kind==='month'?'month':'week'),'#0b5cad'),kp(fmt(Math.round(P.SA))+' m²','Stripping 30 cm'+(P.HS?' · held '+fmt(Math.round(P.HS)):''),'#9a6bd1'),kp(fmt(Math.round(P.F))+' m³','Fill placed'+(P.HF?' · held '+fmt(Math.round(P.HF)):''),'#1f8f4e'),kp(String(P.refs.length),'Inspections refused','#c4372f')));
   paper.append(h('h2',{},'Summary of the '+(kind==='month'?'month':'week')),h('div',{style:'font-size:12px;color:#444;margin:-2px 0 6px'},'"'+PL+'" = work inspected between '+dmy(R.p0)+' and '+dmy(R.to)+' only. "Project total" = everything since the start of the project.'),h('table',{class:'rt cmp'},h('tr',{},h('th',{style:'width:55%'},'Item'),h('th',{class:'n'},PL),h('th',{class:'n'},'Project total since start, to '+dmy(R.to))),
-    ...[['Stripping 30 cm (m²)',P.SA,D.strip,bclr,1],['Fill placed (m³)',P.F,D.fill,bfill,0]].map(([a,v,t,b,z])=>h('tr',{},h('td',{},a),h('td',{class:'n'},fmt(Math.round(v))),h('td',{class:'n'},fmt(Math.round(t))+'  ·  '+P2(t/b*100)+' of BOQ'+(z&&zPct(t)?'  ·  '+zPct(t):'')))),
+    ...[['Stripping 30 cm (m²)',P.SA,D.strip,bclr,1],['Fill placed (m³)',P.F,D.fill,bfill,0]].map(([a,v,t,b,z])=>h('tr',{},h('td',{},a),h('td',{class:'n'},fmt(Math.round(v))),h('td',{class:'n'},fmt(Math.round(t))))),
     h('tr',{},h('td',{},'Cut executed (m³)'),h('td',{class:'n'},P.C>0?fmt(Math.round(P.C)):'–'),h('td',{class:'n'},D.cut>0?fmt(Math.round(D.cut)):'Not started')),
     P.WS?h('tr',{},h('td',{},'Waste removed (within clearing item)'),h('td',{class:'n'},fmt(Math.round(P.WS))+' m³'),h('td',{class:'n'},'')):null,
     h('tr',{},h('td',{},'WIR status '+pl),h('td',{class:'n',colspan:'2'},`${P.st.appr} submitted`)),
@@ -6389,7 +6388,7 @@ function repPeriod(paper,d,tol,by,kind){
   paper.append(...repAreaPanels(wirAreaKeys(P.W.map(w=>w.no)),'Work areas this '+(kind==='month'?'month':'week')+' – design, executed and still to do'));
   if(P.rems.length)paper.append(h('h2',{},'Daily remarks'),...P.rems.map(([s,v])=>h('div',{style:'margin:3px 0'},h('b',{},dmy(s)+': '),v)));
   if(DES){const hold=h('div',{class:'snaps'},h('div',{style:'color:#555'},'Preparing the site plan…'));paper.append(h('h2',{},'Site plan – work done to '+dmy(R.to)),hold);
-    setTimeout(()=>{let u=null;try{u=snapSite(R.to,i=>boqSum('fill',i)?cwPhaseTotals()[i].fill/boqSum('fill',i)*100:0)}catch(e){console.warn(e)}
+    setTimeout(()=>{let u=null;try{u=snapSite(R.to,i=>cwPhaseTotals()[i].fill)}catch(e){console.warn(e)}
       hold.replaceChildren(u?h('img',{src:u,alt:'Site plan',style:'width:100%'}):h('div',{style:'color:#555'},'Site plan not available on this device.'))},60)}
 }
 function snapSite(d,pct){
@@ -6404,7 +6403,7 @@ function snapSite(d,pct){
     drawPlan();
     const c=plan.ctx,P=heroPolys();c.save();c.textAlign='center';
     for(const k in P){const big=P[k].slice().sort((a,b)=>polyArea(b)-polyArea(a))[0];if(!big)continue;let sx=0,sy=0,n=0;for(const [e,nn] of big){const [x,y]=toS(e,nn);sx+=x;sy+=y;n++}if(!n)continue;
-      const x=sx/n,y=sy/n,v=pct(+k),t1='Phase '+k,t2=(v<1?v.toFixed(2):v.toFixed(1))+'% fill';
+      const x=sx/n,y=sy/n,v=pct(+k),t1='Phase '+k,t2=fmt(Math.round(v))+' m³ fill';
       c.font='bold 15px system-ui';const w=Math.max(c.measureText(t1).width,c.measureText(t2).width)+20;
       c.fillStyle='rgba(11,42,74,.92)';c.beginPath();if(c.roundRect)c.roundRect(x-w/2,y-22,w,44,8);else c.rect(x-w/2,y-22,w,44);c.fill();
       c.fillStyle='#fff';c.fillText(t1,x,y-4);c.fillStyle='#f5a524';c.font='bold 14px system-ui';c.fillText(t2,x,y+14)}
@@ -6448,7 +6447,7 @@ function repBuild(){
   }else{
     const sums=W.map(w=>{const s=repStats(w.no,tol);if(wirKind(w.no)==='waste'&&s)return `WIR ${w.no}${w.cno?' ('+w.cno+')':''}: ${w.desc||w.activity||''} — ${s.n} points, ${fmt(s.area)} m², ground lowered ${fmt(s.layCut)} m³`+(WASTE_ASSESS[w.no]&&waState()!=='off'?`, of which waste stockpile ${fmt(WASTE_ASSESS[w.no].pile)} m³ (see assessment).`:'.');return `WIR ${w.no}${w.cno?' ('+w.cno+')':''}: ${w.desc||w.activity||''}${w.layer?', layer '+w.layer:''}`+(s?` — ${s.n} points, ${fmt(s.area)} m², executed ${s.layCut>0.5?'cut '+fmt(s.layCut)+' m³ / ':''}fill ${fmt(s.layFill)} m³, left to design: cut ${fmt(s.cut)} / fill ${fmt(s.fill)} m³.`:'.');});
     {const T=dayTotals(d,tol),D=doneData(),kp=(v,l,c)=>h('div',{class:'kp',style:'--k:'+c},h('b',{},v),h('span',{},l)),pc=(x,b)=>b?((x/b*100)<1?(x/b*100).toFixed(2):(x/b*100).toFixed(1))+'%':'';
-     paper.append(h('div',{class:'kpis'},kp(fmt(Math.round(T.F))+' m³','Fill placed today'+(T.HF?' · held '+fmt(Math.round(T.HF)):''),'#0b5cad'),...(T.SA?[kp(fmt(Math.round(T.SA))+' m²','Stripping today'+(T.HS?' · held '+fmt(Math.round(T.HS)):''),'#9a6bd1')]:[]),...(T.WS?[kp(fmt(Math.round(T.WS))+' m³','Waste removed today'+(waState()!=='off'?' · of which stockpile '+fmt(W.reduce((x,w)=>x+((WASTE_ASSESS[w.no]||{}).pile||0),0))+' m³':''),'#8b5a2b')]:[]),kp(fmt(Math.round(D.fill))+' m³','Total fill placed to date · '+pc(D.fill,D.bf)+' of BOQ','#1f8f4e'),kp(String(W.length),'WIR'+(W.length>1?'s':'')+' today','#5d6f86')))}
+     paper.append(h('div',{class:'kpis'},kp(fmt(Math.round(T.F))+' m³','Fill placed today'+(T.HF?' · held '+fmt(Math.round(T.HF)):''),'#0b5cad'),...(T.SA?[kp(fmt(Math.round(T.SA))+' m²','Stripping today'+(T.HS?' · held '+fmt(Math.round(T.HS)):''),'#9a6bd1')]:[]),...(T.WS?[kp(fmt(Math.round(T.WS))+' m³','Waste removed today'+(waState()!=='off'?' · of which stockpile '+fmt(W.reduce((x,w)=>x+((WASTE_ASSESS[w.no]||{}).pile||0),0))+' m³':''),'#8b5a2b')]:[]),kp(fmt(Math.round(D.fill))+' m³','Total fill placed to date','#1f8f4e'),kp(String(W.length),'WIR'+(W.length>1?'s':'')+' today','#5d6f86')))}
     paper.append(h('ul',{class:'sumlist'},...sums.map(t=>h('li',{},t))));
     const openN=W.reduce((a,w)=>a+Object.values(w.items||{}).filter(i=>!i.done).length,0);
   }
@@ -6514,16 +6513,14 @@ function repAreaPanels(keys,title,only){
 function wirAreaKeys(nos){const m={};let tot=0;for(const no of nos){const c=newAreaCount(no);for(const k in c){m[k]=(m[k]||0)+c[k];tot+=c[k]}}return Object.keys(m).filter(k=>k[0]!=='W'&&m[k]>=15&&m[k]>=0.1*tot).sort()}
 
 /* report helpers for the newer app features: plain-language speed, layers left per area, progress by work area */
-function speedPlain(){const d=speedData();if(!d.nWin)return null;const x=Math.max(1,Math.round(d.need/Math.max(1,d.actual)));
-  return {d,now:Math.round(d.actual),need:Math.round(d.need),ok:d.actual>=d.need,txt:d.actual>=d.need?'On track to finish on time':'Too slow – about '+x+' times faster is needed'}}
-function speedBlockRep(){const sp=speedPlain();if(!sp)return [];
-  let g=gaugeSVG(sp.d.actual,sp.d.need,true);const m=g.match(/data-deg="([-\d.]+)"/);
+function speedPlain(){const d=speedData();if(!d.nWin)return null;return {d,now:Math.round(d.actual)}}
+function speedBlockRep(){const sp=speedPlain();if(!sp)return [];const r=speedRates();
+  let g=gaugeSVG(sp.d.actual,0,true);const m=g.match(/data-deg="([-\d.]+)"/);
   g=g.replace(/style="transform-origin:110px 110px;transform:rotate\(-125deg\);[^"]*"/,'transform="rotate('+(m?m[1]:0)+' 110 110)"');
   const gd=h('div',{style:'width:230px;flex:none'});gd.innerHTML=g;
-  return [h('h2',{},'Production speed – last 30 days'),h('div',{style:'display:flex;gap:18px;align-items:center;flex-wrap:wrap;page-break-inside:avoid;break-inside:avoid'},gd,
-    h('div',{style:'flex:1;min-width:220px'},h('div',{style:'font-size:16px;font-weight:700;color:#0b2a4a'},'Now: '+fmt(sp.now)+' m³ a day'),h('div',{style:'font-size:16px;font-weight:700;color:#0b2a4a;margin-top:2px'},'Needed: '+fmt(sp.need)+' m³ a day'),
-      h('div',{style:'font-size:15px;font-weight:800;margin-top:8px;color:'+(sp.ok?'#1f8f4e':'#b42318')},sp.txt),
-      h('div',{style:'font-size:11.5px;color:#555;margin-top:8px'},'"Now" = average cut + fill per day over the last 30 days from the dated WIR volumes. "Needed" = remaining BOQ cut + fill divided by the days left to '+dmy(sp.d.end)+'.')))]}
+  return [h('h2',{},'Production speed'),h('div',{style:'display:flex;gap:18px;align-items:center;flex-wrap:wrap;page-break-inside:avoid;break-inside:avoid'},gd,
+    h('div',{style:'flex:1;min-width:220px'},h('div',{style:'font-size:16px;font-weight:700;color:#0b2a4a'},'Last 30 days: '+fmt(sp.now)+' m³ a day'),h('div',{style:'font-size:16px;font-weight:700;color:#0b2a4a;margin-top:2px'},'Last 7 days: '+fmt(Math.round(r.d7))+' m³ a day'),
+      h('div',{style:'font-size:11.5px;color:#555;margin-top:8px'},'Average cut + fill per day from the dated WIR volumes.')))]}
 function areaLayers(R){const a=R.cells.filter(c=>c.Z-c.cur>0.03).map(c=>Math.ceil((c.Z-c.cur-0.03)/LAYER_T)).sort((x,y)=>x-y);if(!a.length)return {med:0,max:0};return {med:a[Math.floor(a.length/2)],max:a[a.length-1]}}
 function areaProgressTable(keys){keys=[...new Set(keys)].filter(k=>k&&NEW_AREAS[k]);if(!keys.length||!DES)return [];
   return [h('h2',{},'Progress by work area'),h('div',{style:'font-size:11.5px;color:#444;margin:-2px 0 6px'},'Work areas of the designer partition (AREA 01–40, wadi strips W 01–04). Layers left = how many more '+(LAYER_T*100)+' cm fill layers are needed to reach design: at a typical spot, and at the deepest spot.'),
@@ -6692,7 +6689,7 @@ function repMailText(d){
   if(repMode==='week'||repMode==='month'){const P=repPeriodData(d,repMode,tol),nm=repMode==='month'?'Monthly':'Weekly';
     const L=[`Dear ${name},`,'',`Good day. Please find attached the ${nm.toLowerCase()} survey report for ${P.R.label} (${dmy(P.R.p0)} to ${dmy(P.R.to)}).`,'',`This ${repMode}:`,
       `- ${P.W.length} WIRs submitted`,`- Stripping 30 cm: ${fmt(Math.round(P.SA))} m²`+(P.HS?` (held ${fmt(Math.round(P.HS))} m²)`:''),`- Fill placed: ${fmt(Math.round(P.F))} m³`+(P.HF?` (held ${fmt(Math.round(P.HF))} m³)`:''),
-      `- Inspections refused on site: ${P.refs.length}`,...(()=>{const sp=speedPlain();return sp?['',`Speed: now ${fmt(sp.now)} m³ a day, needed ${fmt(sp.need)} m³ a day – ${sp.txt.toLowerCase()}.`]:[]})(),'','Progress to date:',`- Stripping 30 cm: ${fmt(Math.round(D.strip))} m² (${pct(D.strip,D.bc)} of BOQ${zPct(D.strip)?', '+zPct(D.strip):''})`,`- Fill placed: ${fmt(Math.round(D.fill))} m³ (${pct(D.fill,D.bf)} of BOQ)`];
+      `- Inspections refused on site: ${P.refs.length}`,...(()=>{const sp=speedPlain();return sp?['',`Speed: ${fmt(sp.now)} m³ a day (last 30 days).`]:[]})(),'','Progress to date:',`- Stripping 30 cm: ${fmt(Math.round(D.strip))} m²`,`- Fill placed: ${fmt(Math.round(D.fill))} m³`];
     if(!repApproved())L.push('','Note: the M4 shop drawing / design levels are not yet approved, so the results are provisional.');
     L.push('','Best regards,',by.split(',')[0],(by.split(',')[1]||'Survey Engineer').trim()+' – Alomaier Trading & Contracting','Khuzam 04 Enabling – Earthworks');
     return {to:lsGet('es_mailto','mahmoud.salameh@khatibalami.com'),subj:`Khuzam 04 Enabling | ${nm} Survey Report | ${P.R.label}`,body:L.join('\n'),file:nm+'_Survey_Report_'+P.R.p0+'_'+P.R.to+'.pdf'}}
@@ -6705,8 +6702,8 @@ function repMailText(d){
     else L.push('No WIR was inspected or submitted on this day.');
     if(W.length){const T=dayTotals(d,tol);L.push('',`Done today: fill placed ${fmt(Math.round(T.F))} m³`+(T.HF?` (held ${fmt(Math.round(T.HF))} m³)`:'')+(T.SA?`  ·  stripping ${fmt(Math.round(T.SA))} m²`:'')+(T.HS?` (held ${fmt(Math.round(T.HS))} m²)`:'')+(T.WS?`  ·  waste removed about ${fmt(Math.round(T.WS))} m³`:''))}
     L.push('');}
-  L.push('Progress to date:',`- Stripping 30 cm: ${fmt(Math.round(D.strip))} m² (${pct(D.strip,D.bc)} of BOQ${zPct(D.strip)?', '+zPct(D.strip):''})`+(D.hStrip?` – certified ${fmt(Math.round(D.strip-D.hStrip))} m², held ${fmt(Math.round(D.hStrip))} m² pending verification`:''),`- Fill placed: ${fmt(Math.round(D.fill))} m³ (${pct(D.fill,D.bf)} of BOQ)`+(D.hFill?` – certified ${fmt(Math.round(D.fill-D.hFill))} m³, held ${fmt(Math.round(D.hFill))} m³ pending verification`:''),`- Cut: ${D.cut>0?fmt(Math.round(D.cut))+' m³':'not started'}`);
-  {const sp=speedPlain();if(sp)L.push(`- Speed: now ${fmt(sp.now)} m³ a day, needed ${fmt(sp.need)} m³ a day – ${sp.txt.toLowerCase()}.`)}
+  L.push('Progress to date:',`- Stripping 30 cm: ${fmt(Math.round(D.strip))} m²`+(D.hStrip?` – certified ${fmt(Math.round(D.strip-D.hStrip))} m², held ${fmt(Math.round(D.hStrip))} m² pending verification`:''),`- Fill placed: ${fmt(Math.round(D.fill))} m³`+(D.hFill?` – certified ${fmt(Math.round(D.fill-D.hFill))} m³, held ${fmt(Math.round(D.hFill))} m³ pending verification`:''),`- Cut: ${D.cut>0?fmt(Math.round(D.cut))+' m³':'not started'}`);
+  {const sp=speedPlain();if(sp)L.push(`- Speed: ${fmt(sp.now)} m³ a day (last 30 days).`)}
   if(!repApproved())L.push('','Note: the M4 shop drawing / design levels are not yet approved, so the results are provisional.');
   L.push('','Best regards,',by.split(',')[0],(by.split(',')[1]||'Survey Engineer').trim()+' – Alomaier Trading & Contracting','Khuzam 04 Enabling – Earthworks');
   return {to:lsGet('es_mailto','mahmoud.salameh@khatibalami.com'),subj,body:L.join('\n'),file:(todate?'Progress_to_date_':'Daily_Survey_Report_')+d+'.pdf'};
