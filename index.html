@@ -1417,6 +1417,9 @@ const CUT_W=new Set([&#x27;Site preparation / clearing&#x27;,&#x27;Stripping&#x2
 const CUT_T=new Set([&#x27;Dozer&#x27;,&#x27;Excavator&#x27;,&#x27;Backhoe&#x27;,&#x27;Crusher&#x27;,&#x27;Maintenance vehicle&#x27;,&#x27;Generator&#x27;,&#x27;Bus&#x27;,&#x27;Pickup / Car&#x27;]);
 const consRow=t=&gt;CONS_OF[t]||&#x27;Service vehicles&#x27;;
 const consSide=(w,t)=&gt;CUT_W.has(w)?&#x27;c&#x27;:(w&amp;&amp;w!==&#x27;Standby&#x27;&amp;&amp;w!==&#x27;Other&#x27;)?&#x27;f&#x27;:(CUT_T.has(t)?&#x27;c&#x27;:&#x27;f&#x27;);
+function consEd(d){const E=M().consEdit||{};return E[d]||{}}
+function consSet(d,k,v){M().consEdit=M().consEdit||{};const E=M().consEdit[d]=M().consEdit[d]||{};if(v===null)delete E[k];else E[k]=v;if(!Object.keys(E).length)delete M().consEdit[d];try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}}
+let consEditOn=false;
 function consTitle(){return M().ctitle||&#x27;EQUIPMENT FOR CONTRACTOR IN SITE KHUZAM 4&#x27;}
 function consData(d){
   const r=repData(d),AR=(window.parent.eqAreaList?window.parent.eqAreaList():[]).filter(a=&gt;!a.w&amp;&amp;a.phase);
@@ -1431,10 +1434,13 @@ function consData(d){
     const P=phases[a.phase],row=consRow(x.e.type),k=row+&#x27;|&#x27;+a.k+&#x27;|&#x27;+consSide(x.wk,x.e.type);P.cells[k]=(P.cells[k]||0)+1;
     if(x.e.status===&#x27;down&#x27;||x.e.status===&#x27;maint&#x27;)P.bd[row]=(P.bd[row]||0)+1}
   const list=Object.keys(phases).sort((a,b)=&gt;a-b).map(k=&gt;phases[k]);
+  const ED=consEd(d);for(const [k,v] of Object.entries(ED)){const q=k.split(&#x27;|&#x27;);const P=phases[q[1]];if(!P)continue;
+    if(q[0]===&#x27;c&#x27;){const ck=q[2]+&#x27;|&#x27;+q[3]+&#x27;|&#x27;+q[4];P.auto=P.auto||{};P.auto[ck]=P.cells[ck]||0;if(+v&gt;0)P.cells[ck]=+v;else delete P.cells[ck]}
+    else if(q[0]===&#x27;b&#x27;){P.autoB=P.autoB||{};P.autoB[q[2]]=P.bd[q[2]]||0;P.bd[q[2]]=+v||0}}
   list.forEach(P=&gt;{P.zones=[];P.areas.forEach(a=&gt;{const z=a.zone||&#x27;—&#x27;,l=P.zones[P.zones.length-1];if(l&amp;&amp;l.z===z)l.n++;else P.zones.push({z,n:1})});
     P.tot={};CONS_ROWS.forEach(rw=&gt;{let t=0;P.areas.forEach(a=&gt;{t+=(P.cells[rw+&#x27;|&#x27;+a.k+&#x27;|c&#x27;]||0)+(P.cells[rw+&#x27;|&#x27;+a.k+&#x27;|f&#x27;]||0)});P.tot[rw]=t});
     P.work=CONS_ROWS.reduce((s,rw)=&gt;s+P.tot[rw]-(P.bd[rw]||0),0)});
-  return {d,list,other,n:Object.keys(last).length}}
+  return {d,list,other,n:Object.keys(last).length,ed:Object.keys(ED).length,note:(M().cnote||{})[d]||&#x27;&#x27;}}
 const zLbl=z=&gt;z===&#x27;—&#x27;?&#x27;—&#x27;:&#x27;ZONE &#x27;+String(z).toUpperCase().replace(/^(ZONE|Z)\s*/,&#x27;&#x27;).replace(/^0+(?=\d)/,&#x27;&#x27;);
 const aLbl=a=&gt;&#x27;AREA &#x27;+a.num;
 const CONS_CSS=`&lt;style&gt;
@@ -1456,17 +1462,21 @@ const CONS_CSS=`&lt;style&gt;
 .ctab .wk{background:#e6f4ea!important;color:#1b6b32;font-weight:800}
 .ctab .bd{color:#c92a2a;font-weight:700}
 .ctab .tot td{background:#1c2733!important;color:#fff;font-weight:800}
+.ctab .ci{width:34px;min-width:34px;padding:4px 2px;text-align:center;font:800 13px system-ui;color:#1c2733;background:#fffbe6;border:1px solid #e0c766;border-radius:4px}
+.ctab td.vc .ci{background:#ffe1d1;color:#a8360a;border-color:#f0a07a}.ctab td.vf .ci{background:#d3f1dc;color:#1b6b32;border-color:#86cf9c}.ctab td.bd .ci{color:#c92a2a}
+.ctab td.ed{box-shadow:inset 0 0 0 2px #7048e8}
 &lt;/style&gt;`;
-function consHtml(C){
+function consHtml(C,ED){const E=ED?consEd(C.d):null;
+  const inp=(k,v,cls)=&gt;`&lt;td class=&quot;${cls||&#x27;&#x27;}${E&amp;&amp;(k in E)?&#x27; ed&#x27;:&#x27;&#x27;}&quot; style=&quot;padding:2px&quot;&gt;&lt;input class=&quot;ci&quot; data-k=&quot;${k}&quot; value=&quot;${v||&#x27;&#x27;}&quot; inputmode=&quot;numeric&quot; pattern=&quot;[0-9]*&quot; aria-label=&quot;count&quot;&gt;&lt;/td&gt;`;
   if(!C.list.length)return &#x27;&lt;div class=&quot;card small muted&quot;&gt;The site areas are not available here.&lt;/div&gt;&#x27;;
   return CONS_CSS+C.list.map(P=&gt;`&lt;div class=&quot;tbl&quot; style=&quot;margin-top:12px;background:#fff;border-color:#c9d1da&quot;&gt;&lt;table class=&quot;ctab&quot;&gt;
     &lt;tr&gt;&lt;td rowspan=&quot;3&quot; colspan=&quot;2&quot; class=&quot;sw&quot;&gt;SITE WORK&lt;/td&gt;&lt;td colspan=&quot;${P.areas.length*2}&quot; class=&quot;ph&quot;&gt;PHASE ${P.ph}&lt;/td&gt;&lt;td colspan=&quot;3&quot; rowspan=&quot;2&quot; class=&quot;ph&quot;&gt;Equipment&lt;/td&gt;&lt;/tr&gt;
     &lt;tr&gt;${P.zones.map(z=&gt;`&lt;td colspan=&quot;${z.n*2}&quot; class=&quot;zn&quot;&gt;${esc(zLbl(z.z))}&lt;/td&gt;`).join(&#x27;&#x27;)}&lt;/tr&gt;
     &lt;tr&gt;${P.areas.map(a=&gt;`&lt;td colspan=&quot;2&quot; class=&quot;ar&quot;&gt;${aLbl(a)}&lt;/td&gt;`).join(&#x27;&#x27;)}&lt;td class=&quot;hd&quot;&gt;Total&lt;/td&gt;&lt;td class=&quot;hd&quot;&gt;Broken down&lt;/td&gt;&lt;td class=&quot;hd&quot;&gt;Work&lt;/td&gt;&lt;/tr&gt;
     &lt;tr&gt;&lt;td class=&quot;hd&quot;&gt;NO&lt;/td&gt;&lt;td class=&quot;hd eq&quot;&gt;Equipment&lt;/td&gt;${P.areas.map(()=&gt;`&lt;td class=&quot;cu&quot;&gt;CUT&lt;/td&gt;&lt;td class=&quot;fi&quot;&gt;FILL&lt;/td&gt;`).join(&#x27;&#x27;)}&lt;td class=&quot;hd&quot;&gt;&lt;/td&gt;&lt;td class=&quot;hd&quot;&gt;&lt;/td&gt;&lt;td class=&quot;hd&quot;&gt;&lt;/td&gt;&lt;/tr&gt;
-    ${CONS_ROWS.map((rw,i)=&gt;{const t=P.tot[rw]||0,b=P.bd[rw]||0;return `&lt;tr${i%2?&#x27; class=&quot;alt&quot;&#x27;:&#x27;&#x27;}&gt;&lt;td&gt;${i+1}&lt;/td&gt;&lt;td class=&quot;eq&quot;&gt;${rw}&lt;/td&gt;${P.areas.map(a=&gt;[&#x27;c&#x27;,&#x27;f&#x27;].map(s=&gt;{const v=P.cells[rw+&#x27;|&#x27;+a.k+&#x27;|&#x27;+s]||&#x27;&#x27;;return `&lt;td${v?` class=&quot;${s===&#x27;c&#x27;?&#x27;vc&#x27;:&#x27;vf&#x27;}&quot;`:&#x27;&#x27;}&gt;${v}&lt;/td&gt;`}).join(&#x27;&#x27;)).join(&#x27;&#x27;)}&lt;td class=&quot;tt&quot;&gt;${t}&lt;/td&gt;&lt;td class=&quot;${b?&#x27;bd&#x27;:&#x27;&#x27;}&quot;&gt;${b}&lt;/td&gt;&lt;td class=&quot;wk&quot;&gt;${t-b}&lt;/td&gt;&lt;/tr&gt;`}).join(&#x27;&#x27;)}
+    ${CONS_ROWS.map((rw,i)=&gt;{const t=P.tot[rw]||0,b=P.bd[rw]||0;return `&lt;tr${i%2?&#x27; class=&quot;alt&quot;&#x27;:&#x27;&#x27;}&gt;&lt;td&gt;${i+1}&lt;/td&gt;&lt;td class=&quot;eq&quot;&gt;${rw}&lt;/td&gt;${P.areas.map(a=&gt;[&#x27;c&#x27;,&#x27;f&#x27;].map(s=&gt;{const v=P.cells[rw+&#x27;|&#x27;+a.k+&#x27;|&#x27;+s]||&#x27;&#x27;;return E?inp(&#x27;c|&#x27;+P.ph+&#x27;|&#x27;+rw+&#x27;|&#x27;+a.k+&#x27;|&#x27;+s,v,v?(s===&#x27;c&#x27;?&#x27;vc&#x27;:&#x27;vf&#x27;):&#x27;&#x27;):`&lt;td${v?` class=&quot;${s===&#x27;c&#x27;?&#x27;vc&#x27;:&#x27;vf&#x27;}&quot;`:&#x27;&#x27;}&gt;${v}&lt;/td&gt;`}).join(&#x27;&#x27;)).join(&#x27;&#x27;)}&lt;td class=&quot;tt&quot;&gt;${t}&lt;/td&gt;${E?inp(&#x27;b|&#x27;+P.ph+&#x27;|&#x27;+rw,b,b?&#x27;bd&#x27;:&#x27;&#x27;):`&lt;td class=&quot;${b?&#x27;bd&#x27;:&#x27;&#x27;}&quot;&gt;${b}&lt;/td&gt;`}&lt;td class=&quot;wk&quot;&gt;${t-b}&lt;/td&gt;&lt;/tr&gt;`}).join(&#x27;&#x27;)}
     &lt;tr class=&quot;tot&quot;&gt;&lt;td colspan=&quot;${2+P.areas.length*2}&quot; style=&quot;text-align:left&quot;&gt;TOTAL&lt;/td&gt;&lt;td&gt;${CONS_ROWS.reduce((s,r)=&gt;s+(P.tot[r]||0),0)}&lt;/td&gt;&lt;td&gt;${CONS_ROWS.reduce((s,r)=&gt;s+(P.bd[r]||0),0)}&lt;/td&gt;&lt;td&gt;${P.work}&lt;/td&gt;&lt;/tr&gt;
-  &lt;/table&gt;&lt;/div&gt;`).join(&#x27;&#x27;)+(C.other.length?`&lt;div class=&quot;small&quot; style=&quot;margin-top:8px;color:var(--idle)&quot;&gt;Not in any area (not counted above): ${esc(C.other.map(x=&gt;x.e.no+&#x27; – &#x27;+x.ar).join(&#x27;, &#x27;))}&lt;/div&gt;`:&#x27;&#x27;)}
+  &lt;/table&gt;&lt;/div&gt;`).join(&#x27;&#x27;)+(C.note&amp;&amp;!ED?`&lt;div style=&quot;margin-top:10px;padding:8px 10px;border-left:4px solid #f2b705;background:#fffbe6;color:#1c2733;border-radius:6px;white-space:pre-wrap&quot;&gt;&lt;b&gt;Note:&lt;/b&gt; ${esc(C.note)}&lt;/div&gt;`:&#x27;&#x27;)+(C.other.length?`&lt;div class=&quot;small&quot; style=&quot;margin-top:8px;color:var(--idle)&quot;&gt;Not in any area (not counted above): ${esc(C.other.map(x=&gt;x.e.no+&#x27; – &#x27;+x.ar).join(&#x27;, &#x27;))}&lt;/div&gt;`:&#x27;&#x27;)}
 /* --- small .xlsx writer (no internet needed) --- */
 const CRC_T=(()=&gt;{const t=new Uint32Array(256);for(let n=0;n&lt;256;n++){let c=n;for(let k=0;k&lt;8;k++)c=c&amp;1?0xEDB88320^(c&gt;&gt;&gt;1):c&gt;&gt;&gt;1;t[n]=c&gt;&gt;&gt;0}return t})();
 function crc32(b){let c=0xFFFFFFFF;for(let i=0;i&lt;b.length;i++)c=CRC_T[(c^b[i])&amp;255]^(c&gt;&gt;&gt;8);return (c^0xFFFFFFFF)&gt;&gt;&gt;0}
@@ -1497,6 +1507,7 @@ function consXlsx(C){
     const t=h+11,f1=h+2,f2=h+11;put(t,0,&#x27;TOTAL&#x27;,13);for(let c2=1;c2&lt;eC;c2++)put(t,c2,&#x27;&#x27;,13);mg(t,0,t,eC-1);
     [0,1,2].forEach(k=&gt;{const cl=colName(eC+k),v=k===0?CONS_ROWS.reduce((s,r)=&gt;s+(P.tot[r]||0),0):k===1?CONS_ROWS.reduce((s,r)=&gt;s+(P.bd[r]||0),0):P.work;put(t,eC+k,v,14,`SUM(${cl}${f1}:${cl}${f2})`)});
     R=t+3}
+  if(C.note){put(R,0,&#x27;Note: &#x27;+C.note,6);mg(R,0,R,W-1);for(let c=1;c&lt;W;c++)put(R,c,&#x27;&#x27;,6);R+=2}
   if(C.other.length){put(R,0,&#x27;Not in any area: &#x27;+C.other.map(x=&gt;x.e.no+&#x27; – &#x27;+x.ar).join(&#x27;, &#x27;),6)}
   const xe=s=&gt;String(s).replace(/[&amp;&lt;&gt;&quot;]/g,c=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;}[c]));
   const sd=rows.map((r,i)=&gt;r?`&lt;row r=&quot;${i+1}&quot;${i===0?&#x27; ht=&quot;24&quot; customHeight=&quot;1&quot;&#x27;:&#x27;&#x27;}&gt;${r.map((x,c)=&gt;{if(!x)return &#x27;&#x27;;const ref=colName(c)+(i+1);
@@ -1540,6 +1551,7 @@ function consPdf(C,asBlob){
       box(x0,yy,xE-x0,rh,&#x27;TOTAL&#x27;,{b:1,left:1,fill:[28,39,51],col:[255,255,255]});const T=CONS_ROWS.reduce((s,r)=&gt;s+(P.tot[r]||0),0),Bd=CONS_ROWS.reduce((s,r)=&gt;s+(P.bd[r]||0),0);
       box(xE,yy,cwE,rh,T,{b:1,fill:[28,39,51],col:[255,255,255]});box(xE+cwE,yy,cwE,rh,Bd,{b:1,fill:[28,39,51],col:[255,255,255]});box(xE+2*cwE,yy,cwE,rh,P.work,{b:1,fill:[28,39,51],col:[255,255,255]});
       y=yy+rh+7}
+    if(C.note){if(y&gt;Hp-24){doc.addPage();y=14}doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.setFontSize(9);doc.setTextColor(20);doc.text(&#x27;Note:&#x27;,12,y);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(doc.splitTextToSize(C.note,W-40),26,y);y+=6+4*Math.max(0,doc.splitTextToSize(C.note,W-40).length-1)}
     if(C.other.length){doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.setFontSize(8);doc.setTextColor(120);doc.text(&#x27;Not in any area: &#x27;+C.other.map(x=&gt;x.e.no+&#x27; – &#x27;+x.ar).join(&#x27;, &#x27;),12,Math.min(y,Hp-14),{maxWidth:W-24})}
     const np=doc.getNumberOfPages();for(let i=1;i&lt;=np;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(120);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(&#x27;Prepared by &#x27;+M().eng+(M().role?&#x27; – &#x27;+M().role:&#x27;&#x27;),12,Hp-6);doc.text(&#x27;Page &#x27;+i+&#x27; of &#x27;+np,W-12,Hp-6,{align:&#x27;right&#x27;})}
     const nm=`Equipment_Consultant_${C.d}.pdf`;if(asBlob)return doc.output(&#x27;blob&#x27;);try{doc.save(nm);toast(&#x27;PDF ready&#x27;)}catch(e){toast(&#x27;Download is blocked here — open the app from your own site link&#x27;)}
@@ -1554,11 +1566,21 @@ function renderCons(){
   ${segHtml(&#x27;rSeg&#x27;,[[&#x27;daily&#x27;,&#x27;Full report&#x27;],[&#x27;cons&#x27;,&#x27;Consultant table&#x27;]],repMode)}
   &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;fgrid&quot;&gt;&lt;label class=&quot;f&quot;&gt;Report date&lt;input id=&quot;rD&quot; type=&quot;date&quot; value=&quot;${repDate}&quot;&gt;&lt;/label&gt;&lt;label class=&quot;f&quot;&gt;Title&lt;input id=&quot;cT&quot; value=&quot;${esc(consTitle())}&quot;&gt;&lt;/label&gt;&lt;/div&gt;
     &lt;div class=&quot;small muted&quot; style=&quot;margin-top:6px&quot;&gt;CUT: cut, excavation, stripping, preparation, waste and stockpile work. FILL: fill, spreading, grading, compaction, loading, hauling, water. Broken down = machines marked Breakdown or Maintenance.&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;small muted&quot;&gt;${dNice(repDate)} · ${C.n} machines&lt;/div&gt;${consHtml(C)}&lt;/div&gt;
+  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;row&quot; style=&quot;justify-content:space-between;align-items:center&quot;&gt;&lt;div class=&quot;small muted&quot;&gt;${dNice(repDate)} · ${C.n} machines${C.ed?` · &lt;b style=&quot;color:#7048e8&quot;&gt;${C.ed} changed by hand&lt;/b&gt;`:&#x27;&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;row&quot;&gt;${consEditOn?`&lt;button class=&quot;btn sm acc&quot; id=&quot;cDone&quot;&gt;✓ Done&lt;/button&gt;`:`&lt;button class=&quot;btn sm&quot; id=&quot;cEd&quot;&gt;✏️ Edit table&lt;/button&gt;`}${C.ed?`&lt;button class=&quot;btn sm&quot; id=&quot;cRst&quot;&gt;↺ Back to app counts&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;
+    ${consEditOn?`&lt;div class=&quot;small&quot; style=&quot;margin-top:8px;padding:8px 10px;border-radius:8px;background:#f3f0ff;color:#3b2a8a&quot;&gt;Type any number in a CUT / FILL or Broken down box. Empty or 0 clears it. Totals update by themselves. Changed boxes get a purple frame. Your changes are kept only for this date and only in this table – the full report does not change.&lt;/div&gt;`:&#x27;&#x27;}
+    ${consHtml(C,consEditOn)}
+    &lt;label class=&quot;f&quot; style=&quot;margin-top:12px&quot;&gt;Note for the consultant (optional)&lt;textarea id=&quot;cN&quot; rows=&quot;2&quot; placeholder=&quot;e.g. 2 extra dozers arrive tomorrow&quot;&gt;${esc(C.note)}&lt;/textarea&gt;&lt;/label&gt;&lt;/div&gt;
   &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;ch&quot;&gt;&lt;h2&gt;Send to the consultant&lt;/h2&gt;&lt;/div&gt;
     &lt;div class=&quot;row&quot;&gt;&lt;button class=&quot;btn acc&quot; id=&quot;cShare&quot;&gt;📤 Send PDF (WhatsApp / Email)&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cPdf&quot;&gt;Download PDF&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cXs&quot;&gt;📤 Send Excel&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cX&quot;&gt;Download Excel&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
   bindSeg(&#x27;rSeg&#x27;,k=&gt;{repMode=k;renderReport()});
   $(&#x27;rD&#x27;).onchange=e=&gt;{repDate=e.target.value||today();renderReport()};
+  if($(&#x27;cEd&#x27;))$(&#x27;cEd&#x27;).onclick=()=&gt;{consEditOn=true;renderCons()};if($(&#x27;cDone&#x27;))$(&#x27;cDone&#x27;).onclick=()=&gt;{consEditOn=false;renderCons()};
+  if($(&#x27;cRst&#x27;))$(&#x27;cRst&#x27;).onclick=()=&gt;{if(!confirm(&#x27;Remove all hand changes for &#x27;+dNice(repDate)+&#x27;?&#x27;))return;M().consEdit&amp;&amp;delete M().consEdit[repDate];try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}renderCons();toast(&#x27;Back to the app counts&#x27;)};
+  $(&#x27;v-report&#x27;).querySelectorAll(&#x27;.ci&#x27;).forEach(x=&gt;{x.onfocus=()=&gt;x.select();x.onchange=()=&gt;{const v=x.value.replace(/[^0-9]/g,&#x27;&#x27;),k=x.dataset.k;      const nv=String(+v||0),old=consEd(repDate)[k];if(old===nv)return;consSet(repDate,k,nv);
+      setTimeout(()=&gt;{const ae=document.activeElement,fk=ae&amp;&amp;ae.classList&amp;&amp;ae.classList.contains(&#x27;ci&#x27;)?ae.dataset.k:&#x27;&#x27;;const sc=[...$(&#x27;v-report&#x27;).querySelectorAll(&#x27;.tbl&#x27;)].map(t=&gt;t.scrollLeft),y=window.scrollY;renderCons();
+      [...$(&#x27;v-report&#x27;).querySelectorAll(&#x27;.tbl&#x27;)].forEach((t,i)=&gt;t.scrollLeft=sc[i]||0);window.scrollTo(0,y);if(fk){const n=$(&#x27;v-report&#x27;).querySelector(`.ci[data-k=&quot;${fk}&quot;]`);if(n){n.focus({preventScroll:true});n.select()}}},0)}});
+  $(&#x27;cN&#x27;).onchange=e=&gt;{M().cnote=M().cnote||{};const v=e.target.value.trim();if(v)M().cnote[repDate]=v;else delete M().cnote[repDate];try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}};
   $(&#x27;cT&#x27;).onchange=e=&gt;{M().ctitle=e.target.value.trim();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}};
   const xn=`Equipment_Consultant_${repDate}.xlsx`,tt=&#x27;Equipment report – &#x27;+dNice(repDate);
   $(&#x27;cX&#x27;).onclick=()=&gt;{const b=consXlsx(consData(repDate)),a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(b);a.download=xn;document.body.append(a);a.click();setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},800);toast(&#x27;Excel file saved&#x27;)};
