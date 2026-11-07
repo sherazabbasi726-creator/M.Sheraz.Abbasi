@@ -1510,7 +1510,7 @@ function consXlsx(C){
   // styles: 0 plain, 1 cell, 2 header, 3 cut, 4 fill, 5 title, 6 left text, 7 total, 8 phase, 9 site work, 10 zone, 11 cut value, 12 fill value
   const rows=[],merges=[];let R=0;const put=(r,c,v,s,f)=&gt;{(rows[r]=rows[r]||[])[c]={v,s,f}};const mg=(r1,c1,r2,c2)=&gt;merges.push(colName(c1)+(r1+1)+&#x27;:&#x27;+colName(c2)+(r2+1));
   const maxA=Math.max(...C.list.map(P=&gt;P.areas.length)),W=2+maxA*2+3;
-  put(0,0,consTitle(),5);mg(0,0,0,W-1);put(1,0,&#x27;Date: &#x27;+dNice(C.d)+(M().company?&#x27;   ·   &#x27;+M().company:&#x27;&#x27;)+&#x27;   ·   Prepared by &#x27;+M().eng,6);mg(1,0,1,W-1);for(let c=1;c&lt;W;c++)put(1,c,&#x27;&#x27;,6);R=3;
+  put(0,0,consTitle()+(C.sub?&#x27; – &#x27;+C.sub.toUpperCase():&#x27;&#x27;),5);mg(0,0,0,W-1);put(1,0,&#x27;Date: &#x27;+dNice(C.d)+(M().company?&#x27;   ·   &#x27;+M().company:&#x27;&#x27;)+&#x27;   ·   Prepared by &#x27;+M().eng,6);mg(1,0,1,W-1);for(let c=1;c&lt;W;c++)put(1,c,&#x27;&#x27;,6);R=3;
   for(const P of C.list){const n=P.areas.length,eC=2+n*2;
     for(let r=R;r&lt;R+3;r++)for(let c=0;c&lt;eC+3;c++)put(r,c,&#x27;&#x27;,2);
     put(R,0,&#x27;SITE WORK&#x27;,9);put(R,1,&#x27;&#x27;,9);put(R+1,0,&#x27;&#x27;,9);put(R+1,1,&#x27;&#x27;,9);put(R+2,0,&#x27;&#x27;,9);put(R+2,1,&#x27;&#x27;,9);mg(R,0,R+2,1);
@@ -1552,7 +1552,7 @@ function consXlsx(C){
 function consPdf(C,asBlob){
   if(!window.jspdf){toast(&#x27;PDF library could not load. Connect to the internet once.&#x27;);return}
   try{const{jsPDF}=window.jspdf,doc=new jsPDF({unit:&#x27;mm&#x27;,format:&#x27;a4&#x27;,orientation:&#x27;landscape&#x27;}),W=297,Hp=210;
-    let y=12;doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.setFontSize(13);doc.setTextColor(20);doc.text(consTitle(),12,y);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.setFontSize(9);doc.text(&#x27;Date: &#x27;+dNice(C.d)+(M().company?&#x27;   ·   &#x27;+M().company:&#x27;&#x27;),W-12,y,{align:&#x27;right&#x27;});y+=6;
+    let y=12;doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.setFontSize(13);doc.setTextColor(20);doc.text(consTitle()+(C.sub?&#x27; – &#x27;+C.sub.toUpperCase():&#x27;&#x27;),12,y);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.setFontSize(9);doc.text(&#x27;Date: &#x27;+dNice(C.d)+(M().company?&#x27;   ·   &#x27;+M().company:&#x27;&#x27;),W-12,y,{align:&#x27;right&#x27;});y+=6;
     const box=(x,yy,w,h,t,o)=&gt;{o=o||{};if(o.fill){doc.setFillColor(...o.fill);doc.rect(x,yy,w,h,&#x27;F&#x27;)}doc.setDrawColor(130,140,150);doc.setLineWidth(0.2);doc.rect(x,yy,w,h);if(t!==&#x27;&#x27;&amp;&amp;t!=null){doc.setFont(&#x27;helvetica&#x27;,o.b?&#x27;bold&#x27;:&#x27;normal&#x27;);doc.setFontSize(o.fs||7);doc.setTextColor(...(o.col||[20,20,20]));doc.text(String(t),o.left?x+1.2:x+w/2,yy+h/2+1.1,{align:o.left?&#x27;left&#x27;:&#x27;center&#x27;,maxWidth:w-1})}};
     for(const P of C.list){const n=P.areas.length,cw0=7,cw1=27,cwE=13,cw=Math.min(9,(W-24-cw0-cw1-3*cwE)/(n*2)),rh=5.2,need=rh*15;
       if(y+need&gt;Hp-10){doc.addPage();y=12}
@@ -1572,25 +1572,38 @@ function consPdf(C,asBlob){
     if(C.note){if(y&gt;Hp-24){doc.addPage();y=14}doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.setFontSize(9);doc.setTextColor(20);doc.text(&#x27;Note:&#x27;,12,y);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(doc.splitTextToSize(C.note,W-40),26,y);y+=6+4*Math.max(0,doc.splitTextToSize(C.note,W-40).length-1)}
     if(C.other.length){doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.setFontSize(8);doc.setTextColor(120);doc.text(&#x27;Not in any area: &#x27;+C.other.map(x=&gt;x.e.no+&#x27; – &#x27;+x.ar).join(&#x27;, &#x27;),12,Math.min(y,Hp-14),{maxWidth:W-24})}
     const np=doc.getNumberOfPages();for(let i=1;i&lt;=np;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(120);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(&#x27;Prepared by &#x27;+M().eng+(M().role?&#x27; – &#x27;+M().role:&#x27;&#x27;),12,Hp-6);doc.text(&#x27;Page &#x27;+i+&#x27; of &#x27;+np,W-12,Hp-6,{align:&#x27;right&#x27;})}
-    const nm=`Equipment_Consultant_${C.d}.pdf`;if(asBlob)return doc.output(&#x27;blob&#x27;);try{doc.save(nm);toast(&#x27;PDF ready&#x27;)}catch(e){toast(&#x27;Download is blocked here — open the app from your own site link&#x27;)}
+    const nm=consFile(C.d,C.ph,&#x27;pdf&#x27;);if(asBlob)return doc.output(&#x27;blob&#x27;);try{doc.save(nm);toast(&#x27;PDF ready&#x27;)}catch(e){toast(&#x27;Download is blocked here — open the app from your own site link&#x27;)}
   }catch(e){toast(&#x27;Could not make the PDF: &#x27;+e.message)}}
 async function shareFile(blob,name,title){const f=new File([blob],name,{type:blob.type});
   try{if(navigator.canShare&amp;&amp;navigator.canShare({files:[f]})){await navigator.share({files:[f],title,text:title});return true}}catch(e){if(e&amp;&amp;e.name===&#x27;AbortError&#x27;)return true}
   const a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},800);toast(&#x27;File saved – attach it in WhatsApp or email&#x27;);return false}
+let consPh=&#x27;&#x27;;
+function consFor(d,ph){const C=consData(d);if(!ph)return C;return Object.assign({},C,{list:C.list.filter(P=&gt;String(P.ph)===String(ph)),other:[],sub:&#x27;Phase &#x27;+ph,ph})}
+const consFile=(d,ph,ext)=&gt;`Equipment_Consultant_${d}${ph?&#x27;_Phase&#x27;+ph:&#x27;&#x27;}.${ext}`;
+async function shareFiles(files,title){
+  try{if(navigator.canShare&amp;&amp;navigator.canShare({files})){await navigator.share({files,title,text:title});return}}catch(e){if(e&amp;&amp;e.name===&#x27;AbortError&#x27;)return}
+  files.forEach((f,i)=&gt;setTimeout(()=&gt;{const a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(f);a.download=f.name;document.body.append(a);a.click();setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},800)},i*400));toast(files.length+&#x27; files saved – attach them in WhatsApp or email&#x27;)}
 function renderCons(){
-  const C=consData(repDate);
+  const ALL=consData(repDate),PHS=ALL.list.map(P=&gt;String(P.ph));if(consPh&amp;&amp;!PHS.includes(String(consPh)))consPh=&#x27;&#x27;;
+  const C=consFor(repDate,consPh),pn=P=&gt;CONS_ROWS.reduce((s,r)=&gt;s+(P.tot[r]||0),0);
   $(&#x27;v-report&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;
   &lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Report for the consultant&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Machines in each area – cut or fill – from the places entered for the day&lt;/div&gt;&lt;/div&gt;
   ${segHtml(&#x27;rSeg&#x27;,[[&#x27;daily&#x27;,&#x27;Full report&#x27;],[&#x27;cons&#x27;,&#x27;Consultant table&#x27;]],repMode)}
-  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;fgrid&quot;&gt;&lt;label class=&quot;f&quot;&gt;Report date&lt;input id=&quot;rD&quot; type=&quot;date&quot; value=&quot;${repDate}&quot;&gt;&lt;/label&gt;&lt;label class=&quot;f&quot;&gt;Title&lt;input id=&quot;cT&quot; value=&quot;${esc(consTitle())}&quot;&gt;&lt;/label&gt;&lt;/div&gt;
+  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;fgrid&quot;&gt;&lt;label class=&quot;f&quot;&gt;Report date&lt;input id=&quot;rD&quot; type=&quot;date&quot; value=&quot;${repDate}&quot;&gt;&lt;/label&gt;&lt;label class=&quot;f&quot;&gt;Title&lt;input id=&quot;cT&quot; value=&quot;${esc(consTitle())}&quot;&gt;&lt;/label&gt;
+    &lt;label class=&quot;f&quot;&gt;Phase&lt;select id=&quot;cP&quot;&gt;&lt;option value=&quot;&quot;&gt;All phases (${ALL.list.reduce((s,P)=&gt;s+pn(P),0)} machines)&lt;/option&gt;${ALL.list.map(P=&gt;`&lt;option value=&quot;${P.ph}&quot;${String(P.ph)===String(consPh)?&#x27; selected&#x27;:&#x27;&#x27;}&gt;Phase ${P.ph} (${pn(P)} machines)&lt;/option&gt;`).join(&#x27;&#x27;)}&lt;/select&gt;&lt;/label&gt;&lt;/div&gt;
     &lt;div class=&quot;small muted&quot; style=&quot;margin-top:6px&quot;&gt;CUT: cut, excavation, stripping, preparation, waste and stockpile work. FILL: fill, spreading, grading, compaction, loading, hauling, water. Broken down = machines marked Breakdown or Maintenance.&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;row&quot; style=&quot;justify-content:space-between;align-items:center&quot;&gt;&lt;div class=&quot;small muted&quot;&gt;${dNice(repDate)} · ${C.n} machines${C.ed?` · &lt;b style=&quot;color:#7048e8&quot;&gt;${C.ed} changed by hand&lt;/b&gt;`:&#x27;&#x27;}&lt;/div&gt;
+  &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;row&quot; style=&quot;justify-content:space-between;align-items:center&quot;&gt;&lt;div class=&quot;small muted&quot;&gt;${dNice(repDate)} · ${C.sub?&#x27;&lt;b&gt;&#x27;+C.sub+&#x27;&lt;/b&gt; · &#x27;+C.list.reduce((s,P)=&gt;s+pn(P),0):C.n} machines${C.ed?` · &lt;b style=&quot;color:#7048e8&quot;&gt;${C.ed} changed by hand&lt;/b&gt;`:&#x27;&#x27;}&lt;/div&gt;
       &lt;div class=&quot;row&quot;&gt;${consEditOn?`&lt;button class=&quot;btn sm acc&quot; id=&quot;cDone&quot;&gt;✓ Done&lt;/button&gt;`:`&lt;button class=&quot;btn sm&quot; id=&quot;cEd&quot;&gt;✏️ Edit table&lt;/button&gt;`}${C.ed?`&lt;button class=&quot;btn sm&quot; id=&quot;cRst&quot;&gt;↺ Back to app counts&lt;/button&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;
     ${consEditOn?`&lt;div class=&quot;small&quot; style=&quot;margin-top:8px;padding:8px 10px;border-radius:8px;background:#f3f0ff;color:#3b2a8a&quot;&gt;Type any number in a CUT / FILL or Broken down box. Empty or 0 clears it. Totals update by themselves. Changed boxes get a purple frame. Your changes are kept only for this date and only in this table – the full report does not change.&lt;/div&gt;`:&#x27;&#x27;}
     ${consHtml(C,consEditOn)}
     &lt;label class=&quot;f&quot; style=&quot;margin-top:12px&quot;&gt;Note for the consultant (optional)&lt;textarea id=&quot;cN&quot; rows=&quot;2&quot; placeholder=&quot;e.g. 2 extra dozers arrive tomorrow&quot;&gt;${esc(C.note)}&lt;/textarea&gt;&lt;/label&gt;&lt;/div&gt;
   &lt;div class=&quot;card&quot;&gt;&lt;div class=&quot;ch&quot;&gt;&lt;h2&gt;Send to the consultant&lt;/h2&gt;&lt;/div&gt;
-    &lt;div class=&quot;row&quot;&gt;&lt;button class=&quot;btn acc&quot; id=&quot;cShare&quot;&gt;📤 Send PDF (WhatsApp / Email)&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cPdf&quot;&gt;Download PDF&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cXs&quot;&gt;📤 Send Excel&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cX&quot;&gt;Download Excel&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;
+    &lt;div class=&quot;row&quot;&gt;&lt;button class=&quot;btn acc&quot; id=&quot;cShare&quot;&gt;📤 Send PDF (WhatsApp / Email)&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cPdf&quot;&gt;Download PDF&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cXs&quot;&gt;📤 Send Excel&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cX&quot;&gt;Download Excel&lt;/button&gt;&lt;/div&gt;
+    ${ALL.list.length&gt;1?`&lt;div class=&quot;small muted&quot; style=&quot;margin-top:12px&quot;&gt;${consPh?&#x27;These buttons send Phase &#x27;+consPh+&#x27; only. &#x27;:&#x27;&#x27;}Or send every phase as its own file:&lt;/div&gt;
+    &lt;div class=&quot;row&quot; style=&quot;margin-top:6px&quot;&gt;&lt;button class=&quot;btn&quot; id=&quot;cEachP&quot;&gt;📤 Each phase – separate PDFs (${ALL.list.length})&lt;/button&gt;&lt;button class=&quot;btn&quot; id=&quot;cEachX&quot;&gt;📤 Each phase – separate Excel files (${ALL.list.length})&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;/div&gt;&lt;/div&gt;`;
+  $(&#x27;cP&#x27;).onchange=e=&gt;{consPh=e.target.value;renderCons()};
+  if($(&#x27;cEachP&#x27;))$(&#x27;cEachP&#x27;).onclick=()=&gt;{if(!window.jspdf){toast(&#x27;PDF library could not load. Connect to the internet once.&#x27;);return}const F=[];for(const ph of PHS){const b=consPdf(consFor(repDate,ph),true);if(b)F.push(new File([b],consFile(repDate,ph,&#x27;pdf&#x27;),{type:&#x27;application/pdf&#x27;}))}if(F.length)shareFiles(F,&#x27;Equipment report – &#x27;+dNice(repDate)+&#x27; (each phase)&#x27;)};
+  if($(&#x27;cEachX&#x27;))$(&#x27;cEachX&#x27;).onclick=()=&gt;{const F=PHS.map(ph=&gt;{const b=consXlsx(consFor(repDate,ph));return new File([b],consFile(repDate,ph,&#x27;xlsx&#x27;),{type:b.type})});shareFiles(F,&#x27;Equipment report – &#x27;+dNice(repDate)+&#x27; (each phase)&#x27;)};
   bindSeg(&#x27;rSeg&#x27;,k=&gt;{repMode=k;renderReport()});
   $(&#x27;rD&#x27;).onchange=e=&gt;{repDate=e.target.value||today();renderReport()};
   if($(&#x27;cEd&#x27;))$(&#x27;cEd&#x27;).onclick=()=&gt;{consEditOn=true;renderCons()};if($(&#x27;cDone&#x27;))$(&#x27;cDone&#x27;).onclick=()=&gt;{consEditOn=false;renderCons()};
@@ -1600,11 +1613,11 @@ function renderCons(){
       [...$(&#x27;v-report&#x27;).querySelectorAll(&#x27;.tbl&#x27;)].forEach((t,i)=&gt;t.scrollLeft=sc[i]||0);window.scrollTo(0,y);if(fk){const n=$(&#x27;v-report&#x27;).querySelector(`.ci[data-k=&quot;${fk}&quot;]`);if(n){n.focus({preventScroll:true});n.select()}}},0)}});
   $(&#x27;cN&#x27;).onchange=e=&gt;{M().cnote=M().cnote||{};const v=e.target.value.trim();if(v)M().cnote[repDate]=v;else delete M().cnote[repDate];try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}};
   $(&#x27;cT&#x27;).onchange=e=&gt;{M().ctitle=e.target.value.trim();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}};
-  const xn=`Equipment_Consultant_${repDate}.xlsx`,tt=&#x27;Equipment report – &#x27;+dNice(repDate);
-  $(&#x27;cX&#x27;).onclick=()=&gt;{const b=consXlsx(consData(repDate)),a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(b);a.download=xn;document.body.append(a);a.click();setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},800);toast(&#x27;Excel file saved&#x27;)};
-  $(&#x27;cXs&#x27;).onclick=()=&gt;shareFile(consXlsx(consData(repDate)),xn,tt);
-  $(&#x27;cPdf&#x27;).onclick=()=&gt;consPdf(consData(repDate));
-  $(&#x27;cShare&#x27;).onclick=()=&gt;{const b=consPdf(consData(repDate),true);if(b)shareFile(b,`Equipment_Consultant_${repDate}.pdf`,tt)};
+  const xn=consFile(repDate,consPh,&#x27;xlsx&#x27;),tt=&#x27;Equipment report – &#x27;+dNice(repDate)+(consPh?&#x27; – Phase &#x27;+consPh:&#x27;&#x27;);
+  $(&#x27;cX&#x27;).onclick=()=&gt;{const b=consXlsx(consFor(repDate,consPh)),a=document.createElement(&#x27;a&#x27;);a.href=URL.createObjectURL(b);a.download=xn;document.body.append(a);a.click();setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},800);toast(&#x27;Excel file saved&#x27;)};
+  $(&#x27;cXs&#x27;).onclick=()=&gt;shareFile(consXlsx(consFor(repDate,consPh)),xn,tt);
+  $(&#x27;cPdf&#x27;).onclick=()=&gt;consPdf(consFor(repDate,consPh));
+  $(&#x27;cShare&#x27;).onclick=()=&gt;{const b=consPdf(consFor(repDate,consPh),true);if(b)shareFile(b,consFile(repDate,consPh,&#x27;pdf&#x27;),tt)};
 }
 
 function renderReport(){
