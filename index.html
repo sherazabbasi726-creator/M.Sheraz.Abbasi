@@ -641,6 +641,7 @@ td.num,th.num{text-align:right}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
 .frow{display:flex;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px}.frow .dot{flex:none}
 table.imp{border-collapse:collapse;font-size:12px}.imp td,.imp th{padding:2px}.imp input{width:110px;padding:5px;font-size:12px}.imp select{font-size:11px;padding:4px;width:124px}.imp tr.hd input{font-weight:700;opacity:.65}
+[hidden]{display:none!important}
 &lt;/style&gt;
 
 &lt;/head&gt;&lt;body&gt;&lt;header&gt;
@@ -976,7 +977,7 @@ function renderMonthly(){
 }
 
 /* ================= MAP ================= */
-let zMode=&#x27;board&#x27;;const MV={s:0,cx:0,cy:0};
+let zMode=&#x27;map&#x27;;const MV={s:0,cx:0,cy:0};
 function eqWithLoc(){return S.equip.filter(e=&gt;e.loc&amp;&amp;e.loc.e&amp;&amp;e.status!==&#x27;off&#x27;)}
 function renderMap(host){
   const E=eqWithLoc(),no=S.equip.filter(e=&gt;e.status!==&#x27;off&#x27;&amp;&amp;!(e.loc&amp;&amp;e.loc.e));
@@ -1069,13 +1070,18 @@ function renderHome(){
 /* ================= ZONES ================= */
 let zoneFocus=&#x27;&#x27;;let zoneProj=&#x27;&#x27;;
 function renderZones(){
-  if(zMode===&#x27;sat&#x27;){$(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;&lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Site map&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Areas with machines are highlighted · tap an area for its machines and Google Maps&lt;/div&gt;&lt;/div&gt;${segHtml(&#x27;zSeg&#x27;,[[&#x27;board&#x27;,&#x27;Board&#x27;],[&#x27;map&#x27;,&#x27;Map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;]],zMode)}&lt;div id=&quot;satBox&quot; style=&quot;height:calc(100vh - 260px);min-height:320px;border-radius:12px;overflow:hidden;position:relative;background:#0b1620&quot;&gt;&lt;/div&gt;&lt;/div&gt;`;bindSeg(&#x27;zSeg&#x27;,k=&gt;{zMode=k;renderZones()});try{window.parent.renderSimpleSat(document.getElementById(&#x27;satBox&#x27;),window)}catch(e){document.getElementById(&#x27;satBox&#x27;).textContent=&#x27;Map not available: &#x27;+e.message}return}
-  if(zMode===&#x27;map&#x27;){$(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot; id=&quot;zHost&quot;&gt;&lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Site map&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Machines with their last known location&lt;/div&gt;&lt;/div&gt;${segHtml(&#x27;zSeg&#x27;,[[&#x27;board&#x27;,&#x27;Board&#x27;],[&#x27;map&#x27;,&#x27;Map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;]],zMode)}&lt;/div&gt;`;bindSeg(&#x27;zSeg&#x27;,k=&gt;{zMode=k;renderZones()});renderMap($(&#x27;zHost&#x27;));return}
+  if(zMode===&#x27;sat&#x27;){$(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;&lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Site map&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Areas with machines are highlighted · tap an area for its machines and Google Maps&lt;/div&gt;&lt;/div&gt;${segHtml(&#x27;zSeg&#x27;,[[&#x27;map&#x27;,&#x27;Site map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;],[&#x27;board&#x27;,&#x27;List&#x27;]],zMode)}&lt;div id=&quot;satBox&quot; style=&quot;height:calc(100vh - 260px);min-height:320px;border-radius:12px;overflow:hidden;position:relative;background:#0b1620&quot;&gt;&lt;/div&gt;&lt;/div&gt;`;bindSeg(&#x27;zSeg&#x27;,k=&gt;{zMode=k;renderZones()});try{window.parent.renderSimpleSat(document.getElementById(&#x27;satBox&#x27;),window)}catch(e){document.getElementById(&#x27;satBox&#x27;).textContent=&#x27;Map not available: &#x27;+e.message}return}
+  if(zMode===&#x27;map&#x27;){const r=repData(today());let u=&#x27;&#x27;;try{u=window.parent.eqMapPng(r.rows.map(x=&gt;({no:x.e.no,type:x.e.type,area:x.x.area,zn:x.zn,work:x.wk,status:x.e.status})),1600)}catch(e){}
+    $(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;&lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Site map&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Where the machines work today · ${dNice(today())}&lt;/div&gt;&lt;/div&gt;${segHtml(&#x27;zSeg&#x27;,[[&#x27;map&#x27;,&#x27;Site map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;],[&#x27;board&#x27;,&#x27;List&#x27;]],zMode)}
+      ${u?`&lt;img src=&quot;${u}&quot; alt=&quot;Site map with the machines of today&quot; style=&quot;width:100%;border-radius:12px;border:1px solid var(--line);background:#f6f4ef&quot;&gt;`:&#x27;&lt;div class=&quot;card small muted&quot;&gt;The site map is not available here.&lt;/div&gt;&#x27;}
+      ${r.stale?`&lt;div class=&quot;small&quot; style=&quot;color:var(--idle)&quot;&gt;${r.stale} machine${r.stale&gt;1?&#x27;s are&#x27;:&#x27; is&#x27;} not updated for today – shown at the last known place.&lt;/div&gt;`:&#x27;&#x27;}
+      &lt;div class=&quot;row&quot;&gt;&lt;button class=&quot;btn sm&quot; id=&quot;zRep&quot;&gt;📤 Daily report with this map&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
+    bindSeg(&#x27;zSeg&#x27;,k=&gt;{zMode=k;renderZones()});$(&#x27;zRep&#x27;).onclick=()=&gt;{repMode=&#x27;daily&#x27;;repDate=today();go(&#x27;report&#x27;)};return}
   const projs=[...new Set(zoneList().map(projOf))].sort();
   const zs=zoneList().filter(z=&gt;!zoneProj||projOf(z)===zoneProj).sort();
   $(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;
   &lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;grow&quot;&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Zone board&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Tap a machine to move it, change status or add hours&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-  ${segHtml(&#x27;zSeg&#x27;,[[&#x27;board&#x27;,&#x27;Board&#x27;],[&#x27;map&#x27;,&#x27;Map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;]],zMode)}
+  ${segHtml(&#x27;zSeg&#x27;,[[&#x27;map&#x27;,&#x27;Site map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;],[&#x27;board&#x27;,&#x27;List&#x27;]],zMode)}
   &lt;div class=&quot;chips&quot;&gt;&lt;button class=&quot;chip${!zoneProj?&#x27; on&#x27;:&#x27;&#x27;}&quot; data-p=&quot;&quot;&gt;All&lt;/button&gt;${projs.map(p=&gt;`&lt;button class=&quot;chip${p===zoneProj?&#x27; on&#x27;:&#x27;&#x27;}&quot; data-p=&quot;${esc(p)}&quot;&gt;${esc(p)}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;
   ${zs.map(z=&gt;{const es=S.equip.filter(e=&gt;e.zone===z).sort((a,b)=&gt;a.type.localeCompare(b.type)||a.no.localeCompare(b.no));const w=es.filter(e=&gt;e.status===&#x27;work&#x27;).length;
     return`&lt;div class=&quot;zone&quot; id=&quot;z-${esc(z).replace(/\W/g,&#x27;&#x27;)}&quot;&gt;&lt;div class=&quot;zh&quot;&gt;&lt;b&gt;${esc(z)}&lt;/b&gt;&lt;span class=&quot;cnt&quot;&gt;${w} working · ${es.length} total&lt;/span&gt;&lt;/div&gt;
