@@ -719,6 +719,17 @@ function zoneOpts(ph,cur){return `&lt;option value=&quot;&quot;&gt;— any zone 
 function zonePhase(z){const a=AREAS().find(x=&gt;zKey(x.zone)===zKey(z));return a?a.phase:&#x27;&#x27;}
 function areaOpts(ph,cur,zn){const L=AREAS().filter(a=&gt;(!ph||!a.phase||+a.phase===+ph)&amp;&amp;(!zn||zKey(a.zone)===zKey(zn)));return `&lt;option value=&quot;&quot;&gt;— pick the area —&lt;/option&gt;`+L.map(a=&gt;`&lt;option value=&quot;${a.k}&quot;${a.k===cur?&#x27; selected&#x27;:&#x27;&#x27;}&gt;${esc(a.name)}${a.zone?&#x27; · &#x27;+esc(a.zone):&#x27;&#x27;}${a.phase?&#x27; · Phase &#x27;+a.phase:&#x27;&#x27;}&lt;/option&gt;`).join(&#x27;&#x27;)}
 window.__eqList=()=&gt;S.equip;
+const mapRows=d=&gt;repData(d).rows.map(x=&gt;({no:x.e.no,type:x.e.type,area:x.x.area,zn:x.zn,work:x.wk,status:x.e.status,operator:x.e.operator}));
+window.__eqToday=()=&gt;mapRows(today());
+/* satellite picture of the machines (made once per day and data, then reused by the report and the PDF) */
+const SATIMG={},SATP={};
+function satKey(d){return d+&#x27;|&#x27;+JSON.stringify(mapRows(d))}
+function satImg(d,cb){const key=satKey(d);if(key in SATIMG){cb&amp;&amp;cb(SATIMG[key]);return}
+  if(!window.parent.eqMapSatPng){cb&amp;&amp;cb(&#x27;&#x27;);return}
+  if(!SATP[key])SATP[key]=window.parent.eqMapSatPng(mapRows(d),1800).then(u=&gt;(SATIMG[key]=u||&#x27;&#x27;)).catch(()=&gt;(SATIMG[key]=&#x27;&#x27;));
+  SATP[key].then(u=&gt;cb&amp;&amp;cb(u))}
+function fillSat(id,d){satImg(d,u=&gt;{const b=document.getElementById(id);if(!b)return;b.innerHTML=u?`&lt;img src=&quot;${u}&quot; alt=&quot;Satellite picture with the machines&quot; style=&quot;width:100%;border-radius:10px;border:1px solid var(--line);display:block&quot;&gt;`:&#x27;🛰 The satellite picture needs internet. Open this page again when you are online.&#x27;})}
+const satBox=(id,d)=&gt;`&lt;div id=&quot;${id}&quot; class=&quot;small muted&quot; style=&quot;margin-top:12px;padding:${&#x27;10px 0&#x27;}&quot;&gt;🛰 Loading the satellite picture…&lt;/div&gt;${(setTimeout(()=&gt;fillSat(id,d),0),&#x27;&#x27;)}`;
 function placesOn(d,eqId){return S.places.filter(x=&gt;x.date===d&amp;&amp;(!eqId||x.eq===eqId))}
 function lastPlace(eqId,before){return S.places.filter(x=&gt;x.eq===eqId&amp;&amp;x.date&lt;=before).sort((a,b)=&gt;b.date.localeCompare(a.date)||(b.upd||0)-(a.upd||0))[0]}
 function placeTxt(x){const a=areaBy(x.area),zn=x.zn||(a&amp;&amp;a.zone)||&#x27;&#x27;;return (a||zn)?[x.phase?&#x27;Phase &#x27;+x.phase:&#x27;&#x27;,zn?zKey(zn):&#x27;&#x27;,a?a.name:&#x27;&#x27;].filter(Boolean).join(&#x27; · &#x27;):(x.other||&#x27;—&#x27;)}
@@ -1074,6 +1085,7 @@ function renderZones(){
   if(zMode===&#x27;map&#x27;){const r=repData(today());let u=&#x27;&#x27;;try{u=window.parent.eqMapPng(r.rows.map(x=&gt;({no:x.e.no,type:x.e.type,area:x.x.area,zn:x.zn,work:x.wk,status:x.e.status})),1600)}catch(e){}
     $(&#x27;v-zones&#x27;).innerHTML=`&lt;div class=&quot;stack&quot;&gt;&lt;div&gt;&lt;h2 style=&quot;font-size:24px&quot;&gt;Site map&lt;/h2&gt;&lt;div class=&quot;small muted&quot;&gt;Where the machines work today · ${dNice(today())}&lt;/div&gt;&lt;/div&gt;${segHtml(&#x27;zSeg&#x27;,[[&#x27;map&#x27;,&#x27;Site map&#x27;],[&#x27;sat&#x27;,&#x27;Satellite&#x27;],[&#x27;board&#x27;,&#x27;List&#x27;]],zMode)}
       ${u?`&lt;img src=&quot;${u}&quot; alt=&quot;Site map with the machines of today&quot; style=&quot;width:100%;border-radius:12px;border:1px solid var(--line);background:#f6f4ef&quot;&gt;`:&#x27;&lt;div class=&quot;card small muted&quot;&gt;The site map is not available here.&lt;/div&gt;&#x27;}
+      ${satBox(&#x27;zSat&#x27;,today())}
       ${r.stale?`&lt;div class=&quot;small&quot; style=&quot;color:var(--idle)&quot;&gt;${r.stale} machine${r.stale&gt;1?&#x27;s are&#x27;:&#x27; is&#x27;} not updated for today – shown at the last known place.&lt;/div&gt;`:&#x27;&#x27;}
       &lt;div class=&quot;row&quot;&gt;&lt;button class=&quot;btn sm&quot; id=&quot;zRep&quot;&gt;📤 Daily report with this map&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
     bindSeg(&#x27;zSeg&#x27;,k=&gt;{zMode=k;renderZones()});$(&#x27;zRep&#x27;).onclick=()=&gt;{repMode=&#x27;daily&#x27;;repDate=today();go(&#x27;report&#x27;)};return}
@@ -1413,6 +1425,7 @@ function renderReport(){
     ${r.stale?`&lt;div class=&quot;small&quot; style=&quot;margin-top:10px;color:var(--idle)&quot;&gt;${r.stale} machine${r.stale&gt;1?&#x27;s are&#x27;:&#x27; is&#x27;} not updated for this day – shown at the last known place (marked *).&lt;/div&gt;`:&#x27;&#x27;}
     ${r.waste.length?`&lt;div class=&quot;card&quot; style=&quot;margin-top:10px;box-shadow:none;border-color:#8b5a2b&quot;&gt;&lt;b&gt;Waste &amp;amp; stockpiles&lt;/b&gt;&lt;div class=&quot;small&quot; style=&quot;margin-top:4px&quot;&gt;${r.wl?r.wl+&#x27; loads&#x27;:&#x27;&#x27;}${r.wl&amp;&amp;r.wm?&#x27; · &#x27;:&#x27;&#x27;}${r.wm?fmt1(r.wm)+&#x27; m³&#x27;:&#x27;&#x27;}&lt;/div&gt;&lt;div class=&quot;list&quot; style=&quot;margin-top:6px&quot;&gt;${r.waste.map(x=&gt;`&lt;div class=&quot;li&quot; style=&quot;cursor:default&quot;&gt;&lt;div class=&quot;t&quot;&gt;&lt;b&gt;${esc(x.e.no)} ${esc(x.e.type)} – ${esc(x.wk)}&lt;/b&gt;&lt;span&gt;${esc(x.ar)}${x.waste?&#x27; · &#x27;+esc(x.waste):&#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;&lt;/div&gt;`:&#x27;&#x27;}
     ${(()=&gt;{let u=&#x27;&#x27;;try{u=window.parent.eqMapPng(r.rows.map(x=&gt;({no:x.e.no,type:x.e.type,area:x.x.area,zn:x.zn,work:x.wk,status:x.e.status})),1600)}catch(x){}return u?`&lt;img src=&quot;${u}&quot; alt=&quot;Site map with the areas where machines work&quot; style=&quot;width:100%;border-radius:10px;margin-top:12px;border:1px solid var(--line)&quot;&gt;`:&#x27;&#x27;})()}
+    ${satBox(&#x27;rSat&#x27;,repDate)}
     &lt;div class=&quot;dl&quot; style=&quot;margin-top:12px&quot;&gt;&lt;div&gt;&lt;small&gt;MACHINES&lt;/small&gt;&lt;b&gt;${r.rows.length}&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;small&gt;WORKING&lt;/small&gt;&lt;b&gt;${r.rows.filter(x=&gt;x.e.status===&#x27;work&#x27;).length}&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;small&gt;AREAS&lt;/small&gt;&lt;b&gt;${Object.keys(r.byArea).length}&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;div class=&quot;tbl&quot; style=&quot;margin-top:12px&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;Total&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;Working&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;${Object.keys(r.byType).sort().map(t=&gt;`&lt;tr&gt;&lt;td&gt;${esc(t)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${r.byType[t].n}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${r.byType[t].w}&lt;/td&gt;&lt;/tr&gt;`).join(&#x27;&#x27;)}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
     &lt;div class=&quot;tbl&quot; style=&quot;margin-top:12px&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Work&lt;/th&gt;&lt;th class=&quot;num&quot;&gt;Machines&lt;/th&gt;&lt;th&gt;Equipment&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;${Object.keys(r.byWork).sort().map(k=&gt;`&lt;tr&gt;&lt;td&gt;${esc(k)}&lt;/td&gt;&lt;td class=&quot;num&quot;&gt;${r.byWork[k].length}&lt;/td&gt;&lt;td class=&quot;small&quot;&gt;${esc(r.byWork[k].join(&#x27;, &#x27;))}&lt;/td&gt;&lt;/tr&gt;`).join(&#x27;&#x27;)}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
@@ -1441,6 +1454,7 @@ function makePdf(d,asBlob){
     const head=()=&gt;{doc.setFillColor(28,39,51);doc.rect(0,0,W,22,&#x27;F&#x27;);doc.setFillColor(242,183,5);doc.rect(0,22,W,1.6,&#x27;F&#x27;);doc.setTextColor(255);doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.setFontSize(15);doc.text(&#x27;Daily Equipment Report&#x27;,12,10);doc.setFontSize(9);doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(dNice(d)+(M().company?&#x27; · &#x27;+M().company:&#x27;&#x27;),12,17);doc.setFont(&#x27;helvetica&#x27;,&#x27;bold&#x27;);doc.text(M().eng,W-12,10,{align:&#x27;right&#x27;});doc.setFont(&#x27;helvetica&#x27;,&#x27;normal&#x27;);doc.text(M().role,W-12,17,{align:&#x27;right&#x27;});doc.setTextColor(20)};
     head();let y=32;doc.setFontSize(10);doc.text(`Machines ${r.rows.length}   ·   Working ${r.rows.filter(x=&gt;x.e.status===&#x27;work&#x27;).length}   ·   Areas ${Object.keys(r.byArea).length}`,12,y);y+=6;
     doc.setFontSize(8.5);doc.text(Object.keys(r.byType).sort().map(t=&gt;`${t}: ${r.byType[t].n} (${r.byType[t].w} working)`).join(&#x27;   ·   &#x27;),12,y,{maxWidth:W-24});y+=6;doc.text(&#x27;By work: &#x27;+Object.keys(r.byWork).sort().map(k=&gt;k+&#x27; &#x27;+r.byWork[k].length).join(&#x27;   ·   &#x27;),12,y,{maxWidth:W-24});y+=6;
+    {const su=SATIMG[satKey(d)];if(su){let ih=203-y-4,iw=ih/0.62;if(iw&gt;W-24){iw=W-24;ih=iw*0.62}try{doc.addImage(su,&#x27;PNG&#x27;,(W-iw)/2,y,iw,ih);doc.addPage();head();y=32}catch(x){}}else if(su===undefined)toast(&#x27;Satellite picture is still loading – try again in a few seconds to include it&#x27;)}
     try{const u=window.parent.eqMapPng(r.rows.map(x=&gt;({no:x.e.no,type:x.e.type,area:x.x.area,zn:x.zn,work:x.wk,status:x.e.status})),2000);if(u){let ih=203-y-4,iw=ih/0.62;if(iw&gt;W-24){iw=W-24;ih=iw*0.62}doc.addImage(u,&#x27;PNG&#x27;,(W-iw)/2,y,iw,ih);doc.addPage();head();y=32}}catch(x){}
     const cols=[[&#x27;Phase&#x27;,16],[&#x27;Zone&#x27;,16],[&#x27;Area&#x27;,22],[&#x27;Code&#x27;,22],[&#x27;Type&#x27;,28],[&#x27;Work&#x27;,32],[&#x27;Waste / stockpile&#x27;,44],[&#x27;Foreman&#x27;,32],[&#x27;Operator&#x27;,32],[&#x27;Status&#x27;,29]];
     const row=(cells,bold,fill)=&gt;{if(y&gt;196){doc.addPage();head();y=32}if(fill){doc.setFillColor(238,240,242);doc.rect(12,y,W-24,6.5,&#x27;F&#x27;)}doc.setFont(&#x27;helvetica&#x27;,bold?&#x27;bold&#x27;:&#x27;normal&#x27;);doc.setFontSize(8);let x=12;cells.forEach((c,i)=&gt;{doc.text(doc.splitTextToSize(String(c??&#x27;&#x27;),cols[i][1]-2)[0]||&#x27;&#x27;,x+1.5,y+4.6);x+=cols[i][1]});y+=6.5;doc.setDrawColor(225);doc.line(12,y,W-12,y)};
@@ -2566,7 +2580,7 @@ function loadLeafletIn(win){
     const sc=d.createElement('script');sc.crossOrigin='anonymous';sc.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';sc.onload=()=>res();sc.onerror=()=>rej(new Error('The map needs internet the first time.'));d.head.append(sc)})
 }
 /* picture of the site for the Equipment report: phases, areas, and the areas with machines highlighted */
-function eqMapPng(list,W,H){if(!SITE_BORDER)return '';W=W||1600;H=Math.round(W*0.62);const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+function eqMapPng(list,W,H,opt){if(!SITE_BORDER)return '';opt=opt||{};const SAT=!!opt.sat;W=W||1600;H=Math.round(W*0.62);const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
   const A=newAreaList(),raw=SITE_BORDER.concat(...A.map(a=>a.c));
   // turn the long site so it lies across the page (phase 1 on the left); a north arrow shows the real direction
   let me=0,mn=0;for(const [e,n] of SITE_BORDER){me+=e;mn+=n}me/=SITE_BORDER.length;mn/=SITE_BORDER.length;let cxx=0,cyy=0,cxy=0;for(const [e,n] of raw){cxx+=(e-me)**2;cyy+=(n-mn)**2;cxy+=(e-me)*(n-mn)}
@@ -2579,18 +2593,24 @@ function eqMapPng(list,W,H){if(!SITE_BORDER)return '';W=W||1600;H=Math.round(W*0
   // room above and below the site for the machine boxes
   const band=keys.length?Math.round(H*0.27):0,top=44+band,bot=H-band-10,pad=24,k=Math.min((W-2*pad)/(x1-x0),(bot-top)/(y1-y0)),ox=(W-(x1-x0)*k)/2,oy=top+((bot-top)-(y1-y0)*k)/2,S_=(e,n)=>{const [x,y]=rot(e,n);return [ox+(x-x0)*k,oy+(y1-y)*k]};
   c.fillStyle='#f6f4ef';c.fillRect(0,0,W,H);
+  if(SAT){const sy0=Math.max(36,top-14),sy1=Math.min(H,bot+14),inv=(x,y)=>{const rx=(x-ox)/k+x0,ry=y1-(y-oy)/k;return [me+rx*Math.cos(th)-ry*Math.sin(th),mn+rx*Math.sin(th)+ry*Math.cos(th)]};
+    const C4=[inv(0,sy0),inv(W,sy0),inv(0,sy1),inv(W,sy1)],eA=Math.min(...C4.map(q=>q[0])),eB=Math.max(...C4.map(q=>q[0])),nA=Math.min(...C4.map(q=>q[1])),nB=Math.max(...C4.map(q=>q[1])),mpp=1/k/1.4;
+    if(opt.ext){Object.assign(opt.ext,{eA,eB,nA,nB,mpp});return ''}
+    c.save();c.beginPath();c.rect(0,sy0,W,sy1-sy0);c.clip();c.fillStyle='#4a4436';c.fillRect(0,sy0,W,sy1-sy0);satDraw(c,S_,eA,eB,nA,nB,mpp,null,true);c.restore()}
   const poly=R=>{c.beginPath();R.forEach((q,i)=>{const [x,y]=S_(q[0],q[1]);i?c.lineTo(x,y):c.moveTo(x,y)});c.closePath()};
-  for(const a of A){poly(a.c);const on=by[a.k]&&by[a.k].some(e=>!e._z),zo=zOnly[a.k];c.fillStyle=on?'#ffb300':zo?'#ffd98a':a.w?'#cfe8f5':'#e3e7ea';c.fill();c.strokeStyle=on||zo?'#b86e00':'#9aa5b1';c.lineWidth=on?2.5:zo?1.6:1;c.stroke()}
-  const PC={1:'#e67e22',2:'#2e86de',3:'#8e44ad',4:'#16a085'};
+  for(const a of A){poly(a.c);const on=by[a.k]&&by[a.k].some(e=>!e._z),zo=zOnly[a.k];if(SAT){if(on||zo){c.fillStyle=on?'rgba(255,179,0,.5)':'rgba(255,217,138,.32)';c.fill()}c.strokeStyle=on||zo?'#ffd400':'rgba(255,255,255,.7)';c.lineWidth=on?3:zo?2:1;c.stroke();continue}
+    c.fillStyle=on?'#ffb300':zo?'#ffd98a':a.w?'#cfe8f5':'#e3e7ea';c.fill();c.strokeStyle=on||zo?'#b86e00':'#9aa5b1';c.lineWidth=on?2.5:zo?1.6:1;c.stroke()}
+  const PC=SAT?{1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'}:{1:'#e67e22',2:'#2e86de',3:'#8e44ad',4:'#16a085'};
   try{const P=heroPolys();for(const [i,rings] of Object.entries(P))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);c.strokeStyle=PC[i];c.lineWidth=2.5;c.stroke()}}catch(x){}
-  poly(SITE_BORDER);c.setLineDash([8,5]);c.strokeStyle='#b8860b';c.lineWidth=2;c.stroke();c.setLineDash([]);
-  const nums=()=>{c.textAlign='center';c.textBaseline='middle';for(const a of A){const [x,y]=S_(a.lx,a.ly),on=by[a.k],num=a.w?('W'+(+a.k.slice(1))):String(+a.k.slice(1));c.font=(on?'800 16px ':'600 11px ')+'system-ui';if(on){c.lineWidth=4;c.strokeStyle='#fff';c.strokeText(num,x,y)}c.fillStyle=on?'#111':'#5d6873';c.fillText(num,x,y)}};
+  poly(SITE_BORDER);c.setLineDash([8,5]);c.strokeStyle=SAT?'#ffeb3b':'#b8860b';c.lineWidth=2;c.stroke();c.setLineDash([]);
+  const nums=()=>{c.textAlign='center';c.textBaseline='middle';for(const a of A){const [x,y]=S_(a.lx,a.ly),on=by[a.k],num=a.w?('W'+(+a.k.slice(1))):String(+a.k.slice(1));c.font=(on?'800 16px ':'600 11px ')+'system-ui';if(on||SAT){c.lineWidth=on?4:3;c.strokeStyle=on?'#fff':'rgba(0,0,0,.75)';c.strokeText(num,x,y)}c.fillStyle=on?'#111':SAT?'#fff':'#5d6873';c.fillText(num,x,y)}};
   // machine boxes with a leader line to their area
   const TC={Dozer:'#e0a800',Grader:'#f08c00',Excavator:'#d9480f','Loader / Shovel':'#c2255c','Roller / Compactor':'#5f3dc4','Dump Truck':'#1971c2','Fighter Dumper':'#1864ab','Water Tanker':'#0c8599','Small Tanker':'#0c8599','Big Tanker':'#0b7285',Backhoe:'#a61e4d'};
   const ab=t=>({Dozer:'DZ',Grader:'GR',Excavator:'EX','Loader / Shovel':'LD','Roller / Compactor':'RL','Dump Truck':'DT','Fighter Dumper':'FD','Water Tanker':'WT','Small Tanker':'ST','Big Tanker':'BT',Backhoe:'BH'}[t]||'•');
   const items=keys.map(kk=>{const a=A.find(x=>x.k===kk);const [x,y]=S_(a.lx,a.ly);return {a,x,y,M:by[kk]}}).sort((p,q)=>p.x-q.x);
   const bw=Math.min(300,Math.max(210,(W-40)/Math.max(1,Math.ceil(items.length/2))-14)),lh=19;
   const place=(L,isTop)=>{let cx=16;for(const it of L){const n=Math.min(it.M.length,Math.floor((band-38)/lh)),bh=30+n*lh+(it.M.length>n?lh:0);let bx=Math.max(cx,Math.min(W-bw-16,it.x-bw/2));cx=bx+bw+12;const by_=isTop?44+(band-bh)/2:H-10-band+(band-bh)/2;
+      if(SAT){c.strokeStyle='#fff';c.lineWidth=3.6;c.beginPath();c.moveTo(it.x,it.y+(isTop?-11:11));c.lineTo(bx+bw/2,isTop?by_+bh:by_);c.stroke()}
       c.strokeStyle='#14212d';c.lineWidth=1.4;c.beginPath();c.moveTo(it.x,it.y+(isTop?-11:11));c.lineTo(bx+bw/2,isTop?by_+bh:by_);c.stroke();
       c.fillStyle='#ffffff';c.strokeStyle='#b86e00';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(bx,by_,bw,bh,8):c.rect(bx,by_,bw,bh);c.fill();c.stroke();
       c.textAlign='left';c.textBaseline='middle';c.font='800 13px system-ui';c.fillStyle='#14212d';c.fillText((it.M.every(e=>e._z)?'':newAreaName(it.a.k)+' · ')+((typeof newAreaZone==='function'&&newAreaZone(it.a.k))?(it.M.every(e=>e._z)?'Zone ':'')+newAreaZone(it.a.k):'')+(()=>{try{const d=designAt(it.a.lx,it.a.ly);return d&&d.ph?' · Phase '+d.ph:''}catch(x){return ''}})(),bx+10,by_+15);
@@ -2598,12 +2618,18 @@ function eqMapPng(list,W,H){if(!SITE_BORDER)return '';W=W||1600;H=Math.round(W*0
         c.textAlign='left';c.fillStyle='#14212d';c.font='700 12px system-ui';const t1=e.no||'';c.fillText(t1,bx+42,yy);const w1=c.measureText(t1).width;c.font='12px system-ui';c.fillStyle='#495057';let t2=(e.work?' – '+e.work:''); while(t2&&c.measureText(t2).width>bw-56-w1)t2=t2.slice(0,-2);c.fillText(t2,bx+42+w1,yy)});
       if(it.M.length>n){c.fillStyle='#5d6873';c.font='italic 11px system-ui';c.fillText('+ '+(it.M.length-n)+' more',bx+42,by_+30+n*lh+lh/2-2)}}};
   place(items.filter((_,i)=>i%2===0),true);place(items.filter((_,i)=>i%2===1),false);nums();
-  c.textAlign='left';c.textBaseline='alphabetic';c.font='700 16px system-ui';c.fillStyle='#14212d';c.fillText('Where the machines work',14,24);c.font='12.5px system-ui';c.fillStyle='#5d6873';
-  c.fillText(keys.length+' places · '+list.filter(e=>e.area||e.zn).length+' machines on the map'+(list.some(e=>!e.area&&!e.zn)?' · '+list.filter(e=>!e.area&&!e.zn).length+' not on the map':''),220,24);
+  c.textAlign='left';c.textBaseline='alphabetic';c.font='700 16px system-ui';c.fillStyle='#14212d';c.fillText(SAT?'Where the machines work · satellite':'Where the machines work',14,24);c.font='12.5px system-ui';c.fillStyle='#5d6873';
+  c.fillText(keys.length+' places · '+list.filter(e=>e.area||e.zn).length+' machines on the map'+(list.some(e=>!e.area&&!e.zn)?' · '+list.filter(e=>!e.area&&!e.zn).length+' not on the map':''),SAT?300:220,24);
+  if(SAT){c.textAlign='right';c.font='11px system-ui';c.fillStyle='#5d6873';c.fillText('Imagery © Esri, Maxar, Earthstar Geographics',W-10,H-3)}
   let lx=W-16;c.textAlign='right';for(const [i,col] of Object.entries(PC).reverse()){c.fillStyle=col;c.font='700 12px system-ui';c.fillText('Phase '+i,lx,24);lx-=c.measureText('Phase '+i).width+14}
+  {const ax=W-34,ay=oy+((y1-y0)*k)/2;if(SAT){c.fillStyle='rgba(255,255,255,.88)';c.beginPath();c.arc(ax,ay,30,0,7);c.fill()}}
   {const ax=W-34,ay=oy+((y1-y0)*k)/2,[a1,b1]=S_(me,mn),[a2,b2]=S_(me,mn+100),L=Math.hypot(a2-a1,b2-b1)||1,dx=(a2-a1)/L,dy=(b2-b1)/L;c.strokeStyle='#14212d';c.fillStyle='#14212d';c.lineWidth=2;c.beginPath();c.moveTo(ax-dx*14,ay-dy*14);c.lineTo(ax+dx*14,ay+dy*14);c.stroke();
     c.beginPath();c.moveTo(ax+dx*18,ay+dy*18);c.lineTo(ax+dx*7-dy*6,ay+dy*7+dx*6);c.lineTo(ax+dx*7+dy*6,ay+dy*7-dx*6);c.fill();c.font='700 12px system-ui';c.textAlign='center';c.fillText('N',ax+dx*28,ay+dy*28+4)}
   return cv.toDataURL('image/png')}
+// same picture on satellite imagery; resolves '' when the imagery cannot be loaded or used
+async function eqMapSatPng(list,W){if(!SITE_BORDER)return '';const ext={};eqMapPng(list,W,0,{sat:true,ext});if(!ext.mpp)return '';
+  const share=await satWait(ext.eA,ext.eB,ext.nA,ext.nB,ext.mpp,15000);if(share<0.3)return '';
+  try{return eqMapPng(list,W,0,{sat:true})}catch(e){return ''}}
 /* areas for the Equipment app: name, zone and phase of each site-map area */
 let EQ_AREAS=null;
 function eqAreaList(){if(EQ_AREAS)return EQ_AREAS;const P=(()=>{try{return heroPolys()}catch(e){return {}}})();
@@ -2621,15 +2647,21 @@ function renderSimpleSat(box,win){
     const ll=([E,N])=>utm38ToLL(E,N);let bounds=null;
     if(SITE_BORDER){const pl=SITE_BORDER.map(ll);bounds=L.latLngBounds(pl);L.polygon(pl,{color:'#ffeb3b',weight:3,dashArray:'8 6',fill:false,interactive:false}).addTo(map)}
     try{const P=heroPolys(),cols={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};for(const [i,rings] of Object.entries(P)){const big=(rings||[]).filter(r=>r&&r.length>=3).sort((a,b)=>b.length-a.length)[0];for(const r of rings){if(!r||r.length<3)continue;const pg=L.polygon(r.map(ll),{color:cols[i]||'#fff',weight:3,fill:false,interactive:false});if(r===big)pg.bindTooltip('PHASE '+i,{permanent:true,direction:'center',className:'phlbl ph'+i});pg.addTo(map)}}}catch(e){console.warn(e)}
-    let EQ=[];try{EQ=(win.__eqList?win.__eqList():[]).filter(e=>e.area&&e.status!=='off')}catch(e){}const byA={};for(const e of EQ)(byA[e.area]=byA[e.area]||[]).push(e);
+    let EQ=[];try{EQ=win.__eqToday?win.__eqToday():(win.__eqList?win.__eqList():[]).filter(e=>e.area&&e.status!=='off')}catch(e){}EQ=EQ.filter(e=>e.area||e.zn);
+    const byA={},zA={},AL=newAreaList(),zk=z=>String(z||'').replace(/\s+/g,' ').trim();
+    for(const e of EQ){if(e.area)(byA[e.area]=byA[e.area]||[]).push(e);else{const Lz=AL.filter(a=>zk(typeof newAreaZone==='function'?newAreaZone(a.k):'')===zk(e.zn));if(Lz.length){Lz.forEach(a=>zA[a.k]=1);const pk=Lz.slice().sort((p,q)=>(q.m2||0)-(p.m2||0))[0];(byA[pk.k]=byA[pk.k]||[]).push(Object.assign({},e,{_z:1}))}}}
+    const TCm={Dozer:'#e0a800',Grader:'#f08c00',Excavator:'#d9480f','Loader / Shovel':'#c2255c','Roller / Compactor':'#5f3dc4','Dump Truck':'#1971c2','Fighter Dumper':'#1864ab','Water Tanker':'#0c8599','Small Tanker':'#0c8599','Big Tanker':'#0b7285',Backhoe:'#a61e4d'};
+    const abm=t=>({Dozer:'DZ',Grader:'GR',Excavator:'EX','Loader / Shovel':'LD','Roller / Compactor':'RL','Dump Truck':'DT','Fighter Dumper':'FD','Water Tanker':'WT','Small Tanker':'ST','Big Tanker':'BT',Backhoe:'BH'}[t]||'•');
     const esc_=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));let focus=null;
-    for(const a of newAreaList()){
-      const nm=newAreaName(a.k),num=a.w?('W'+(+a.k.slice(1))):String(+a.k.slice(1)),M_=byA[a.k]||[],on=M_.length>0;
-      const pg=L.polygon(a.c.map(ll),on?{color:'#ffd400',weight:3.5,fillColor:'#ffb300',fillOpacity:.45}:{color:'#ffffff',weight:1.5,fillColor:a.w?'#4fc3f7':'#ffffff',fillOpacity:a.w?.2:.06})
-        .bindTooltip(on?num+' · '+M_.length+' 🚜':num,{permanent:true,direction:'center',className:'satlbl'})
-        .bindPopup('<b style="font-size:15px">'+nm+'</b>'+(a.m2?'<div>'+fmt(Math.round(a.m2))+' m²</div>':'')+(on?'<div style="margin-top:6px;max-height:180px;overflow:auto">'+M_.map(e=>'<div style="padding:3px 0;border-top:1px solid #ddd"><b>'+esc_(e.no)+'</b> '+esc_(e.type)+(e.work?'<br><span style="color:#555">'+esc_(e.work)+'</span>':'')+(e.operator?'<br><span style="color:#777">'+esc_(e.operator)+'</span>':'')+'</div>').join('')+'</div>':'<div style="color:#777">No machines here</div>')+gmButtons(a.lx,a.ly)).addTo(map);
+    for(const a of AL){
+      const nm=newAreaName(a.k),num=a.w?('W'+(+a.k.slice(1))):String(+a.k.slice(1)),M_=byA[a.k]||[],on=M_.some(e=>!e._z),zo=!on&&zA[a.k];
+      const pg=L.polygon(a.c.map(ll),on?{color:'#ffd400',weight:3.5,fillColor:'#ffb300',fillOpacity:.45}:zo?{color:'#ffd400',weight:2,fillColor:'#ffd98a',fillOpacity:.3}:{color:'#ffffff',weight:1.5,fillColor:a.w?'#4fc3f7':'#ffffff',fillOpacity:a.w?.2:.06})
+        .bindTooltip(M_.length?num+' · '+M_.length+' 🚜':num,{permanent:true,direction:'center',className:'satlbl'})
+        .bindPopup('<b style="font-size:15px">'+nm+'</b>'+(a.m2?'<div>'+fmt(Math.round(a.m2))+' m²</div>':'')+(M_.length?(M_.every(e=>e._z)?'<div style="color:#8a5a00">Zone '+esc_(M_[0].zn)+' (whole zone)</div>':'')+'<div style="margin-top:6px;max-height:180px;overflow:auto">'+M_.map(e=>'<div style="padding:3px 0;border-top:1px solid #ddd"><b>'+esc_(e.no)+'</b> '+esc_(e.type)+(e.work?'<br><span style="color:#555">'+esc_(e.work)+'</span>':'')+(e.operator?'<br><span style="color:#777">'+esc_(e.operator)+'</span>':'')+'</div>').join('')+'</div>':'<div style="color:#777">No machines here</div>')+gmButtons(a.lx,a.ly)).addTo(map);
+      if(M_.length){const n=Math.min(M_.length,6),h='<div style="transform:translate(-50%,calc(-100% - 16px));display:inline-block;background:#fff;color:#14212d;border:2px solid #b86e00;border-radius:8px;padding:3px 6px;font:700 11px system-ui;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.45)">'+M_.slice(0,n).map(e=>'<div style="line-height:17px"><span style="display:inline-block;min-width:20px;text-align:center;background:'+(TCm[e.type]||'#495057')+';color:#fff;border-radius:3px;font-size:9.5px;padding:0 2px;margin-right:4px">'+abm(e.type)+'</span>'+esc_(e.no)+(e.work?'<span style="font-weight:500;color:#555"> – '+esc_(e.work)+'</span>':'')+'</div>').join('')+(M_.length>n?'<div style="font-weight:500;color:#777">+ '+(M_.length-n)+' more</div>':'')+'</div>';
+        L.marker(ll([a.lx,a.ly]),{icon:L.divIcon({html:h,className:'',iconSize:null}),zIndexOffset:500}).on('click',()=>pg.openPopup()).addTo(map)}
       if(win.__mapFocus&&win.__mapFocus===a.k)focus=pg}
-    if(EQ.length||Object.keys(byA).length){const lg=win.document.createElement('div');lg.style.cssText='position:absolute;left:10px;top:10px;z-index:1000;background:rgba(255,255,255,.92);color:#15202b;padding:6px 10px;border-radius:8px;font:600 12px system-ui';lg.innerHTML='<span style="display:inline-block;width:12px;height:12px;background:#ffb300;border:2px solid #ffd400;border-radius:3px;vertical-align:-2px;margin-right:6px"></span>'+EQ.length+' machines in '+Object.keys(byA).length+' areas';box.append(lg)}
+    if(EQ.length||Object.keys(byA).length){const lg=win.document.createElement('div');lg.style.cssText='position:absolute;left:10px;top:10px;z-index:1000;background:rgba(255,255,255,.92);color:#15202b;padding:6px 10px;border-radius:8px;font:600 12px system-ui';lg.innerHTML='<span style="display:inline-block;width:12px;height:12px;background:#ffb300;border:2px solid #ffd400;border-radius:3px;vertical-align:-2px;margin-right:6px"></span>'+EQ.length+' machines today in '+Object.keys(byA).length+' places';box.append(lg)}
     const btn=win.document.createElement('button');btn.textContent='◎ My location';btn.style.cssText='position:absolute;right:10px;bottom:24px;z-index:1000;padding:8px 12px;border-radius:10px;border:0;background:#fff;color:#15202b;font:700 13px system-ui;box-shadow:0 2px 8px rgba(0,0,0,.3)';
     btn.onclick=()=>map.locate({setView:true,maxZoom:18,enableHighAccuracy:true});box.append(btn);
     let me=null;map.on('locationfound',e=>{if(me)me.remove();me=L.circleMarker(e.latlng,{radius:8,color:'#fff',weight:3,fillColor:'#1a73e8',fillOpacity:1}).addTo(map).bindPopup('You are here (±'+Math.round(e.accuracy)+' m)').openPopup()});
@@ -3858,11 +3890,21 @@ function satTile(z,x,y,cb){const k=z+'/'+x+'/'+y;let t=satCache.get(k);
   if(satCache.size>900){for(const [kk,v] of satCache){if(v.ok||v.err){satCache.delete(kk);break}}}
   return null}
 // draw tiles into a 2D context; W2S maps UTM (E,N) to canvas pixels; mpp = metres per canvas pixel
+function satRange(la0,la1,lo0,lo1,mpp,base){
+  let z=Math.round(Math.log2(156543.03*Math.cos((la0+la1)/2*Math.PI/180)/Math.max(mpp,.05)));z=Math.max(5,Math.min(19,z));
+  let x0,x1,y0,y1;for(;;){x0=Math.floor(sLon2x(lo0,z));x1=Math.floor(sLon2x(lo1,z));y0=Math.floor(sLat2y(la1,z));y1=Math.floor(sLat2y(la0,z));if((x1-x0+1)*(y1-y0+1)<=(base?400:90)||z<=5)break;z--}
+  return {z,x0,x1,y0,y1}}
+// wait until the tiles of a UTM box are loaded (or failed); resolves with the share loaded
+function satWait(eA,eB,nA,nB,mpp,ms){
+  const LL=[utm38ToLL(eA,nA),utm38ToLL(eB,nA),utm38ToLL(eA,nB),utm38ToLL(eB,nB)];
+  const r=satRange(Math.min(...LL.map(q=>q[0])),Math.max(...LL.map(q=>q[0])),Math.min(...LL.map(q=>q[1])),Math.max(...LL.map(q=>q[1])),mpp,true);
+  const K=[];for(let y=r.y0;y<=r.y1;y++)for(let x=r.x0;x<=r.x1;x++){satTile(r.z,x,y,null);K.push(r.z+'/'+x+'/'+y)}
+  const t0=Date.now();return new Promise(res=>{const chk=()=>{let ok=0,done=0;for(const k of K){const t=satCache.get(k);if(!t){done++;continue}if(t.ok){ok++;done++}else if(t.err)done++}
+    if(done>=K.length||Date.now()-t0>(ms||15000))return res(K.length?ok/K.length:0);setTimeout(chk,250)};chk()})}
 function satDraw(c,W2S,eA,eB,nA,nB,mpp,onLoad,base){
   const LL=[utm38ToLL(eA,nA),utm38ToLL(eB,nA),utm38ToLL(eA,nB),utm38ToLL(eB,nB)];
   const la0=Math.min(...LL.map(q=>q[0])),la1=Math.max(...LL.map(q=>q[0])),lo0=Math.min(...LL.map(q=>q[1])),lo1=Math.max(...LL.map(q=>q[1]));
-  let z=Math.round(Math.log2(156543.03*Math.cos((la0+la1)/2*Math.PI/180)/Math.max(mpp,.05)));z=Math.max(5,Math.min(19,z));
-  let x0,x1,y0,y1;for(;;){x0=Math.floor(sLon2x(lo0,z));x1=Math.floor(sLon2x(lo1,z));y0=Math.floor(sLat2y(la1,z));y1=Math.floor(sLat2y(la0,z));if((x1-x0+1)*(y1-y0+1)<=(base?400:90)||z<=5)break;z--}
+  const {z,x0,x1,y0,y1}=satRange(la0,la1,lo0,lo1,mpp,base);
   const S=(x,y)=>{const ll=[sY2lat(y,z),sX2lon(x,z)],u=llToUtm38(ll[0],ll[1]);return W2S(u[0],u[1])};
   const m0=c.getTransform();
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
