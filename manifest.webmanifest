@@ -1,8 +1,8 @@
 {
-  "name": "Alomaier Survey – Eng Muhammad Sheraz Abbasi",
-  "short_name": "Alomaier Survey",
-  "start_url": "./",
-  "scope": "./",
+  "name": "Alomaier Survey v1 – Eng Muhammad Sheraz Abbasi",
+  "short_name": "Alomaier v1",
+  "start_url": "./index.html",
+  "scope": "./index",
   "display": "standalone",
   "background_color": "#0e1113",
   "theme_color": "#0e1113",
@@ -19,5 +19,6 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
+  "id": "./index.html"
 }
