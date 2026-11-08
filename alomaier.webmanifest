@@ -1,0 +1,23 @@
+{
+  "name": "Alomaier Survey 2.0 – Eng Muhammad Sheraz Abbasi",
+  "short_name": "Alomaier Survey",
+  "start_url": "./alomaier.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1113",
+  "theme_color": "#0e1113",
+  "icons": [
+    {
+      "src": "alomaier-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "alomaier-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
