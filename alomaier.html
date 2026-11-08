@@ -54,6 +54,9 @@ h1.pt{font:700 30px/1.05 var(--disp);margin:2px 0 2px;letter-spacing:.01em}.sub{
 table.t{width:100%;border-collapse:collapse;font-size:12.5px}table.t th{text-align:left;color:var(--mu);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:7px 6px;border-bottom:1px solid var(--ln);white-space:nowrap}
 table.t td{padding:7px 6px;border-bottom:1px solid #20262a;white-space:nowrap}table.t td.n,table.t th.n{text-align:right;font-family:var(--mono)}table.t tr.g td{background:#1b2024;font-weight:700}table.t tr.g2 td{background:#181d20;font-weight:600}
 .tw{overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--ln)}
+.psv{margin:10px 0 14px;break-inside:auto}.psvh{font-size:12px;margin-bottom:4px}.ptp td,.ptp th{font-size:10.5px;padding:3px 5px;font-family:IBM Plex Mono,monospace}
+#qs{position:fixed;inset:0;z-index:55;background:var(--bg,#0e1113);display:flex;flex-direction:column}.qsb{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--ln);background:var(--p1,#12161a);flex:none}.qsc{flex:1;overflow:auto;padding:14px;max-width:1180px;width:100%;margin:0 auto;box-sizing:border-box}
+#drawBar{position:absolute;left:10px;top:10px;background:rgba(14,17,19,.95);border:1px solid var(--am);border-radius:14px;padding:10px 12px;max-width:calc(100% - 20px);z-index:5}tr.sub td{color:#e9d5ff}
 .qg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}.qt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--p2);border:1px solid var(--ln);border-radius:14px;padding:10px 12px;color:inherit;cursor:pointer;font:inherit}.qt:hover{border-color:var(--am)}.qt .qi{font-size:20px}.qt b{font-size:14px}.qt small{color:var(--mu);font-size:11.5px}
 .seg{display:inline-flex;border:1px solid var(--ln);border-radius:12px;overflow:hidden;background:var(--p2)}.seg button{border:0;background:none;padding:7px 12px;font-weight:600;font-size:12.5px;cursor:pointer;color:var(--mu)}.seg button.on{background:var(--am);color:#1a1205}
 label.f{display:block;margin-bottom:10px}label.f>span{display:block;font-size:12px;font-weight:600;color:#c9d1d8;margin-bottom:4px}
@@ -212,9 +215,9 @@ function dbDel(k){return new Promise(r=>{if(!idb)return r();try{const t=idb.tran
 const MK='as2-meta';
 let M=null;   // register: designs, ngl, surveys, surveyors, edits of built-in records
 const PTS={}; // id -> [{id,e,n,z}]
-function defMeta(){return {v:1,designs:[],ngl:[],surveys:[],surveyors:['Muhammad Sheraz Abbasi'],edits:{},tol:K.tol||0.1,prep:0.30,lay:0.30,del:{},surf:[]}}
+function defMeta(){return {v:1,designs:[],ngl:[],surveys:[],surveyors:['Muhammad Sheraz Abbasi'],edits:{},tol:K.tol||0.1,prep:0.30,lay:0.30,del:{},surf:[],subs:[]}}
 const PD=()=>+M.prep||0.30,LT=()=>+M.lay||0.30;
-function saveMeta(){if(RO)return;const now=Date.now();for(const L of ['designs','ngl','surveys','surf'])for(const x of (M[L]||(M[L]=[])))if(!x.u)x.u=now;lsSet(MK,M);if(typeof cloudSoon==='function')cloudSoon()}
+function saveMeta(){if(RO)return;const now=Date.now();for(const L of ['designs','ngl','surveys','surf','subs'])for(const x of (M[L]||(M[L]=[])))if(!x.u)x.u=now;lsSet(MK,M);if(typeof cloudSoon==='function')cloudSoon()}
 /* built-in records */
 function builtDesigns(){return [Object.assign({id:'d1',name:'IFC Rev 01 – Khuzam 4 grading design',ifc:'',start:'2026-09-01',note:'Design grid points (10 × 10 m) built into the app.',builtin:true,n:B0.n},M.edits.d1||{})]}
 function builtNgl(){return [Object.assign({id:'g0',name:'NGL topography – whole project',date:'2026-09-01',note:'Natural ground surveyed at the start of the project.',builtin:true,n:B0.n},M.edits.g0||{})]}
@@ -292,7 +295,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
     h('div',{class:'row mut',style:'font-size:12px'},h('span',{},pc(Q.fD,Q.fR).toFixed(1)+'% done'),h('span',{class:'sp'}),h('span',{},fmt(Q.fR-Q.fD)+' m³ still to place')),
     h('div',{class:'kk',style:'margin-top:12px'},h('div',{class:'k'},h('b',{},fmt(Q.cD)),h('small',{},'m³ cut done of '+fmt(Q.cR))),h('div',{class:'k'},h('b',{},fmt(Q.on)),h('small',{},'m² on final design (±'+(M.tol*100).toFixed(0)+' cm)')))));
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
-    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v2.4 · 8 Nov 2026')),h('div',{class:'qg'},
+    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v2.6 · 9 Nov 2026')),h('div',{class:'qg'},
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -491,16 +494,19 @@ function rQty(){const el=$('#p-qty');el.replaceChildren();
   el.append(h('h1',{class:'pt'},'Quantities'),h('div',{class:'sub'},'Design minus natural ground = required. Ground now minus natural ground = done. Updated from every survey.'),qs);
   el.append(h('div',{class:'row',style:'margin-bottom:12px'},h('select',{style:'width:auto;max-width:100%',onchange:e=>{lsSet('as2_design',e.target.value);recalc()}},...DL.map(d=>h('option',{value:d.id,selected:d.id===act.id},d.name))),
     h('div',{class:'seg'},...[['phase','Phase'],['zone','Zone'],['area','Area']].map(([k,l])=>h('button',{class:qGroup===k?'on':'',onclick:()=>{qGroup=k;lsSet('as2_qg',k);rQty()}},l))),h('span',{class:'sp'}),
-    h('button',{class:'btn sm',onclick:()=>qtyCsv(Q,act)},'Excel / CSV')));
+    h('button',{class:'btn sm',onclick:()=>subDraw(null)},'+ Sub-area'),h('button',{class:'btn sm',onclick:()=>qtyCsv(Q,act)},'Excel / CSV')));
+  el.append(h('div',{class:'mut',style:'font-size:12px;margin:-4px 0 10px'},'Tap any phase, zone, area or sub-area for its full quantity sheet with the map – send it on WhatsApp / e-mail or save PDF / Excel.'));
   const pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
   el.append(h('div',{class:'kk k4',style:'margin-bottom:12px'},h('div',{class:'k'},h('b',{style:'color:var(--am)'},fmt(T.fD)),h('small',{},'m³ fill done · '+pc(T.fD,T.fR))),h('div',{class:'k'},h('b',{},fmt(T.fR-T.fD)),h('small',{},'m³ fill to go of '+fmt(T.fR))),
     h('div',{class:'k'},h('b',{style:'color:var(--bad)'},fmt(T.cD)),h('small',{},'m³ cut done · '+pc(T.cD,T.cR))),h('div',{class:'k'},h('b',{},fmt(T.cR-T.cD)),h('small',{},'m³ cut to go of '+fmt(T.cR)))));
   {const o=groupSum(()=>true,DZ[act.id]);el.append(h('div',{class:'grid2',style:'margin-bottom:12px'},h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Fill area by grade'),gradeBar(o.gF)),h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Cut area by grade'),gradeBar(o.gC))))}
   const rows=[];const line=(lab,r,cls)=>rows.push(h('tr',{class:cls||''},h('td',{},lab),h('td',{class:'n'},fmt(r.fR)),h('td',{class:'n'},fmt(r.fD)),h('td',{class:'n'},fmt(r.fR-r.fD)),h('td',{class:'n'},pc(r.fD,r.fR)),h('td',{class:'n'},fmt(r.cR)),h('td',{class:'n'},fmt(r.cD)),h('td',{class:'n'},fmt(r.cR-r.cD)),h('td',{class:'n'},fmt(r.prep)+' / '+fmt(r.prepR)),h('td',{class:'n'},layTxt(r)),h('td',{class:'n'},fmt(r.on))));
-  for(const p of [1,2,3,4]){const r=Q['P'+p];if(!r)continue;line('Phase '+p,r,'g');if(qGroup==='phase')continue;
-    const zs=Object.keys(Q).filter(k=>k.startsWith('Z'+p+'|')).sort();for(const zk of zs){const zn=zk.split('|')[1];line(zn||'No zone',Q[zk],qGroup==='area'?'g2':'');
-      if(qGroup==='area')K.areas.forEach((a,ai)=>{if(a.zone===zn&&Q['A'+ai]){line('  '+a.name,Q['A'+ai]);const tr=rows[rows.length-1];tr.style.cursor='pointer';tr.onclick=()=>areaSummary(ai)}})}}
-  line('Total',T,'g');
+  const clk=(t,k)=>{const tr=rows[rows.length-1];tr.style.cursor='pointer';tr.onclick=()=>qtySheet(t,k);tr.firstChild.append(h('span',{class:'mut'},' ›'))};
+  const SA=subs(),SQ={};if(qGroup==='area'&&SA.length){const Zd=DZ[act.id];for(const s_ of SA)SQ[s_.id]=qtyOf(subTest(s_),Zd)}
+  for(const p of [1,2,3,4]){const r=Q['P'+p];if(!r)continue;line('Phase '+p,r,'g');clk('phase',p);if(qGroup==='phase')continue;
+    const zs=Object.keys(Q).filter(k=>k.startsWith('Z'+p+'|')).sort();for(const zk of zs){const zn=zk.split('|')[1];line(zn||'No zone',Q[zk],qGroup==='area'?'g2':'');clk('zone',zk.slice(1));
+      if(qGroup==='area')K.areas.forEach((a,ai)=>{if(a.zone===zn&&Q['A'+ai]){line('  '+a.name,Q['A'+ai]);clk('area',ai);for(const s_ of SA.filter(x=>x.area===a.name)){line('      ↳ '+s_.name,SQ[s_.id],'sub');clk('sub',s_.id)}}})}}
+  line('Total',T,'g');clk('all','');
   el.append(h('div',{class:'card',style:'padding:0'},h('div',{class:'tw',style:'border:0'},h('table',{class:'t'},h('tr',{},h('th',{},''),h('th',{class:'n'},'Fill req.'),h('th',{class:'n'},'Fill done'),h('th',{class:'n'},'Fill to go'),h('th',{class:'n'},'%'),h('th',{class:'n'},'Cut req.'),h('th',{class:'n'},'Cut done'),h('th',{class:'n'},'Cut to go'),h('th',{class:'n'},'Prepared m²'),h('th',{class:'n'},'Layer now / needed'),h('th',{class:'n'},'On grade m²')),...rows))));
   el.append(h('div',{class:'mut',style:'font-size:12px'},'Volumes in m³ on the grade points of '+activeDesign().name.split(' – ')[0]+' ('+fmt(B.n)+' points; each point counts for its own grid spacing). Natural ground = the NGL record, newest survey first. Preparation = NGL − '+PD().toFixed(2)+' m (or the surveyed preparation level). Fill is measured from the preparation level; layer 1 sits on the preparation, layer 2 on layer 1 … each '+LT().toFixed(2)+' m, the last one up to the design. “Layer now / needed” = the layer most of the fill area has reached / the most layers any part needs. “On grade” = within ±'+(M.tol*100).toFixed(0)+' cm of this design.'))}
 function qtyCsv(Q,D){const L=[['Group','Fill required m3','Fill done m3','Fill to go m3','Cut required m3','Cut done m3','Cut to go m3','Prepared m2','On grade m2'].join(',')];
@@ -547,7 +553,7 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
   x.lineWidth=1;x.strokeStyle='rgba(238,241,243,.35)';for(const a of K.areas){poly(a.c);x.stroke()}
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);
   if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}}
   if(pick){const [a,b]=W2S(pick.e,pick.n);x.strokeStyle='#ffb020';x.lineWidth=2.5;x.beginPath();x.arc(a,b,9,0,7);x.stroke()}}
@@ -559,13 +565,14 @@ function info(e,n){const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0){
     for(let L=1;L<=ln;L++)rows.push([(L===ln?'Final layer ':'Layer ')+L+(L<=ld?' ✓':''),f3(Math.min(base+LT()*L,z))]);rows.push(['Layers done',ld+' of '+ln])}
   for(const d of designs())if(d.id!==D.id){const v=DZ[d.id][i];if(v===v)rows.push([d.name.split(' – ')[0],f3(v)])}
   const dz=z-c,gk=gradeOf(i,DZ[D.id]);box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';pick=null;draw()}},'×'),h('b',{style:'display:block;margin-bottom:2px;font-size:14px;color:'+(gk?GR[gk][1]:'inherit')},gradeTxt(i,DZ[D.id])),h('div',{class:'mut',style:'font-size:11.5px;margin-bottom:6px'},z>g?'Fill area':'Cut area'),
-    h('div',{class:'kv'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])),a?h('button',{class:'btn sm pri',style:'width:100%;margin-top:10px',onclick:()=>areaSummary(B.A[i])},a.name+' – cut, fill, layers, grade'):null,a?h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>v3Open(B.A[i])},'🧊 '+a.name+' in 3D'):null);box.style.display='block';draw()}
+    h('div',{class:'kv'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])),a?h('button',{class:'btn sm pri',style:'width:100%;margin-top:10px',onclick:()=>areaSummary(B.A[i])},a.name+' – cut, fill, layers, grade'):null,a?h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>v3Open(B.A[i])},'🧊 '+a.name+' in 3D'):null,
+    ...subs().filter(sa=>subTest(sa)(i)).map(sa=>h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet('sub',sa.id)},'Sub-area '+sa.name+' – quantities')),a?h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>subDraw(B.A[i])},'+ Sub-area in '+a.name):null);box.style.display='block';draw()}
 function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=null;
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.offsetX,e.offsetY]);moved=0;last=[e.offsetX,e.offsetY];if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),s:view.s}}});
   c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);view.s=Math.max(0.01,Math.min(20,pinch.s*d/pinch.d));moved=9;draw();return}
     const dx=e.offsetX-last[0],dy=e.offsetY-last[1];if(Math.abs(dx)+Math.abs(dy)>0){moved+=Math.abs(dx)+Math.abs(dy);view.e-=dx/view.s;view.n+=dy/view.s;last=[e.offsetX,e.offsetY];draw()}});
-  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
+  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);if(DRAW){DRAW.pts.push([we,wn]);drawBar();draw()}else info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
   $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
@@ -590,17 +597,6 @@ function groupSum(test,Z){const tol=M.tol,o={fR:0,fD:0,cR:0,cD:0,gF:[0,0,0,0,0,0
 function gradeBar(arr){const tot=arr.reduce((a,b)=>a+b,0);if(!tot)return h('div',{class:'mut',style:'font-size:12px'},'–');
   return h('div',{},h('div',{style:'display:flex;height:10px;border-radius:6px;overflow:hidden;background:#20262a;margin:4px 0 6px'},...[1,2,3,4,5,6].map(k=>arr[k]?h('i',{style:'width:'+(arr[k]/tot*100)+'%;background:'+GR[k][1]}):null)),
     h('div',{style:'display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:#c9d1d8'},...[5,4,3,2,1,6].map(k=>arr[k]?h('span',{},h('i',{style:'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:'+GR[k][1]}),GR[k][0]+' '+fmt(arr[k])+' m²'):null)))}
-function areaSummary(ai){const a=K.areas[ai],D=activeDesign(),Z=DZ[D.id],o=groupSum(i=>B.A[i]===ai,Z),SV=surveys().filter(s=>survArea(s).split(' · ')[0]===a.name).slice(0,5),pc=(x,y)=>y>0?(x/y*100).toFixed(1)+'%':'–';
-  const need=Object.keys(o.lN).length?Math.max(...Object.keys(o.lN).map(Number)):0,now=Object.keys(o.lD).length?+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0]:0;
-  modal(a.name+' · '+a.zone,h('div',{},
-    h('div',{class:'mut',style:'font-size:12px;margin-bottom:10px'},'Design: '+D.name+' · '+fmt(o.n)+' grade points'),
-    h('div',{class:'tw',style:'margin-bottom:12px'},h('table',{class:'t'},h('tr',{},h('th',{},''),h('th',{class:'n'},'Required'),h('th',{class:'n'},'Done'),h('th',{class:'n'},'To go'),h('th',{class:'n'},'%')),
-      h('tr',{},h('td',{},'Fill m³'),h('td',{class:'n'},fmt(o.fR)),h('td',{class:'n'},fmt(o.fD)),h('td',{class:'n'},fmt(o.fR-o.fD)),h('td',{class:'n'},pc(o.fD,o.fR))),
-      h('tr',{},h('td',{},'Cut m³'),h('td',{class:'n'},fmt(o.cR)),h('td',{class:'n'},fmt(o.cD)),h('td',{class:'n'},fmt(o.cR-o.cD)),h('td',{class:'n'},pc(o.cD,o.cR))))),
-    need?h('div',{class:'k',style:'margin-bottom:12px'},h('b',{},(now?'Layer '+now:'Preparation')+' of '+need),h('small',{},'layer most of the fill area has reached · '+Math.max(0,need-now)+' layer'+(need-now===1?'':'s')+' to go')):null,
-    h('div',{class:'lbl'},'Fill area by grade'),gradeBar(o.gF),h('div',{class:'lbl',style:'margin-top:10px'},'Cut area by grade'),gradeBar(o.gC),
-    SV.length?h('div',{style:'margin-top:12px'},h('div',{class:'lbl'},'Latest surveys here'),...SV.map(survItem)):null,
-    h('div',{class:'mut',style:'font-size:11.5px;margin-top:10px'},'Final grade ≤ '+GTH().f.toFixed(2)+' m from design · touch grade ≤ '+GTH().t.toFixed(2)+' m · near grade ≤ '+GTH().n.toFixed(2)+' m.')))}
 /* ============================== REPORTS (daily / monthly, printable) ============================== */
 let repKind=lsGet('as2_rk','day'),repDay=today(),repMon=today().slice(0,7);
 function stateAt(last){const S0={CUR:new Float32Array(G),LL:new Uint8Array(B.n),PZ:new Float32Array(B.n).fill(NaN)};
@@ -613,34 +609,31 @@ function repMap(worked,Z,W,bb,title){W=W||1500;const Hh=Math.round(W*0.62),cv=do
   const L=layer('grade');x.imageSmoothingEnabled=true;const [sx,sy]=P(B.e0-2*L.r,B.n1+2*L.r);x.drawImage(L.cv,sx,sy,L.cv.width*L.r*s,L.cv.height*L.r*s);
   const poly=R=>{x.beginPath();R.forEach((q,i)=>{const [a,b]=P(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});x.closePath()};
   x.strokeStyle='rgba(238,241,243,.35)';x.lineWidth=1;for(const a of K.areas){poly(a.c);x.stroke()}
-  wadiDraw(x,P,s);
+  wadiDraw(x,P,s);subsDraw(x,P,s);
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.5;x.stroke();x.setLineDash([])}
   x.lineWidth=4;x.strokeStyle='#ffb020';for(const ai of worked){poly(K.areas[ai].c);x.stroke()}
   x.textAlign='center';x.textBaseline='middle';for(const [ai,a] of K.areas.entries()){const [p,q]=P(a.lx,a.ly),on=worked.has(ai);x.font=(on?'800 17px ':'600 11px ')+'IBM Plex Sans,system-ui';x.lineWidth=on?5:3;x.strokeStyle='rgba(0,0,0,.8)';const t=a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=on?'#ffb020':'#fff';x.fillText(t,p,q)}
-  x.textAlign='left';x.font='700 15px IBM Plex Sans,system-ui';x.fillStyle='#eef1f3';x.fillText(title||'Grade status · areas worked in the period outlined in amber',14,20);
+  cloudAreas(x,P,worked,!!bb&&bb!==undefined&&W>=1200);
+  x.textAlign='left';x.font='700 15px IBM Plex Sans,system-ui';x.fillStyle='#eef1f3';x.fillText(title||'Grade status · areas surveyed in the period marked with a red cloud',14,20);
   let lx=W-14;x.textAlign='right';x.font='600 12px IBM Plex Sans,system-ui';for(const k of [6,1,2,3,4,5]){x.fillStyle=GR[k][1];const t=GR[k][0];x.fillText(t,lx,20);lx-=x.measureText(t).width+8;x.fillRect(lx-10,13,10,10);lx-=18}
   return cv.toDataURL('image/png')}
-function rRep(){const el=$('#p-rep');el.replaceChildren();
-  el.append(h('div',{class:'noprint'},h('h1',{class:'pt'},'Reports'),h('div',{class:'sub'},'Daily and monthly progress with the map, layers and grade status. Print or save as PDF.'),
-    h('div',{class:'row',style:'margin-bottom:12px'},h('div',{class:'seg'},...[['day','Daily'],['mon','Monthly']].map(([k,l])=>h('button',{class:repKind===k?'on':'',onclick:()=>{repKind=k;lsSet('as2_rk',k);rRep()}},l))),
-      repKind==='day'?h('input',{type:'date',value:repDay,style:'width:auto',onchange:e=>{repDay=e.target.value||today();rRep()}}):h('input',{type:'month',value:repMon,style:'width:auto',onchange:e=>{repMon=e.target.value||today().slice(0,7);rRep()}}),
-      h('span',{class:'sp'}),h('button',{class:'btn pri',onclick:()=>print()},'Print / PDF'),h('button',{class:'btn',onclick:()=>repCsv()},'CSV'))));
-  const d0=repKind==='day'?repDay:repMon+'-01',d1=repKind==='day'?repDay:repMon+'-31',D=designFor(d1),Z=DZ[D.id];
-  const inP=surveys().filter(s=>s.date>=d0&&s.date<=d1).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const changed=designs().filter(x=>x.start>=d0&&x.start<=d1);
-  const worked=new Set();for(const s of inP){const P=PTS[s.id];if(!P)continue;for(const [i] of cover(P))if(B.A[i]>=0)worked.add(B.A[i])}
-  const S1=stateAt(d1),pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
-  const tot=withState(S1,()=>groupSum(()=>true,Z));
-  const AR=[...worked].map(ai=>({ai,a:K.areas[ai],o:withState(S1,()=>groupSum(i=>B.A[i]===ai,Z))}));
-  let zoomBB=null;if(worked.size){let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const ai of worked){const b_=K.areas[ai].bb||bboxOf(K.areas[ai].c);e0=Math.min(e0,b_.e0);e1=Math.max(e1,b_.e1);n0=Math.min(n0,b_.n0);n1=Math.max(n1,b_.n1)}const m=Math.max(80,(e1-e0+n1-n0)*0.08);zoomBB={e0:e0-m,e1:e1+m,n0:n0-m,n1:n1+m}}
-  const [img,img2]=withState(S1,()=>{LYR.grade=null;const u=repMap(worked,Z);const u2=zoomBB?repMap(worked,Z,1500,zoomBB,'Close-up of the areas worked · grade status to '+dNice(d1)):null;LYR.grade=null;return [u,u2]});
+function rRep(){const el=$('#p-rep');el.replaceChildren();const R=repRange();
+  const inp=repKind==='day'?h('input',{type:'date',value:repDay,style:'width:auto',onchange:e=>{repDay=e.target.value||today();rRep()}}):repKind==='wk'?h('label',{class:'row',style:'gap:6px'},h('span',{class:'mut',style:'font-size:12px'},'Week from'),h('input',{type:'date',value:repWk,style:'width:auto',onchange:e=>{repWk=e.target.value||today();lsSet('as2_rw',repWk);rRep()}})):h('input',{type:'month',value:repMon,style:'width:auto',onchange:e=>{repMon=e.target.value||today().slice(0,7);rRep()}});
+  el.append(h('div',{class:'noprint'},h('h1',{class:'pt'},'Reports'),h('div',{class:'sub'},'Daily, weekly and monthly progress: the areas surveyed are marked with a red cloud on the map, and every layer’s survey points are included. Send it on WhatsApp or e-mail, or save it as PDF / Excel.'),
+    h('div',{class:'row',style:'margin-bottom:10px;flex-wrap:wrap;gap:8px'},h('div',{class:'seg'},...[['day','Daily'],['wk','Weekly'],['mon','Monthly']].map(([k,l])=>h('button',{class:repKind===k?'on':'',onclick:()=>{repKind=k;lsSet('as2_rk',k);rRep()}},l))),inp,
+      h('label',{class:'row',style:'gap:6px;font-size:12.5px'},h('input',{type:'checkbox',checked:repPts,style:'width:auto',onchange:e=>{repPts=e.target.checked;lsSet('as2_rp',repPts);rRep()}}),'Survey points')),
+    h('div',{class:'row',style:'margin-bottom:12px;flex-wrap:wrap;gap:8px'},h('button',{class:'btn pri',onclick:()=>repExport('share')},'📤 Send (WhatsApp / e-mail)'),h('button',{class:'btn',onclick:()=>repExport('pdf')},'⬇ PDF'),h('button',{class:'btn',onclick:()=>repExport('xlsx')},'⬇ Excel'),
+      h('button',{class:'btn',onclick:()=>repExport('wa')},'WhatsApp text'),h('button',{class:'btn',onclick:()=>repExport('mail')},'E-mail'),h('button',{class:'btn',onclick:()=>print()},'Print'))));
+  const X=repData(),{D,Z,inP,worked,S1,tot,AR,changed}=X,d0=R.d0,d1=R.d1,pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
+  const zoomBB=repBB(worked);
+  const [img,img2]=withState(S1,()=>{LYR.grade=null;const u=repMap(worked,Z);const u2=zoomBB?repMap(worked,Z,1500,zoomBB,'Close-up · areas surveyed this '+R.word+' (red cloud) · grade status to '+dNice(d1)):null;LYR.grade=null;return [u,u2]});
   const vf=inP.reduce((a,s)=>a+(STAT[s.id]?STAT[s.id].vf:0),0),vc=inP.reduce((a,s)=>a+(STAT[s.id]?STAT[s.id].vc:0),0),who=[...new Set(inP.map(s=>s.surveyor||'–'))];
   const lay=o=>{const need=Object.keys(o.lN).length?Math.max(...Object.keys(o.lN).map(Number)):0;if(!need)return '–';const now=+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0];return (now?'L'+now:'Prep')+' / '+need+' · '+Math.max(0,need-now)+' to go'};
   const paper=h('div',{class:'paper'},
     h('div',{class:'ph'},h('img',{src:document.querySelector('header .lg').src,alt:''}),h('div',{},h('b',{},'ALOMAIER TRADING & CONTRACTING'),h('div',{},'Khuzam 4 – Enabling earthworks · Survey department')),h('span',{style:'flex:1'}),
-      h('div',{style:'text-align:right'},h('b',{},repKind==='day'?'DAILY PROGRESS REPORT':'MONTHLY PROGRESS REPORT'),h('div',{},repKind==='day'?dNice(repDay):MON[+repMon.slice(5)-1]+' '+repMon.slice(0,4)))),
+      h('div',{style:'text-align:right'},h('b',{},R.title),h('div',{},R.when))),
     h('div',{class:'pmeta'},'Design: ',h('b',{},D.name),D.ifc?' (issued '+dmy(D.ifc)+')':'','  ·  work from '+dmy(D.start),changed.length?h('span',{class:'pwarn'},'  ·  New IFC in this period: '+changed.map(x=>x.name+' from '+dmy(x.start)).join(', ')):null),
-    h('div',{class:'pk'},...[['Fill this '+(repKind==='day'?'day':'month'),fmt(vf)+' m³'],['Cut this '+(repKind==='day'?'day':'month'),fmt(vc)+' m³'],['Surveys',inP.length+' · '+fmt(inP.reduce((a,s)=>a+(s.n||0),0))+' pts'],['Surveyors',who.join(', ')||'–'],
+    h('div',{class:'pk'},...[['Fill this '+R.word,fmt(vf)+' m³'],['Cut this '+R.word,fmt(vc)+' m³'],['Surveys',inP.length+' · '+fmt(inP.reduce((a,s)=>a+(s.n||0),0))+' pts'],['Surveyors',who.join(', ')||'–'],
       ['Fill to date',fmt(tot.fD)+' / '+fmt(tot.fR)+' m³ · '+pc(tot.fD,tot.fR)],['Cut to date',fmt(tot.cD)+' / '+fmt(tot.cR)+' m³ · '+pc(tot.cD,tot.cR)]].map(([k,v])=>h('div',{},h('small',{},k),h('b',{},v)))),
     h('div',{class:'pmaps'},img2?h('img',{class:'pmap',src:img2,alt:'Close-up of the areas worked'}):null,h('img',{class:'pmap',src:img,alt:'Site map with grade status'})),
     h('div',{class:'pg2'},h('div',{},h('h4',{},'Fill area by grade (to date)'),gradeBar(tot.gF)),h('div',{},h('h4',{},'Cut area by grade (to date)'),gradeBar(tot.gC))),
@@ -648,14 +641,19 @@ function rRep(){const el=$('#p-rep');el.replaceChildren();
       ...inP.map(s=>{const T=(STAT[s.id]||{}).T;return h('tr',{},h('td',{},dmy(s.date)),h('td',{},s.surveyor||'–'),h('td',{},survArea(s)),h('td',{},kindName(s.kind,s.layer)+(s.wir?' · WIR-'+String(s.wir).padStart(4,'0'):'')),h('td',{},fmt(s.n)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vf)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vc)),h('td',{},T&&T.n?Math.round(T.on/T.n*100)+'%':'–'))})):h('div',{class:'pnone'},'No survey in this period.'),
     AR.length?[h('h4',{},'Areas worked – status to date'),h('table',{class:'pt2'},h('tr',{},h('th',{},'Area'),h('th',{},'Zone'),h('th',{},'Layers'),h('th',{},'Fill done / req. m³'),h('th',{},'Cut done / req. m³'),h('th',{},'Final m²'),h('th',{},'Touch m²'),h('th',{},'Near m²')),
       ...AR.sort((x,y)=>x.a.name.localeCompare(y.a.name)).map(({a,o})=>h('tr',{},h('td',{},a.name),h('td',{},a.zone),h('td',{},lay(o)),h('td',{},fmt(o.fD)+' / '+fmt(o.fR)),h('td',{},fmt(o.cD)+' / '+fmt(o.cR)),h('td',{},fmt(o.gF[5]+o.gC[5])),h('td',{},fmt(o.gF[4]+o.gC[4])),h('td',{},fmt(o.gF[3]+o.gC[3])))))]:null,
-    repKind==='mon'?monBars(inP,d0,d1):null,
+    repKind!=='day'?monBars(inP,d0,d1):null,
+    repPts&&inP.length?[h('h4',{},'Survey points of every layer surveyed'),...inP.map(s=>{const rows=survRows(s),hasT=rows.some(r=>r.tg===r.tg),cl=v=>{const a=Math.abs(v);return !(v===v)?'':a<=(M.tol||0.1)?'color:#148c50':a<=0.3?'color:#c88200':'color:#c8281e'};
+      return h('div',{class:'psv'},h('div',{class:'psvh'},h('b',{},(s.wir?'WIR-'+String(s.wir).padStart(4,'0')+' · ':'')+kindName(s.kind,s.layer)),' · '+dmy(s.date)+' · '+(s.surveyor||'–')+' · '+survArea(s)+' · '+rows.length+' points'),
+        h('table',{class:'pt2 ptp'},h('tr',{},...['Point','Northing','Easting','Design','Before','Surveyed','Surv. − design'].concat(hasT?['Target','Surv. − target']:[]).map(t=>h('th',{},t))),
+          ...rows.slice(0,400).map(r=>h('tr',{},h('td',{},r.id),h('td',{},r.n.toFixed(3)),h('td',{},r.e.toFixed(3)),h('td',{},f3(r.des)),h('td',{},f3(r.prev)),h('td',{},f3(r.z)),h('td',{style:cl(r.dd)},sg(r.dd)),...(hasT?[h('td',{},f3(r.tg)),h('td',{style:cl(r.dt)},sg(r.dt))]:[])))),
+        rows.length>400?h('div',{class:'pnone'},'… '+(rows.length-400)+' more points in the PDF / Excel file'):null)})]:null,
     h('div',{class:'psign'},h('div',{},'Prepared by',h('b',{},'Eng. Muhammad Sheraz Abbasi'),'Survey Engineer'),h('div',{},'Checked by',h('b',{},' '),' '),h('div',{},'Date',h('b',{},dNice(today())),' ')),
     h('div',{class:'pfoot'},'Final grade ≤ '+GTH().f.toFixed(2)+' m · touch grade ≤ '+GTH().t.toFixed(2)+' m · near grade ≤ '+GTH().n.toFixed(2)+' m from design · preparation NGL − '+PD().toFixed(2)+' m · layers '+LT().toFixed(2)+' m · Alomaier Survey 2.0'));
   el.append(paper)}
-function monBars(inP,d0,d1){const by={};for(const s of inP)by[s.date]=(by[s.date]||0)+(STAT[s.id]?STAT[s.id].vf:0);const days=[];const y=+d0.slice(0,4),m=+d0.slice(5,7),nd=new Date(y,m,0).getDate();
-  for(let d=1;d<=nd;d++){const k=d0.slice(0,8)+String(d).padStart(2,'0');days.push([d,by[k]||0])}const mx=Math.max(1,...days.map(x=>x[1]));
-  return h('div',{},h('h4',{},'Fill per day (m³)'),h('div',{class:'pbars'},...days.map(([d,v])=>h('div',{title:d+': '+fmt(v)+' m³'},h('i',{style:'height:'+Math.max(v?3:0,v/mx*100)+'%'}),h('small',{},d%5===1||d===nd?String(d):'')))))}
-function repCsv(){const d0=repKind==='day'?repDay:repMon+'-01',d1=repKind==='day'?repDay:repMon+'-31';const L=['Date,Surveyor,Area,Work,Layer,Points,Fill m3,Cut m3'];
+function monBars(inP,d0,d1){const by={};for(const s of inP)by[s.date]=(by[s.date]||0)+(STAT[s.id]?STAT[s.id].vf:0);const days=[];let nd=0;
+  for(let k=d0;k<=d1;k=addDays(k,1)){nd++;days.push([+k.slice(8),by[k]||0])}const mx=Math.max(1,...days.map(x=>x[1]));
+  return h('div',{},h('h4',{},'Fill per day (m³)'),h('div',{class:'pbars'},...days.map(([d,v])=>h('div',{title:d+': '+fmt(v)+' m³'},h('i',{style:'height:'+Math.max(v?3:0,v/mx*100)+'%'}),h('small',{},days.length<=10||d%5===1||d===nd?String(d):'')))))}
+function repCsv(){const {d0,d1}=repRange();const L=['Date,Surveyor,Area,Work,Layer,Points,Fill m3,Cut m3'];
   for(const s of surveys().filter(s=>s.date>=d0&&s.date<=d1).reverse())L.push([s.date,'"'+(s.surveyor||'')+'"','"'+survArea(s)+'"',(KIND[s.kind]||KIND.other)[0],s.layer||'',s.n,Math.round(STAT[s.id]?STAT[s.id].vf:0),Math.round(STAT[s.id]?STAT[s.id].vc:0)].join(','));
   download('Progress_'+(repKind==='day'?repDay:repMon)+'.csv',L.join('\n'),'text/csv')}
 
@@ -680,7 +678,7 @@ function encPts(P){if(P.E){const n=P.E.length;let e0=1e12,n0=1e12;for(let i=0;i<
 function decPts(o){if(!o)return null;if(o.t===1){const I=new Int32Array(unb64(o.b)),n=I.length/3,T={E:new Float64Array(n),N:new Float64Array(n),Z:new Float32Array(n)};for(let i=0;i<n;i++){T.E[i]=o.e0+I[3*i]/1000;T.N[i]=o.n0+I[3*i+1]/1000;T.Z[i]=I[3*i+2]/1000}return T}
   return String(o.s||'').split(';').filter(Boolean).map(r=>{const q=r.split(',');return {id:q[0],n:+q[1],e:+q[2],z:+q[3]}})}
 function mergeMeta(a,b){if(!b)return a;const o=Object.assign(defMeta(),b,a);
-  for(const L of ['designs','ngl','surveys','surf']){const m=new Map();for(const x of (b[L]||[]))m.set(x.id,x);for(const x of (a[L]||[])){const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)}o[L]=[...m.values()]}
+  for(const L of ['designs','ngl','surveys','surf','subs']){const m=new Map();for(const x of (b[L]||[]))m.set(x.id,x);for(const x of (a[L]||[])){const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)}o[L]=[...m.values()]}
   o.del=Object.assign({},b.del||{},a.del||{});o.edits={};for(const k of new Set([...Object.keys(a.edits||{}),...Object.keys(b.edits||{})])){const x=(a.edits||{})[k],y=(b.edits||{})[k];o.edits[k]=!y?x:!x?y:((x.u||0)>=(y.u||0)?x:y)}
   o.surveyors=[...new Set([...(b.surveyors||[]),...(a.surveyors||[])])];const sa=a.su||0,sb=b.su||0;for(const k of ['tol','prep','lay','gF','gT','gN'])o[k]=sa>=sb?a[k]:b[k];o.su=Math.max(sa,sb);return o}
 const userIds=m=>[...(m.designs||[]),...(m.ngl||[]),...(m.surveys||[]),...(m.surf||[])].filter(x=>!(m.del||{})[x.id]).map(x=>x.id);
@@ -1293,6 +1291,212 @@ body{background:#0e1113}
 function rEq(){const el=$('#p-eq');if(el.querySelector('iframe'))return;
   const html=EQ_SRC.replace('<html>','<html data-theme="dark">').replace('</head>',EQ_CSS+'</head>');
   el.replaceChildren(h('iframe',{id:'equipFrame',title:'Equipment',style:'flex:1;width:100%;height:100%;border:0;background:#0e1113',srcdoc:html}))}
+
+/* ============================== REPORT EXTRAS: revision clouds, survey points, PDF / Excel / share ============================== */
+/* a revision cloud (scalloped outline) around an area, drawn in screen pixels */
+function revCloud(x,S,r){if(S.length<3)return;let cx=0,cy=0;for(const [a,b] of S){cx+=a;cy+=b}cx/=S.length;cy/=S.length;
+  const off=S.map(([a,b])=>{const dx=a-cx,dy=b-cy,L=Math.hypot(dx,dy)||1;return [a+dx/L*r*0.9,b+dy/L*r*0.9]});
+  // walk the outline, one scallop every ~2r
+  const pts=[];for(let j=0;j<off.length;j++){const p=off[j],q=off[(j+1)%off.length],L=Math.hypot(q[0]-p[0],q[1]-p[1]),n=Math.max(1,Math.round(L/(r*2)));for(let k=0;k<n;k++)pts.push([p[0]+(q[0]-p[0])*k/n,p[1]+(q[1]-p[1])*k/n])}
+  if(pts.length>400){const st=Math.ceil(pts.length/400);for(let k=pts.length-1;k>0;k--)if(k%st)pts.splice(k,1)}
+  x.beginPath();x.moveTo(pts[0][0],pts[0][1]);
+  for(let j=0;j<pts.length;j++){const a=pts[j],b=pts[(j+1)%pts.length],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;let nx=-dy/L,ny=dx/L;if((mx-cx)*nx+(my-cy)*ny<0){nx=-nx;ny=-ny}
+    x.quadraticCurveTo(mx+nx*L*0.7,my+ny*L*0.7,b[0],b[1])}
+  x.closePath();x.stroke()}
+function cloudAreas(x,P,worked,big){x.save();x.lineJoin='round';x.lineCap='round';const r=big?9:6;
+  const LST=CLOUDS?CLOUDS:[...worked].map(ai=>({c:K.areas[ai].c,name:K.areas[ai].name.replace('AREA ','').replace(/^W\s*/,'W')}));
+  for(const a of LST){const S=a.c.map(q=>P(q[0],q[1]));x.strokeStyle='rgba(0,0,0,.55)';x.lineWidth=big?6:4.5;revCloud(x,S,r);x.strokeStyle='#ff3b30';x.lineWidth=big?3.2:2.4;revCloud(x,S,r);
+    // a small triangle tag with the area number, like a revision mark
+    let tx=-1e9,ty=0;for(const [p,q] of S)if(p>tx){tx=p;ty=q}tx+=r*2.4;const t=a.name;x.font='800 '+(t.length>3?8.5:10)+'px IBM Plex Sans,system-ui';x.fillStyle='#ff3b30';x.beginPath();x.moveTo(tx,ty-13);x.lineTo(tx+13,ty+10);x.lineTo(tx-13,ty+10);x.closePath();x.fill();
+    x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.fillText(t,tx,ty+3)}
+  x.restore()}
+
+/* the period the report covers */
+let repWk=lsGet('as2_rw','')||(()=>{const d=new Date(Date.parse(today()));d.setDate(d.getDate()-6);return d.toISOString().slice(0,10)})(),repPts=lsGet('as2_rp',true)!==false;
+const addDays=(d,n)=>{const t=new Date(Date.parse(d)+n*864e5);return t.toISOString().slice(0,10)};
+function repRange(){if(repKind==='day')return {d0:repDay,d1:repDay,word:'day',title:'DAILY PROGRESS REPORT',when:dNice(repDay),file:repDay};
+  if(repKind==='wk'){const d1=addDays(repWk,6);return {d0:repWk,d1,word:'week',title:'WEEKLY PROGRESS REPORT',when:dNice(repWk)+' – '+dNice(d1),file:'week_'+repWk}}
+  const y=+repMon.slice(0,4),m=+repMon.slice(5,7),nd=new Date(y,m,0).getDate();return {d0:repMon+'-01',d1:repMon+'-'+String(nd).padStart(2,'0'),word:'month',title:'MONTHLY PROGRESS REPORT',when:MON[m-1]+' '+y,file:repMon}}
+
+/* every point of a survey: design, the level before it, the level surveyed, and for a fill layer its target */
+const PREVC={};
+function prevState(date){const k=addDays(date,-1);if(!PREVC[k])PREVC[k]=stateAt(k);return PREVC[k]}
+function survRows(s){const P=PTS[s.id];if(!P)return [];const T=P.E?P:null,n=T?T.E.length:P.length,D=designFor(s.date),Z=DZ[D.id]||DZ[activeDesign().id],S0=prevState(s.date),rows=[];
+  for(let t=0;t<n;t++){const e=T?T.E[t]:P[t].e,nn=T?T.N[t]:P[t].n,z=T?T.Z[t]:P[t].z,id=T?String(t+1):(P[t].id||String(t+1)),i=nearestBase(e,nn);
+    const des=i>=0?Z[i]:NaN,prev=i>=0?S0.CUR[i]:NaN;let tgt=NaN;
+    if(i>=0&&s.kind==='fill'&&s.layer){const base=S0.PZ[i]===S0.PZ[i]?S0.PZ[i]:G[i]-PD();tgt=Math.min(base+LT()*s.layer,des===des?des:1e9)}
+    else if(i>=0&&s.kind==='prep')tgt=G[i]-PD();else if(i>=0&&(s.kind==='final'||s.kind==='cut'))tgt=des;
+    rows.push({id,n:nn,e,des,prev,z,dd:z-des,tg:tgt,dt:z-tgt})}
+  return rows}
+const f3=v=>v===v&&v!=null?v.toFixed(3):'–',sg=v=>v===v&&v!=null?(v>=0?'+':'')+v.toFixed(3):'–';
+
+/* collect everything a report needs once, for the page, the PDF and the Excel file */
+function repData(){const R=repRange(),D=designFor(R.d1),Z=DZ[D.id];
+  const inP=surveys().filter(s=>s.date>=R.d0&&s.date<=R.d1).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const worked=new Set();for(const s of inP){const P=PTS[s.id];if(!P)continue;for(const [i] of cover(P))if(B.A[i]>=0)worked.add(B.A[i])}
+  const S1=stateAt(R.d1),tot=withState(S1,()=>groupSum(()=>true,Z));
+  const AR=[...worked].map(ai=>({ai,a:K.areas[ai],o:withState(S1,()=>groupSum(i=>B.A[i]===ai,Z))})).sort((x,y)=>x.a.name.localeCompare(y.a.name));
+  const vf=inP.reduce((a,s)=>a+(STAT[s.id]?STAT[s.id].vf:0),0),vc=inP.reduce((a,s)=>a+(STAT[s.id]?STAT[s.id].vc:0),0),who=[...new Set(inP.map(s=>s.surveyor||'–'))];
+  return {R,D,Z,inP,worked,S1,tot,AR,vf,vc,who,changed:designs().filter(x=>x.start>=R.d0&&x.start<=R.d1)}}
+const layTxt2=o=>{const need=Object.keys(o.lN).length?Math.max(...Object.keys(o.lN).map(Number)):0;if(!need)return '–';const now=+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0];return (now?'L'+now:'Prep')+' / '+need+' · '+Math.max(0,need-now)+' to go'};
+function repSummaryText(X){const pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
+  return 'Alomaier – Khuzam 4 · '+X.R.title.toLowerCase().replace(/^\w/,c=>c.toUpperCase())+'\n'+X.R.when+'\n\n'+
+    'Fill this '+X.R.word+': '+fmt(X.vf)+' m³\nCut this '+X.R.word+': '+fmt(X.vc)+' m³\nSurveys: '+X.inP.length+(X.who.length?' ('+X.who.join(', ')+')':'')+'\n'+
+    (X.AR.length?'Areas: '+X.AR.map(r=>r.a.name.replace('AREA ','A')+' '+layTxt2(r.o).split(' · ')[0]).join(', ')+'\n':'')+
+    '\nFill to date: '+fmt(X.tot.fD)+' / '+fmt(X.tot.fR)+' m³ ('+pc(X.tot.fD,X.tot.fR)+')\nCut to date: '+fmt(X.tot.cD)+' / '+fmt(X.tot.cR)+' m³ ('+pc(X.tot.cD,X.tot.cR)+')\n\nEng. Muhammad Sheraz Abbasi · Survey Engineer'}
+
+/* ---------- PDF (jsPDF + tables), A4 landscape ---------- */
+const JSPDF_URL='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',AUTOT_URL='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+function toJpg(url,bg,q){return new Promise(res=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.fillStyle=bg||'#ffffff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);res(c.toDataURL('image/jpeg',q||0.82))};im.onerror=()=>res(url);im.src=url})}
+async function repPdf(X,maps){maps=await Promise.all(maps.map(u=>u?toJpg(u,'#0b0e10',0.8):u));const LOGOJ=await toJpg(document.querySelector('header .lg').src,'#0e1113',0.9);await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF));await loadJs(AUTOT_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable));
+  const doc=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'}),san=t=>typeof t==='string'?t.replace(/³/g,'3').replace(/²/g,'2').replace(/≤/g,'<=').replace(/−/g,'-').replace(/→/g,'->').replace(/[^\x00-\xff–—…·]/g,''):t,_txt=doc.text.bind(doc);doc.text=(t,...a)=>_txt(Array.isArray(t)?t.map(san):san(t),...a);const W=297,M_=10,AM=[255,176,32],INK=[20,26,30];const pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
+  const head=()=>{doc.setFillColor(14,17,19);doc.rect(0,0,W,20,'F');try{doc.addImage(LOGOJ,'JPEG',M_,3,14,14,'logo')}catch(e){}
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('ALOMAIER TRADING & CONTRACTING',M_+18,9);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(190,198,205);doc.text('Khuzam 4 – Enabling earthworks · Survey department',M_+18,14.5);
+    doc.setTextColor(...AM);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(X.R.title,W-M_,9,{align:'right'});doc.setTextColor(255,255,255);doc.setFontSize(9);doc.text(X.R.when,W-M_,14.5,{align:'right'})};
+  head();let y=25;doc.setTextColor(...INK);doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.text('Design: '+X.D.name+(X.D.ifc?' (issued '+dmy(X.D.ifc)+')':'')+' · work from '+dmy(X.D.start)+(X.changed.length?' · NEW IFC: '+X.changed.map(x=>x.name).join(', '):''),M_,y);y+=3;
+  const K6=[['Fill this '+X.R.word,fmt(X.vf)+' m³'],['Cut this '+X.R.word,fmt(X.vc)+' m³'],['Surveys',X.inP.length+' · '+fmt(X.inP.reduce((a,s)=>a+(s.n||0),0))+' pts'],['Surveyors',X.who.join(', ')||'–'],['Fill to date',fmt(X.tot.fD)+' / '+fmt(X.tot.fR)+' m³ · '+pc(X.tot.fD,X.tot.fR)],['Cut to date',fmt(X.tot.cD)+' / '+fmt(X.tot.cR)+' m³ · '+pc(X.tot.cD,X.tot.cR)]];
+  const bw=(W-2*M_-5*3)/6;K6.forEach(([k,v],j)=>{const x=M_+j*(bw+3);doc.setDrawColor(220,224,228);doc.setFillColor(246,247,248);doc.roundedRect(x,y,bw,15,1.5,1.5,'FD');doc.setFontSize(7);doc.setTextColor(110,118,126);doc.text(k.toUpperCase(),x+2.5,y+4.5);doc.setFontSize(8.2);doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.text(doc.splitTextToSize(san(v),bw-4).slice(0,2),x+2.5,y+9);doc.setFont('helvetica','normal')});y+=19;
+  // maps: close-up with the cloud on the left, whole site on the right
+  const mw=(W-2*M_-4)/2,mh=mw*0.62;if(maps[1])doc.addImage(maps[1],'JPEG',M_,y,mw,mh);doc.addImage(maps[0],'JPEG',maps[1]?M_+mw+4:M_+mw/2,y,mw,mh);y+=mh+3;
+  doc.setFontSize(7.5);doc.setTextColor(200,40,30);doc.text('Red cloud = area(s) surveyed in this '+X.R.word,M_,y+2);
+  // tables
+  doc.addPage();head();const AT=(o)=>{for(const k of ['head','body'])if(o[k])o[k]=o[k].map(r=>r.map(san));return doc.autoTable(Object.assign({theme:'grid',styles:{fontSize:7.6,cellPadding:1.3,textColor:INK,lineColor:[220,224,228]},headStyles:{fillColor:[28,33,37],textColor:[255,255,255],fontStyle:'bold'},alternateRowStyles:{fillColor:[248,249,250]},margin:{left:M_,right:M_,top:24},didDrawPage:()=>head()},o))};
+  doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text('Work surveyed',M_,27);
+  AT({startY:29,head:[['Date','Surveyor','Area · zone · phase','Work','Points','Fill m³','Cut m³','On target']],body:X.inP.length?X.inP.map(s=>{const T=(STAT[s.id]||{}).T;return [dmy(s.date),s.surveyor||'–',survArea(s),kindName(s.kind,s.layer)+(s.wir?' · WIR-'+String(s.wir).padStart(4,'0'):''),fmt(s.n),fmt(STAT[s.id]&&STAT[s.id].vf),fmt(STAT[s.id]&&STAT[s.id].vc),T&&T.n?Math.round(T.on/T.n*100)+'%':'–']}):[['No survey in this period','','','','','','','']]});
+  if(X.AR.length){let yy=doc.lastAutoTable.finalY+7;if(yy>185){doc.addPage();head();yy=28}doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.text('Areas worked – status to date',M_,yy);
+    AT({startY:yy+2,head:[['Area','Zone','Layers','Fill done / req. m³','Cut done / req. m³','Final m²','Touch m²','Near m²']],body:X.AR.map(({a,o})=>[a.name,a.zone||'',layTxt2(o),fmt(o.fD)+' / '+fmt(o.fR),fmt(o.cD)+' / '+fmt(o.cR),fmt(o.gF[5]+o.gC[5]),fmt(o.gF[4]+o.gC[4]),fmt(o.gF[3]+o.gC[3])])})}
+  // the survey points of every layer surveyed
+  if(repPts)for(const s of X.inP){const rows=survRows(s);if(!rows.length)continue;doc.addPage();head();const t='WIR / survey: '+(s.wir?'WIR-'+String(s.wir).padStart(4,'0')+' · ':'')+kindName(s.kind,s.layer)+' · '+dmy(s.date)+' · '+(s.surveyor||'–')+' · '+survArea(s);
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text(doc.splitTextToSize(t,W-2*M_)[0],M_,27);const lim=1500,hasT=rows.some(r=>r.tg===r.tg);
+    AT({startY:29,head:[['Point','Northing','Easting','Design','Before','Surveyed','Surveyed − design'].concat(hasT?['Target','Surveyed − target']:[])],
+      body:rows.slice(0,lim).map(r=>[r.id,r.n.toFixed(3),r.e.toFixed(3),f3(r.des),f3(r.prev),f3(r.z),sg(r.dd)].concat(hasT?[f3(r.tg),sg(r.dt)]:[])),
+      didParseCell:d=>{if(d.section==='body'&&(d.column.index===6||d.column.index===8)){const v=parseFloat(d.cell.raw);if(isFinite(v)){const a=Math.abs(v);d.cell.styles.textColor=a<=(M.tol||0.1)?[20,140,80]:a<=0.3?[200,130,0]:[200,40,30]}}}});
+    if(rows.length>lim){doc.setFontSize(8);doc.text('… '+(rows.length-lim)+' more points in the Excel file.',M_,doc.lastAutoTable.finalY+5)}}
+  // sign-off and page numbers
+  let yy=doc.lastAutoTable?doc.lastAutoTable.finalY+12:40;if(yy>180){doc.addPage();head();yy=34}doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(...INK);
+  [['Prepared by','Eng. Muhammad Sheraz Abbasi','Survey Engineer'],['Checked by','',''],['Date',dNice(today()),'']].forEach(([a,b,c],j)=>{const x=M_+j*92;doc.setDrawColor(150);doc.line(x,yy+12,x+80,yy+12);doc.setTextColor(110);doc.text(a,x,yy);doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.text(b,x,yy+6);doc.setFont('helvetica','normal');doc.text(c,x,yy+17)});
+  const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setFontSize(7);doc.setTextColor(130);doc.text('Alomaier Survey 2.0 · final ≤ '+GTH().f.toFixed(2)+' m · touch ≤ '+GTH().t.toFixed(2)+' m · near ≤ '+GTH().n.toFixed(2)+' m · prep NGL − '+PD().toFixed(2)+' m · layers '+LT().toFixed(2)+' m',M_,205);doc.text('Page '+p+' of '+np,W-M_,205,{align:'right'})}
+  return doc.output('blob')}
+
+/* ---------- Excel: summary, surveys, areas, every point ---------- */
+async function repXlsx(X){await loadJs(XLSX_URL,()=>!!window.XLSX);const wb=XLSX.utils.book_new(),pc=(a,b)=>b>0?+(a/b*100).toFixed(1):0;
+  const sum=[['Alomaier Trading & Contracting – Khuzam 4'],[X.R.title,X.R.when],['Design',X.D.name],[],['Fill this '+X.R.word+' (m³)',Math.round(X.vf)],['Cut this '+X.R.word+' (m³)',Math.round(X.vc)],['Surveys',X.inP.length],['Surveyors',X.who.join(', ')],
+    ['Fill to date (m³)',Math.round(X.tot.fD),'of',Math.round(X.tot.fR),pc(X.tot.fD,X.tot.fR)+'%'],['Cut to date (m³)',Math.round(X.tot.cD),'of',Math.round(X.tot.cR),pc(X.tot.cD,X.tot.cR)+'%'],[],['Prepared by','Eng. Muhammad Sheraz Abbasi – Survey Engineer']];
+  const ws1=XLSX.utils.aoa_to_sheet(sum);ws1['!cols']=[{wch:26},{wch:40},{wch:6},{wch:14},{wch:8}];XLSX.utils.book_append_sheet(wb,ws1,'Summary');
+  const sv=[['Date','Surveyor','Area · zone · phase','Work','Layer','WIR','Points','Fill m³','Cut m³','On target %']].concat(X.inP.map(s=>{const T=(STAT[s.id]||{}).T;return [s.date,s.surveyor||'',survArea(s),(KIND[s.kind]||KIND.other)[0],s.layer||'',s.wir?'WIR-'+String(s.wir).padStart(4,'0'):'',s.n||0,Math.round(STAT[s.id]?STAT[s.id].vf:0),Math.round(STAT[s.id]?STAT[s.id].vc:0),T&&T.n?Math.round(T.on/T.n*100):'']}));
+  const ws2=XLSX.utils.aoa_to_sheet(sv);ws2['!cols']=[{wch:11},{wch:22},{wch:34},{wch:22},{wch:6},{wch:10},{wch:8},{wch:10},{wch:10},{wch:10}];XLSX.utils.book_append_sheet(wb,ws2,'Surveys');
+  const ar=[['Area','Zone','Layers','Fill done m³','Fill required m³','Cut done m³','Cut required m³','Final m²','Touch m²','Near m²']].concat(X.AR.map(({a,o})=>[a.name,a.zone||'',layTxt2(o),Math.round(o.fD),Math.round(o.fR),Math.round(o.cD),Math.round(o.cR),Math.round(o.gF[5]+o.gC[5]),Math.round(o.gF[4]+o.gC[4]),Math.round(o.gF[3]+o.gC[3])]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ar),'Areas');
+  const pt=[['Date','Survey','Area','Point','Northing','Easting','Design','Before','Surveyed','Surveyed − design','Target','Surveyed − target']];
+  for(const s of X.inP){const nm=(s.wir?'WIR-'+String(s.wir).padStart(4,'0')+' ':'')+kindName(s.kind,s.layer);for(const r of survRows(s))pt.push([s.date,nm,survArea(s).split(' · ')[0],r.id,+r.n.toFixed(3),+r.e.toFixed(3),r.des===r.des?+r.des.toFixed(3):'',r.prev===r.prev?+r.prev.toFixed(3):'',+r.z.toFixed(3),r.dd===r.dd?+r.dd.toFixed(3):'',r.tg===r.tg?+r.tg.toFixed(3):'',r.dt===r.dt?+r.dt.toFixed(3):''])}
+  const ws4=XLSX.utils.aoa_to_sheet(pt);ws4['!cols']=[{wch:11},{wch:22},{wch:10},{wch:8},{wch:13},{wch:12},{wch:9},{wch:9},{wch:9},{wch:10},{wch:9},{wch:10}];XLSX.utils.book_append_sheet(wb,ws4,'Survey points');
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});return new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+function saveBlob(blob,name){const a=h('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+async function repExport(how){const X=repData(),base='Alomaier_K4_'+X.R.title.split(' ')[0].toLowerCase()+'_report_'+X.R.file;toast('Preparing the report…');
+  try{if(how==='xlsx'){saveBlob(await repXlsx(X),base+'.xlsx');return}
+    if(how==='wa'){open('https://wa.me/?text='+encodeURIComponent(repSummaryText(X)),'_blank');return}
+    if(how==='mail'){location.href='mailto:?subject='+encodeURIComponent('Khuzam 4 – '+X.R.title.toLowerCase()+' – '+X.R.when)+'&body='+encodeURIComponent(repSummaryText(X)+'\n\n(The PDF report is attached.)');return}
+    const maps=withState(X.S1,()=>{LYR.grade=null;const bb=repBB(X.worked);const a=repMap(X.worked,X.Z,1600),b=bb?repMap(X.worked,X.Z,1600,bb,'Close-up · areas surveyed this '+X.R.word+' (red cloud)'):null;LYR.grade=null;return [a,b]});
+    const pdf=await repPdf(X,maps);
+    if(how==='share'){const f=new File([pdf],base+'.pdf',{type:'application/pdf'}),fx=new File([await repXlsx(X)],base+'.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const files=navigator.canShare&&navigator.canShare({files:[f,fx]})?[f,fx]:[f];
+      if(navigator.canShare&&navigator.canShare({files})){try{await navigator.share({files,title:X.R.title+' – '+X.R.when,text:repSummaryText(X)});return}catch(e){if(e&&e.name==='AbortError')return}}
+      toast('This browser cannot share files – the PDF is saved instead');}
+    saveBlob(pdf,base+'.pdf')}catch(e){console.error(e);toast('Could not make the report: '+(e.message||e)+' (needs internet the first time)')}}
+function repBB(worked){if(!worked.size)return null;let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const ai of worked){const b_=K.areas[ai].bb||bboxOf(K.areas[ai].c);e0=Math.min(e0,b_.e0);e1=Math.max(e1,b_.e1);n0=Math.min(n0,b_.n0);n1=Math.max(n1,b_.n1)}const m=Math.max(80,(e1-e0+n1-n0)*0.08);return {e0:e0-m,e1:e1+m,n0:n0-m,n1:n1+m}}
+
+/* ============================== SUB-AREAS (our own working pieces inside the consultant's areas 1–40) ============================== */
+const subs=()=>(M.subs||[]).filter(x=>!M.del[x.id]);
+function subOf(s){const ai=K.areas.findIndex(a=>a.name===s.area);return ai}
+function subTest(s){const ai=subOf(s),bb=s.bb||(s.bb=bboxOf(s.c));return i=>B.A[i]===ai&&B.E[i]>=bb.e0&&B.E[i]<=bb.e1&&B.N[i]>=bb.n0&&B.N[i]<=bb.n1&&inPoly(B.E[i],B.N[i],s.c)}
+let DRAW=null;
+function subDraw(ai,edit){if(!guard())return;show('map');DRAW={ai,pts:edit?edit.c.slice():[],edit};mapFocus=null;
+  setTimeout(()=>{if(ai!=null){const b=K.areas[ai].bb||bboxOf(K.areas[ai].c);fitBox(b.e0-30,b.e1+30,b.n0-30,b.n1+30)}drawBar();draw()},60)}
+function drawBar(){let b=$('#drawBar');if(!DRAW){if(b)b.remove();return}if(!b){b=h('div',{id:'drawBar'});$('#mapBox').append(b)}
+  b.replaceChildren(h('div',{style:'font-weight:700'},'New sub-area'+(DRAW.ai!=null?' in '+K.areas[DRAW.ai].name:'')),h('div',{class:'mut',style:'font-size:12px'},'Tap the corners on the map · '+DRAW.pts.length+' corner'+(DRAW.pts.length===1?'':'s')),
+    h('div',{class:'row',style:'gap:6px;margin-top:6px;flex-wrap:wrap'},h('button',{class:'btn sm',onclick:()=>{DRAW.pts.pop();drawBar();draw()}},'↶ Undo'),h('button',{class:'btn sm',onclick:subPaste},'Type N, E'),
+      h('button',{class:'btn sm',onclick:()=>{DRAW=null;drawBar();draw()}},'Cancel'),h('button',{class:'btn sm pri',onclick:subSave},'Save')))}
+function subPaste(){const ta=h('textarea',{placeholder:'One corner per line: N, E\n2762640.05, 666145.40\n…',style:'min-height:140px'});
+  modal('Sub-area corners',h('div',{},ta,h('div',{class:'mut',style:'font-size:12px;margin-top:6px'},'Northing and Easting of each corner, in order around the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const P=[];for(const l of ta.value.split(/\n/)){const v=(l.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);const N=v.find(x=>x>B.n0-5000&&x<B.n1+5000),E=v.find(x=>x>B.e0-5000&&x<B.e1+5000);if(N&&E)P.push([E,N])}
+    if(P.length<3){toast('Need at least 3 corners');return}DRAW.pts=P;close();drawBar();fitTo(P.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
+function subSave(){if(!DRAW||DRAW.pts.length<3){toast('Tap at least 3 corners');return}let cx=0,cy=0;for(const q of DRAW.pts){cx+=q[0];cy+=q[1]}cx/=DRAW.pts.length;cy/=DRAW.pts.length;
+  let ai=DRAW.ai;if(ai==null){const i=nearestBase(cx,cy,400);ai=i>=0?B.A[i]:-1}if(ai<0){toast('The sub-area must be inside an area');return}
+  const a=K.areas[ai],n0=subs().filter(s=>s.area===a.name).length,nm=h('input',{value:DRAW.edit?DRAW.edit.name:a.name.replace('AREA ','')+'-'+String.fromCharCode(65+n0)}),nt=h('input',{value:DRAW.edit?DRAW.edit.note||'':'',placeholder:'e.g. east side, near the crusher'});
+  modal(DRAW.edit?'Sub-area':'Name the sub-area',h('div',{},h('label',{class:'f'},h('span',{},'Name'),nm),h('label',{class:'f'},h('span',{},'Note'),nt),h('div',{class:'mut',style:'font-size:12px'},'Inside '+a.name+' · '+a.zone+' · '+fmt(Math.round(polyArea(DRAW.pts)))+' m²')),
+    close=>[h('button',{class:'btn',onclick:close},'Back'),h('button',{class:'btn pri',onclick:()=>{const o={name:nm.value.trim()||'Sub-area',note:nt.value.trim(),area:a.name,c:DRAW.pts.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]),u:Date.now()};
+      M.subs=M.subs||[];if(DRAW.edit)Object.assign(M.subs.find(x=>x.id===DRAW.edit.id),o);else M.subs.push(Object.assign({id:'sa'+uid()},o));saveMeta();close();DRAW=null;drawBar();draw();toast('Sub-area saved – it is in Quantities and Reports')}},'Save')])}
+function subsDraw(x,P,s){if(s<0.05)return;x.save();x.setLineDash([6,4]);x.lineWidth=1.8;x.strokeStyle='#e9d5ff';x.textAlign='center';x.textBaseline='middle';x.font='700 11px IBM Plex Sans,system-ui';
+  for(const sa of subs()){x.beginPath();sa.c.forEach((q,i)=>{const [a,b]=P(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});x.closePath();x.stroke();if(s>0.15){let cx=0,cy=0;for(const q of sa.c){const [a,b]=P(q[0],q[1]);cx+=a;cy+=b}cx/=sa.c.length;cy/=sa.c.length;x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.75)';x.setLineDash([]);x.strokeText(sa.name,cx,cy);x.fillStyle='#e9d5ff';x.fillText(sa.name,cx,cy);x.setLineDash([6,4]);x.lineWidth=1.8;x.strokeStyle='#e9d5ff'}}
+  if(DRAW&&DRAW.pts.length){x.setLineDash([]);x.strokeStyle='#ffb020';x.lineWidth=2.5;x.beginPath();DRAW.pts.forEach((q,i)=>{const [a,b]=P(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(DRAW.pts.length>2)x.closePath();x.stroke();x.fillStyle='#ffb020';for(const q of DRAW.pts){const [a,b]=P(q[0],q[1]);x.beginPath();x.arc(a,b,5,0,7);x.fill()}}
+  x.restore()}
+
+/* ============================== QUANTITY SHEET for any phase / zone / area / sub-area ============================== */
+function qtyOf(test,Z){const tol=M.tol||0.1,r={fR:0,fD:0,cR:0,cD:0,on:0,n:0,prep:0,prepR:0,fz:0,sv:0,lN:{},lD:{},m2:0};
+  for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g))continue;const cell=B.C[i],c=CUR[i],need=z-g;r.n++;r.m2+=cell;if(Math.abs(c-z)<=tol)r.on+=cell;
+    if(need>0){const base=prepLevel(i),nf=z-base,pr=prepared(i);r.fR+=nf*cell;if(pr)r.fD+=Math.max(0,Math.min(nf,c-base))*cell;r.prepR+=cell;if(pr)r.prep+=cell;const ln=layersNeeded(i,Z),ld=layersDone(i,Z);r.lN[ln]=(r.lN[ln]||0)+1;r.lD[ld]=(r.lD[ld]||0)+1}
+    else{r.cR+=-need*cell;r.cD+=Math.max(0,Math.min(-need,g-c))*cell}}
+  return r}
+/* a group: what it is, which grade points belong to it, and what to draw a cloud around */
+function grp(type,key){if(type==='phase')return {type,key,name:'Phase '+key,test:i=>B.P[i]===+key,clouds:(K.phases[key]||[]).filter(r=>r&&r.length>2).map(c=>({c,name:'P'+key})),kids:()=>Object.keys(QTMP).filter(k=>k.startsWith('Z'+key+'|')).sort().map(k=>grp('zone',k.slice(1)))};
+  if(type==='zone'){const [p,z]=key.split('|');const A=K.areas.map((a,ai)=>[a,ai]).filter(([a])=>a.zone===z);return {type,key,name:'Phase '+p+' · '+(z?'Zone '+z:'No zone'),test:i=>B.P[i]===+p&&B.A[i]>=0&&K.areas[B.A[i]].zone===z,clouds:A.map(([a])=>({c:a.c,name:a.name.replace('AREA ','')})),kids:()=>A.filter(([a,ai])=>QTMP['A'+ai]).map(([a,ai])=>grp('area',ai))}}
+  if(type==='area'){const ai=+key,a=K.areas[ai];return {type,key,name:a.name+' · '+(a.zone||''),test:i=>B.A[i]===ai,clouds:[{c:a.c,name:a.name.replace('AREA ','')}],ai,kids:()=>subs().filter(s=>s.area===a.name).map(s=>grp('sub',s.id))}}
+  if(type==='sub'){const s=subs().find(x=>x.id===key);return {type,key,name:'Sub-area '+s.name+' · '+s.area,test:subTest(s),clouds:[{c:s.c,name:s.name}],ai:subOf(s),sub:s,kids:()=>[]}}
+  return {type:'all',key:'',name:'Whole project',test:()=>true,clouds:[],kids:()=>[1,2,3,4].filter(p=>QTMP['P'+p]).map(p=>grp('phase',p))}}
+let QTMP={};
+function grpBB(g){let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const cl of g.clouds)for(const q of cl.c){e0=Math.min(e0,q[0]);e1=Math.max(e1,q[0]);n0=Math.min(n0,q[1]);n1=Math.max(n1,q[1])}if(e0>e1)return null;const m=Math.max(60,(e1-e0+n1-n0)*0.08);return {e0:e0-m,e1:e1+m,n0:n0-m,n1:n1+m}}
+let CLOUDS=null;  // when set, the report map draws clouds around these outlines instead of around areas
+function grpMaps(g,Z){CLOUDS=g.clouds;try{LYR.grade=null;const bb=grpBB(g);const a=bb?repMap(new Set(),Z,1500,bb,g.name+' · grade status '+dNice(today())+' (red cloud)'):null;const b=repMap(new Set(),Z,1500,null,'Where it is on the site');LYR.grade=null;return [a,b]}finally{CLOUDS=null}}
+function grpSurveys(g){const out=[];for(const s of surveys()){const P=PTS[s.id];if(!P)continue;let k=0;for(const [i] of cover(P))if(g.test(i)){k++;if(k>3)break}if(k)out.push(s)}return out.sort((a,b)=>(b.date||'').localeCompare(a.date||''))}
+function qtySheet(type,key){if(!ready)return;const D=activeDesign(),Z=DZ[D.id];QTMP=qtyRows(Z);const g=grp(type,key),o=qtyOf(g.test,Z),go=groupSum(g.test,Z),pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–';
+  const kids=g.kids().map(k=>({g:k,o:qtyOf(k.test,Z)})),SV=grpSurveys(g),[m1,m2]=grpMaps(g,Z);
+  let ov=$('#qs');if(ov)ov.remove();ov=h('div',{id:'qs'});document.body.append(ov);document.body.style.overflow='hidden';
+  const close=()=>{ov.remove();document.body.style.overflow=''};
+  const kk=(v,t,c)=>h('div',{class:'k'},h('b',{style:c?'color:'+c:''},v),h('small',{},t));
+  ov.append(h('div',{class:'qsb'},h('button',{class:'btn sm',onclick:close},'✕ Close'),h('b',{style:'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'},g.name),
+      h('button',{class:'btn sm pri',onclick:()=>qtyExport(g,'share')},'📤 Send'),h('button',{class:'btn sm',onclick:()=>qtyExport(g,'pdf')},'PDF'),h('button',{class:'btn sm',onclick:()=>qtyExport(g,'xlsx')},'Excel')),
+    h('div',{class:'qsc'},
+      h('div',{class:'mut',style:'font-size:12px;margin-bottom:8px'},'Design: '+D.name+' · '+fmt(o.n)+' grade points · '+fmt(Math.round(o.m2))+' m²'+(g.sub&&g.sub.note?' · '+g.sub.note:'')),
+      h('div',{class:'kk k4',style:'margin-bottom:12px'},kk(fmt(o.fD),'m³ fill done · '+pc(o.fD,o.fR),'var(--am)'),kk(fmt(o.fR-o.fD),'m³ fill to go of '+fmt(o.fR)),kk(fmt(o.cD),'m³ cut done · '+pc(o.cD,o.cR),'var(--bad)'),kk(fmt(o.cR-o.cD),'m³ cut to go of '+fmt(o.cR))),
+      h('div',{class:'kk k4',style:'margin-bottom:12px'},kk(layTxt(o),'layer now / needed'),kk(fmt(Math.round(o.prep))+' / '+fmt(Math.round(o.prepR)),'m² prepared'),kk(fmt(Math.round(o.on)),'m² on design ±'+(M.tol*100).toFixed(0)+' cm'),kk(String(SV.length),'surveys here')),
+      h('div',{class:'pmaps',style:'display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-bottom:12px'},m1?h('img',{src:m1,style:'width:100%;border-radius:12px'}):null,h('img',{src:m2,style:'width:100%;border-radius:12px'})),
+      h('div',{class:'grid2',style:'margin-bottom:12px'},h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Fill area by grade'),gradeBar(go.gF)),h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Cut area by grade'),gradeBar(go.gC))),
+      kids.length?h('div',{class:'card',style:'padding:0'},h('div',{class:'ct',style:'padding:12px 14px 0'},h('h3',{},{phase:'Zones',zone:'Areas',area:'Sub-areas',all:'Phases'}[g.type]||'Parts')),h('div',{class:'tw',style:'border:0'},h('table',{class:'t'},h('tr',{},h('th',{},''),h('th',{class:'n'},'Fill req.'),h('th',{class:'n'},'Fill done'),h('th',{class:'n'},'To go'),h('th',{class:'n'},'%'),h('th',{class:'n'},'Cut req.'),h('th',{class:'n'},'Cut done'),h('th',{class:'n'},'To go'),h('th',{class:'n'},'Layer')),
+        ...kids.map(({g:k,o:r})=>h('tr',{style:'cursor:pointer',onclick:()=>qtySheet(k.type,k.key)},h('td',{},k.name.split(' · ')[k.type==='zone'?1:0]+' ›'),h('td',{class:'n'},fmt(r.fR)),h('td',{class:'n'},fmt(r.fD)),h('td',{class:'n'},fmt(r.fR-r.fD)),h('td',{class:'n'},pc(r.fD,r.fR)),h('td',{class:'n'},fmt(r.cR)),h('td',{class:'n'},fmt(r.cD)),h('td',{class:'n'},fmt(r.cR-r.cD)),h('td',{class:'n'},layTxt(r))))))):null,
+      g.type==='area'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai)}},'+ Sub-area (draw on map)'),h('button',{class:'btn sm',onclick:()=>{close();v3Open(g.ai)}},'🧊 3D')):null,
+      g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai,g.sub)}},'Edit corners / name'),canEdit()||!CLOUD.st?h('button',{class:'btn sm dng',onclick:()=>{if(!confirm('Delete sub-area '+g.sub.name+'?'))return;M.del[g.sub.id]=1;saveMeta();close();toast('Deleted')}},'Delete'):null):null,
+      h('div',{class:'card'},h('h3',{},'Surveys here'),SV.length?h('div',{},...SV.slice(0,30).map(survItem)):h('div',{class:'mut'},'No survey yet.'),SV.length>30?h('div',{class:'mut'},'+ '+(SV.length-30)+' more in the Excel file'):null)))}
+function areaSummary(ai){qtySheet('area',ai)}
+async function qtyPdf(g,X,maps){await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF));await loadJs(AUTOT_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable));
+  maps=await Promise.all(maps.map(u=>u?toJpg(u,'#0b0e10',0.8):u));const LOGOJ=await toJpg(document.querySelector('header .lg').src,'#0e1113',0.9);
+  const doc=new jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4'}),san=t=>typeof t==='string'?t.replace(/³/g,'3').replace(/²/g,'2').replace(/≤/g,'<=').replace(/−/g,'-').replace(/›/g,'').replace(/[^\x00-\xff–—…·]/g,''):t,_txt=doc.text.bind(doc);doc.text=(t,...a)=>_txt(Array.isArray(t)?t.map(san):san(t),...a);
+  const W=297,M_=10,AM=[255,176,32],INK=[20,26,30],pc=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'–',o=X.o;
+  const head=()=>{doc.setFillColor(14,17,19);doc.rect(0,0,W,20,'F');try{doc.addImage(LOGOJ,'JPEG',M_,3,14,14,'logo')}catch(e){}doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('ALOMAIER TRADING & CONTRACTING',M_+18,9);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(190,198,205);doc.text('Khuzam 4 – Enabling earthworks · Survey department',M_+18,14.5);
+    doc.setTextColor(...AM);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('QUANTITY REPORT · '+g.name.toUpperCase(),W-M_,9,{align:'right'});doc.setTextColor(255,255,255);doc.setFontSize(9);doc.text(dNice(today()),W-M_,14.5,{align:'right'})};
+  head();let y=25;doc.setTextColor(...INK);doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.text('Design: '+X.D.name+' · '+fmt(o.n)+' grade points · '+fmt(Math.round(o.m2))+' m2',M_,y);y+=3;
+  const K8=[['Fill required',fmt(o.fR)+' m3'],['Fill done',fmt(o.fD)+' m3 · '+pc(o.fD,o.fR)],['Fill to go',fmt(o.fR-o.fD)+' m3'],['Cut required',fmt(o.cR)+' m3'],['Cut done',fmt(o.cD)+' m3 · '+pc(o.cD,o.cR)],['Cut to go',fmt(o.cR-o.cD)+' m3'],['Layer now / needed',layTxt(o)],['On design',fmt(Math.round(o.on))+' m2']];
+  const bw=(W-2*M_-7*3)/8;K8.forEach(([k,v],j)=>{const x=M_+j*(bw+3);doc.setDrawColor(220,224,228);doc.setFillColor(246,247,248);doc.roundedRect(x,y,bw,15,1.5,1.5,'FD');doc.setFontSize(6.6);doc.setTextColor(110,118,126);doc.text(k.toUpperCase(),x+2,y+4.5);doc.setFontSize(8.2);doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.text(doc.splitTextToSize(san(v),bw-3).slice(0,2),x+2,y+9);doc.setFont('helvetica','normal')});y+=19;
+  const mw=(W-2*M_-4)/2,mh=mw*0.62;if(maps[0])doc.addImage(maps[0],'JPEG',M_,y,mw,mh);doc.addImage(maps[1],'JPEG',maps[0]?M_+mw+4:M_+mw/2,y,mw,mh);
+  doc.addPage();head();const AT=(o2)=>{for(const k of ['head','body'])if(o2[k])o2[k]=o2[k].map(r=>r.map(san));return doc.autoTable(Object.assign({theme:'grid',styles:{fontSize:7.8,cellPadding:1.3,textColor:INK,lineColor:[220,224,228]},headStyles:{fillColor:[28,33,37],textColor:[255,255,255]},alternateRowStyles:{fillColor:[248,249,250]},margin:{left:M_,right:M_,top:24},didDrawPage:()=>head()},o2))};
+  let ty=27;if(X.kids.length){doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text('Breakdown',M_,ty);AT({startY:ty+2,head:[['','Fill required m3','Fill done m3','Fill to go m3','%','Cut required m3','Cut done m3','Cut to go m3','Layer now / needed','Prepared m2']],
+    body:X.kids.map(({g:k,o:r})=>[k.name,fmt(r.fR),fmt(r.fD),fmt(r.fR-r.fD),pc(r.fD,r.fR),fmt(r.cR),fmt(r.cD),fmt(r.cR-r.cD),layTxt(r),fmt(Math.round(r.prep))+' / '+fmt(Math.round(r.prepR))]).concat([['Total',fmt(o.fR),fmt(o.fD),fmt(o.fR-o.fD),pc(o.fD,o.fR),fmt(o.cR),fmt(o.cD),fmt(o.cR-o.cD),layTxt(o),fmt(Math.round(o.prep))+' / '+fmt(Math.round(o.prepR))]])});ty=doc.lastAutoTable.finalY+8}
+  if(ty>180){doc.addPage();head();ty=28}doc.setFontSize(10.5);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text('Surveys here',M_,ty);
+  AT({startY:ty+2,head:[['Date','Surveyor','Area · zone · phase','Work','Points','Fill m3','Cut m3']],body:X.SV.length?X.SV.map(s=>[dmy(s.date),s.surveyor||'–',survArea(s),kindName(s.kind,s.layer)+(s.wir?' · WIR-'+String(s.wir).padStart(4,'0'):''),fmt(s.n),fmt(STAT[s.id]&&STAT[s.id].vf),fmt(STAT[s.id]&&STAT[s.id].vc)]):[['No survey yet','','','','','','']]});
+  let yy=doc.lastAutoTable.finalY+12;if(yy>180){doc.addPage();head();yy=34}doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+  [['Prepared by','Eng. Muhammad Sheraz Abbasi','Survey Engineer'],['Checked by','',''],['Date',dNice(today()),'']].forEach(([a,b,c],j)=>{const x=M_+j*92;doc.setDrawColor(150);doc.line(x,yy+12,x+80,yy+12);doc.setTextColor(110);doc.text(a,x,yy);doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.text(b,x,yy+6);doc.setFont('helvetica','normal');doc.text(c,x,yy+17)});
+  const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setFontSize(7);doc.setTextColor(130);doc.text('Alomaier Survey 2.0 · fill measured from the preparation level (NGL - '+PD().toFixed(2)+' m) · layers '+LT().toFixed(2)+' m · on design = within '+(M.tol*100).toFixed(0)+' cm',M_,205);doc.text('Page '+p+' of '+np,W-M_,205,{align:'right'})}
+  return doc.output('blob')}
+async function qtyXlsx(g,X){await loadJs(XLSX_URL,()=>!!window.XLSX);const wb=XLSX.utils.book_new(),o=X.o,R=r=>Math.round(r);
+  const sum=[['Alomaier Trading & Contracting – Khuzam 4'],['Quantity report',g.name],['Design',X.D.name],['Date',today()],[],['','Required m³','Done m³','To go m³','% done'],['Fill',R(o.fR),R(o.fD),R(o.fR-o.fD),o.fR?+(o.fD/o.fR*100).toFixed(1):0],['Cut',R(o.cR),R(o.cD),R(o.cR-o.cD),o.cR?+(o.cD/o.cR*100).toFixed(1):0],[],['Layer now / needed',layTxt(o)],['Prepared m²',R(o.prep),'of',R(o.prepR)],['On design m²',R(o.on)],['Grade points',o.n],['Area m²',R(o.m2)]];
+  const ws=XLSX.utils.aoa_to_sheet(sum);ws['!cols']=[{wch:22},{wch:16},{wch:12},{wch:12},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Summary');
+  if(X.kids.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Part','Fill required m³','Fill done m³','Fill to go m³','Cut required m³','Cut done m³','Cut to go m³','Layer now / needed','Prepared m²','On design m²']].concat(X.kids.map(({g:k,o:r})=>[k.name,R(r.fR),R(r.fD),R(r.fR-r.fD),R(r.cR),R(r.cD),R(r.cR-r.cD),layTxt(r),R(r.prep),R(r.on)]))),'Breakdown');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Date','Surveyor','Area · zone · phase','Work','Layer','WIR','Points','Fill m³','Cut m³']].concat(X.SV.map(s=>[s.date,s.surveyor||'',survArea(s),(KIND[s.kind]||KIND.other)[0],s.layer||'',s.wir?'WIR-'+String(s.wir).padStart(4,'0'):'',s.n||0,R(STAT[s.id]?STAT[s.id].vf:0),R(STAT[s.id]?STAT[s.id].vc:0)]))),'Surveys');
+  return new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+async function qtyExport(g,how){toast('Preparing the report…');try{const D=activeDesign(),Z=DZ[D.id];QTMP=qtyRows(Z);const X={D,o:qtyOf(g.test,Z),kids:g.kids().map(k=>({g:k,o:qtyOf(k.test,Z)})),SV:grpSurveys(g)},base='Alomaier_K4_qty_'+g.name.replace(/[^\w]+/g,'_')+'_'+today();
+  if(how==='xlsx'){saveBlob(await qtyXlsx(g,X),base+'.xlsx');return}const pdf=await qtyPdf(g,X,grpMaps(g,Z));
+  if(how==='share'){const f=new File([pdf],base+'.pdf',{type:'application/pdf'}),fx=new File([await qtyXlsx(g,X)],base+'.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),files=navigator.canShare&&navigator.canShare({files:[f,fx]})?[f,fx]:[f];
+    const txt='Khuzam 4 – quantities · '+g.name+'\nFill: '+fmt(X.o.fD)+' / '+fmt(X.o.fR)+' m³ done ('+fmt(X.o.fR-X.o.fD)+' to go)\nCut: '+fmt(X.o.cD)+' / '+fmt(X.o.cR)+' m³ done ('+fmt(X.o.cR-X.o.cD)+' to go)\nLayer now / needed: '+layTxt(X.o)+'\n'+dNice(today())+' · Eng. Muhammad Sheraz Abbasi';
+    if(navigator.canShare&&navigator.canShare({files})){try{await navigator.share({files,title:'Quantities – '+g.name,text:txt});return}catch(e){if(e&&e.name==='AbortError')return}}toast('This browser cannot share files – the PDF is saved instead')}
+  saveBlob(pdf,base+'.pdf')}catch(e){console.error(e);toast('Could not make the report: '+(e.message||e))}}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
