@@ -306,7 +306,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
     h('div',{class:'row mut',style:'font-size:12px'},h('span',{},pc(Q.fD,Q.fR).toFixed(1)+'% done'),h('span',{class:'sp'}),h('span',{},fmt(Q.fR-Q.fD)+' m³ still to place')),
     h('div',{class:'kk',style:'margin-top:12px'},h('div',{class:'k'},h('b',{},fmt(Q.cD)),h('small',{},'m³ cut done of '+fmt(Q.cR))),h('div',{class:'k'},h('b',{},fmt(Q.on)),h('small',{},'m² on final design (±'+(M.tol*100).toFixed(0)+' cm)')))));
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
-    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.0 · 9 Nov 2026')),h('div',{class:'qg'},
+    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.1 · 9 Nov 2026')),h('div',{class:'qg'},
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -836,7 +836,16 @@ function satBtn(){const b=$('#zSat');if(b){b.classList.toggle('on',satOn);b.titl
 function satToggle(){satOn=!satOn;lsSet('as2_sat',satOn);satBtn();legend();draw();if(satOn&&!navigator.onLine)toast('Satellite photo needs internet')}
 
 /* ============================== small loaders (only when used, need internet the first time) ============================== */
-function loadJs(src,ok){return new Promise((res,rej)=>{if(ok())return res();const s=document.createElement('script');s.crossOrigin='anonymous';s.src=src;s.onload=()=>ok()?res():rej(new Error('load'));s.onerror=()=>rej(new Error('This needs internet the first time.'));document.head.append(s)})}
+/* load a library: first the copy on our own site (works with any VPN / blocker and offline), then two public servers */
+const LIB_ALT={'three.min.js':['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js','https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js','https://unpkg.com/three@0.128.0/build/three.min.js'],
+  'jspdf.umd.min.js':['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'],
+  'jspdf.plugin.autotable.min.js':['https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js','https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js'],
+  'xlsx.full.min.js':['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'],
+  'tesseract.min.js':['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'],
+  'pdf.min.js':['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js']};
+function loadOne(src,ok){return new Promise((res,rej)=>{const s=document.createElement('script');if(/^https?:/.test(src))s.crossOrigin='anonymous';s.src=src;s.onload=()=>ok()?res():rej(new Error('bad file'));s.onerror=()=>{s.remove();rej(new Error('blocked'))};document.head.append(s)})}
+async function loadJs(src,ok){if(ok())return;const name=src.split('/').pop(),L=LIB_ALT[name]?(['tesseract.min.js','pdf.min.js'].includes(name)?[]:[name]).concat(LIB_ALT[name]):[src];
+  for(const u of L){try{await loadOne(u,ok);return}catch(e){}}throw new Error('could not be loaded – check the internet connection (a VPN or ad-blocker can also block it).')}
 const THREE_URL='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',TESS_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* ============================== DATA IN: CSV / TXT · Excel · LandXML surface · camera / photo of a sheet · PDF ============================== */
@@ -892,7 +901,7 @@ const v3Name=k=>({cur:'Ground now (with stockpiles)',work:'Ground now (earthwork
 function v3Open(areaIdx){if(!ready){toast('Still loading…');return}if(areaIdx!=null)V3.area=areaIdx;
   let ov=$('#v3');if(ov)ov.remove();ov=h('div',{id:'v3'},h('div',{id:'v3Bar'}),h('div',{id:'v3Box'},h('canvas',{id:'v3c'}),h('div',{id:'v3Leg'}),h('div',{id:'v3Info'}),h('div',{class:'zb'},h('button',{title:'Reset view',onclick:()=>{v3Home();v3Draw()}},'⟲'),h('button',{title:'Save picture',onclick:v3Png},'⬇'))),h('div',{id:'v3Msg'},'Loading 3D…'));
   document.body.append(ov);document.body.style.overflow='hidden';v3Bar();
-  loadJs(THREE_URL,()=>typeof THREE!=='undefined').then(()=>{v3Init();v3Build()}).catch(e=>{$('#v3Msg').textContent='3D needs internet the first time it opens. '+(e.message||'')})}
+  loadJs(THREE_URL,()=>typeof THREE!=='undefined').then(()=>{v3Init();v3Build()}).catch(e=>{$('#v3Msg').textContent='3D '+(e.message||'could not be loaded')})}
 function v3Close(){const ov=$('#v3');if(ov)ov.remove();document.body.style.overflow='';if(T3){try{T3.r.dispose()}catch(e){}T3=null}}
 function v3Init(){const c=$('#v3c'),r=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:true});r.setPixelRatio(Math.min(2,devicePixelRatio||1));r.setClearColor(0x0b0e10);
   const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,1,60000);sc.add(new THREE.HemisphereLight(0xffffff,0x3a3328,0.75));const dl=new THREE.DirectionalLight(0xffffff,0.75);dl.position.set(-1,2,1.2);sc.add(dl);
