@@ -71,6 +71,18 @@ textarea{min-height:110px;font-family:var(--mono);font-size:12.5px}
 #mapLeg{position:absolute;left:10px;bottom:10px;background:rgba(14,17,19,.9);border:1px solid var(--ln);border-radius:12px;padding:8px 10px;font-size:11.5px;color:#c9d1d8;max-width:calc(100% - 20px)}
 #mapLeg .lg2{display:flex;gap:10px;flex-wrap:wrap}#mapLeg i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 #mapInfo{position:absolute;right:10px;top:10px;width:min(300px,calc(100% - 20px));max-height:calc(100% - 20px);overflow:auto;background:rgba(14,17,19,.95);border:1px solid var(--ln);border-radius:14px;padding:12px;font-size:12.5px;display:none}
+.zb button.on{background:var(--am);color:#1a1205;border-color:var(--am)}.zb button.t3{font-size:13px;font-family:var(--cond,inherit)}
+.srcs{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}.srcs .btn{font-size:12px}
+.satop{display:flex;align-items:center;gap:8px;margin-top:6px}.satop input{flex:1;accent-color:#ffb020}
+#v3{position:fixed;inset:0;z-index:60;background:#0b0e10;display:flex;flex-direction:column}
+#v3Bar{display:flex;gap:8px;align-items:flex-end;padding:8px 10px;border-bottom:1px solid var(--ln);overflow-x:auto;background:var(--p1,#12161a);flex:none}
+.v3f{display:flex;flex-direction:column;gap:2px;font-size:10.5px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;flex:none}.v3f select,.v3f input{font-size:13px;padding:6px 8px;border-radius:10px;border:1px solid var(--ln);background:var(--p2);color:inherit;text-transform:none;letter-spacing:0}
+#v3Box{position:relative;flex:1;overflow:hidden;touch-action:none}#v3c{position:absolute;inset:0;width:100%;height:100%}
+#v3Leg{position:absolute;left:10px;bottom:10px;background:rgba(14,17,19,.9);border:1px solid var(--ln);border-radius:12px;padding:8px 10px;font-size:11.5px;color:#c9d1d8;max-width:calc(100% - 80px)}
+#v3Leg .lg2{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}#v3Leg i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+#v3Info{position:absolute;right:10px;top:10px;width:min(280px,calc(100% - 20px));background:rgba(14,17,19,.95);border:1px solid var(--ln);border-radius:14px;padding:12px;font-size:12.5px;display:none}
+#v3Info .x{position:absolute;right:8px;top:6px;background:none;border:0;color:var(--mu);font-size:18px;cursor:pointer}
+#v3Msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(14,17,19,.95);border:1px solid var(--ln);border-radius:12px;padding:12px 16px;font-size:13px;text-align:center;max-width:80%}
 #mapInfo .x{position:absolute;right:8px;top:6px;background:none;border:0;color:var(--mu);font-size:18px;cursor:pointer}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px}.kv span{color:var(--mu)}.kv b{font-family:var(--mono);font-weight:600;text-align:right}
 .zb{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}.zb button{width:40px;height:40px;border-radius:12px;border:1px solid var(--ln);background:rgba(22,26,29,.95);font:700 18px var(--sans);cursor:pointer}
@@ -106,7 +118,7 @@ html.vg-on header,html.vg-on main,html.vg-on nav{filter:blur(6px);pointer-events
 </header>
 <main id="main">
   <section class="page on" id="p-today"></section>
-  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
+  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
   <section class="page" id="p-surv"></section>
   <section class="page" id="p-design"></section>
   <section class="page" id="p-qty"></section>
@@ -357,16 +369,16 @@ function parsePts(text){const out=[];let order=null;
 function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('as2_lastwho','Muhammad Sheraz Abbasi'),kind:'fill',layer:'',note:''};
   const who=[...new Set(M.surveyors.concat(surveys().map(x=>x.surveyor).filter(x=>x&&x!=='Survey team')))];
   const f={date:h('input',{type:'date',value:s.date}),who:h('input',{list:'whoL',value:s.surveyor||''}),kind:h('select',{},...Object.entries(KIND).map(([k,[n]])=>h('option',{value:k,selected:s.kind===k},n))),
-    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'}),
-    file:h('input',{type:'file',accept:'.csv,.txt,.xyz,.pts,.xml'})};
+    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'})};
   const prev=h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'});
   const upd=()=>{const P=parsePts(f.txt.value);if(!P.length){prev.textContent=isNew?'No points read yet.':'Leave empty to keep the '+fmt(s.n)+' points already saved.';return}const pl=placeOf(P);prev.textContent=P.length+' points read · '+pl.txt};
-  f.txt.oninput=upd;f.file.onchange=async()=>{const fl=f.file.files[0];if(!fl)return;const t=await fl.text();if(/\.xml$/i.test(fl.name)||/<LandXML/i.test(t.slice(0,4000))){const r=readPoints(t,fl.name,'vertices');f.txt.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else f.txt.value=t;upd()};upd();
+  f.txt.oninput=upd;const say=t=>{prev.textContent=t};
+  const src=srcRow((t,name,how,photo)=>{if(how==='plain'&&(/\.xml$/i.test(name)||/<LandXML/i.test(t.slice(0,4000)))){const r=readPoints(t,name,'vertices');f.txt.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else f.txt.value=t;upd();if(how==='rows'){const n=t?t.split('\n').length:0;prev.textContent=(n?n+' rows read from '+name+(photo?' (photo – please check the numbers below; on WIR sheets the finished level is used)':'')+' · ':'No point rows found in '+name+'. ')+prev.textContent}},say);upd();
   const body=h('div',{},h('datalist',{id:'whoL'},...who.map(w=>h('option',{value:w}))),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Date'),f.date),h('label',{class:'f'},h('span',{},'Surveyor'),f.who)),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Work'),f.kind),h('label',{class:'f'},h('span',{},'Layer (fill only – empty = found from the points)'),f.layer)),
     h('label',{class:'f'},h('span',{},'Note'),f.note),
-    s.builtin?h('div',{class:'mut',style:'font-size:12px'},'Points of this WIR are built in and stay as they are.'):[h('label',{class:'f'},h('span',{},'Points file (.csv / .txt)'),f.file),h('label',{class:'f'},h('span',{},'… or paste the points'),f.txt),prev],
+    s.builtin?h('div',{class:'mut',style:'font-size:12px'},'Points of this WIR are built in and stay as they are.'):[h('div',{class:'f'},h('span',{},'Get the points from'),src),h('label',{class:'f'},h('span',{},'Points (check or type them here)'),f.txt),prev],
     h('div',{class:'mut',style:'font-size:12px'},'Area, zone and phase are found from the points. The quantity is the change from the ground before this survey.'));
   modal(isNew?'New survey':'Edit survey',body,close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:async()=>{
       const P=s.builtin?null:parsePts(f.txt.value);if(isNew&&(!P||!P.length)){toast('Add the survey points first');return}
@@ -419,7 +431,7 @@ function cmpView(R){const nm=id=>(designs().find(d=>d.id===id)||{}).name||id;
     h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn',onclick:()=>{mapMode='cmp';show('map')}},'Show the changes on the map')))}
 function importSurface(type){if(!guard())return;const isD=type==='design';let fileTxt='',fileName='',got=null;
   const f={name:h('input',{placeholder:isD?'e.g. IFC Rev 02':'e.g. NGL – Area 12 after obstacle removal'}),a:h('input',{type:'date',value:today()}),b:h('input',{type:'date',value:today()}),note:h('input',{placeholder:'optional'}),
-    file:h('input',{type:'file',accept:'.csv,.txt,.xyz,.pts,.xml'}),mode:h('select',{},h('option',{value:'vertices'},'Use the surface points as they are'),h('option',{value:'10',selected:true},'Grade points every 10 m'),h('option',{value:'5'},'Grade points every 5 m'),h('option',{value:'2'},'Grade points every 2 m')),
+    mode:h('select',{},h('option',{value:'vertices'},'Use the surface points as they are'),h('option',{value:'10',selected:true},'Grade points every 10 m'),h('option',{value:'5'},'Grade points every 5 m'),h('option',{value:'2'},'Grade points every 2 m')),
     txt:h('textarea',{placeholder:'… or paste points: Point, N, E, Z'})};
   const modeRow=h('label',{class:'f',style:'display:none'},h('span',{},'This file is a surface (LandXML TIN)'),f.mode);
   const prev=h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:8px'},'No points read yet.');
@@ -427,10 +439,10 @@ function importSurface(type){if(!guard())return;const isD=type==='design';let fi
     setTimeout(()=>{try{const isX=/\.xml$/i.test(fileName)||/<LandXML|<Surface\b/i.test(t.slice(0,4000));modeRow.style.display=isX?'':'none';got=readPoints(t,fileName,f.mode.value);const n=nPts(got.T);
       prev.textContent=n?fmt(n)+' points · '+got.src+' · '+placeOf(toObjs(got.T,3000)).txt:'No points found in this file.'}catch(e){got=null;prev.textContent='Could not read this file.'}},30)};
   f.txt.oninput=()=>{fileTxt='';fileName='';read()};f.mode.onchange=read;
-  f.file.onchange=async()=>{const fl=f.file.files[0];if(!fl)return;prev.textContent='Opening '+fl.name+' ('+fmt(fl.size/1048576,1)+' MB)…';fileName=fl.name;fileTxt=await fl.text();f.txt.value='';read()};
+  const src=srcRow((t,name,how)=>{if(how==='plain'){fileName=name;fileTxt=t;f.txt.value=''}else{fileTxt='';fileName='';f.txt.value=t}read()},t=>{prev.textContent=t});
   modal(isD?'New design IFC':'Add NGL survey',h('div',{},h('label',{class:'f'},h('span',{},'Name'),f.name),
     isD?h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'IFC issued on'),f.a),h('label',{class:'f'},h('span',{},'Work started from it on'),f.b)):h('label',{class:'f'},h('span',{},'Surveyed on'),f.a),
-    h('label',{class:'f'},h('span',{},'Note'),f.note),h('label',{class:'f'},h('span',{},'Points file (CSV / TXT) or surface (LandXML .xml)'),f.file),modeRow,h('label',{class:'f'},h('span',{},'… or paste points'),f.txt),prev,
+    h('label',{class:'f'},h('span',{},'Note'),f.note),h('div',{class:'f'},h('span',{},'Get the points from'),src),modeRow,h('label',{class:'f'},h('span',{},'… or paste points'),f.txt),prev,
     h('div',{class:'mut',style:'font-size:12px'},isD?'Grade points (N, E, Z) – any number, 200,000+ is fine – or a LandXML surface exported from Civil 3D / 12d. The new design is used from its start date; the old one stays on record.':'Natural ground measured later, as points or a surface. It replaces the old natural ground only where it was measured.')),
     close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:async()=>{if(!got||nPts(got.T)<3){toast('Add the points or the surface first');return}
       const T=got.T,id=(isD?'d':'g')+uid();prev.textContent='Saving…';await dbPut('pts:'+id,T);PTS[id]=T;
@@ -497,15 +509,16 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
 function legend(){const L={need:[['#5cb8ff','fill needed'],['#ff5d5d','cut needed'],['#2a3035','on NGL']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
     last:Object.values(KIND).map(([n,c])=>[c,n]).concat([['#2c3237','not surveyed']]),ngl:[['#465057','NGL at project start'],['#ffb020','NGL surveyed later']],grade:[[GR[5][1],'final grade'],[GR[4][1],'touch grade'],[GR[3][1],'near grade'],['#4a6a8a','fill working'],['#8a4a4a','cut working'],[GR[1][1],'not started'],[GR[6][1],'over design']],lay:[['#373d42','not prepared'],['#e0b25a','prepared (NGL − 0.30)'],['#285a96','first layers'],['#78c8ff','last layers'],['#3ecf8e','on final design'],['#462828','cut area']],cmp:[['#ff8a00','raised'],['#5cb8ff','lowered'],['#32383d','same (±2 cm)']]}[mapMode]||[];
   $('#mapLeg').replaceChildren(...kids(h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
-    mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null))}
+    mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null,
+    satOn?h('label',{class:'satop'},h('span',{},'🛰 Colours'),h('input',{type:'range',min:'0',max:'1',step:'0.05',value:String(satOp),oninput:e=>{satOp=+e.target.value;lsSet('as2_satop',satOp);draw()}})):null));satBtn()}
 function sizeMap(){const c=$('#map'),b=$('#mapBox').getBoundingClientRect(),dp=devicePixelRatio||1;c.width=Math.max(10,b.width*dp);c.height=Math.max(10,b.height*dp)}
 function fit(){fitBox(B.e0,B.e1,B.n0,B.n1)}
 function fitBox(e0,e1,n0,n1){const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,s=Math.min(W/(e1-e0+40),H/(n1-n0+40));view={s,e:(e0+e1)/2,n:(n0+n1)/2}}
 function fitTo(P){if(!P||!P.length)return;let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const p of P){e0=Math.min(e0,p.e);e1=Math.max(e1,p.e);n0=Math.min(n0,p.n);n1=Math.max(n1,p.n)}fitBox(e0-60,e1+60,n0-60,n1+60)}
 const W2S=(e,n)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(e-view.e)*view.s+c.width/dp/2,(view.n-n)*view.s+c.height/dp/2]};
 const S2W=(x,y)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(x-c.width/dp/2)/view.s+view.e,view.n-(y-c.height/dp/2)/view.s]};
-function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getContext('2d'),dp=devicePixelRatio||1;x.setTransform(dp,0,0,dp,0,0);x.fillStyle='#0b0e10';x.fillRect(0,0,c.width,c.height);
-  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=view.s*L.r<3;x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);
+function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getContext('2d'),dp=devicePixelRatio||1;x.setTransform(dp,0,0,dp,0,0);x.fillStyle='#0b0e10';x.fillRect(0,0,c.width,c.height);if(satOn)satMap(x);
+  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=view.s*L.r<3;x.globalAlpha=satOn?satOp:1;if(x.globalAlpha>0.01)x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);x.globalAlpha=1;
   const poly=(R,close=true)=>{x.beginPath();R.forEach((q,i)=>{const [a,b]=W2S(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(close)x.closePath()};
   x.lineWidth=1;x.strokeStyle='rgba(238,241,243,.35)';for(const a of K.areas){poly(a.c);x.stroke()}
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
@@ -521,7 +534,7 @@ function info(e,n){const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0){
     for(let L=1;L<=ln;L++)rows.push([(L===ln?'Final layer ':'Layer ')+L+(L<=ld?' ✓':''),f3(Math.min(base+LT()*L,z))]);rows.push(['Layers done',ld+' of '+ln])}
   for(const d of designs())if(d.id!==D.id){const v=DZ[d.id][i];if(v===v)rows.push([d.name.split(' – ')[0],f3(v)])}
   const dz=z-c,gk=gradeOf(i,DZ[D.id]);box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';pick=null;draw()}},'×'),h('b',{style:'display:block;margin-bottom:2px;font-size:14px;color:'+(gk?GR[gk][1]:'inherit')},gradeTxt(i,DZ[D.id])),h('div',{class:'mut',style:'font-size:11.5px;margin-bottom:6px'},z>g?'Fill area':'Cut area'),
-    h('div',{class:'kv'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])),a?h('button',{class:'btn sm pri',style:'width:100%;margin-top:10px',onclick:()=>areaSummary(B.A[i])},a.name+' – cut, fill, layers, grade'):null);box.style.display='block';draw()}
+    h('div',{class:'kv'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])),a?h('button',{class:'btn sm pri',style:'width:100%;margin-top:10px',onclick:()=>areaSummary(B.A[i])},a.name+' – cut, fill, layers, grade'):null,a?h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>v3Open(B.A[i])},'🧊 '+a.name+' in 3D'):null);box.style.display='block';draw()}
 function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=null;
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.offsetX,e.offsetY]);moved=0;last=[e.offsetX,e.offsetY];if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),s:view.s}}});
   c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
@@ -530,7 +543,7 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
-  $('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
+  $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
   addEventListener('resize',()=>{if(cur==='map'){sizeMap();draw()}})}
 /* ============================== GRADE STATUS (final / touch / near) ============================== */
 const GTH=()=>({f:+M.gF||0.05,t:+M.gT||0.15,n:+M.gN||0.30});
@@ -708,6 +721,234 @@ async function backup(){const o={app:'alomaier-survey-2',saved:new Date().toISOS
 async function restore(f){if(!f)return;try{const o=JSON.parse(await f.text());if(o.app!=='alomaier-survey-2'||!o.meta)throw 0;if(!confirm('Replace the data on this device with the backup from '+(o.saved||'').slice(0,10)+'?'))return;
   M=Object.assign(defMeta(),o.meta);for(const [k,v] of Object.entries(o.pts||{})){await dbPut('pts:'+k,v);PTS[k]=v}saveMeta();await recalc();toast('Backup restored')}catch(e){toast('This is not an Alomaier Survey backup file')}}
 /* ============================== start ============================== */
+/* ============================== SATELLITE PHOTO under the map (Esri World Imagery, UTM 38N) ============================== */
+const SAT_URL=(z,x,y)=>'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/'+z+'/'+y+'/'+x;
+const satCache=new Map();let satOn=lsGet('as2_sat',false)===true,satOp=+lsGet('as2_satop',0.55),satRaf=0;
+const sLon2x=(lon,z)=>(lon+180)/360*2**z,sLat2y=(lat,z)=>{const r=lat*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*2**z};
+const sX2lon=(x,z)=>x/2**z*360-180,sY2lat=(y,z)=>{const n=Math.PI-2*Math.PI*y/2**z;return 180/Math.PI*Math.atan(Math.sinh(n))};
+function utm38ToLL(E,N){
+  const a=6378137,f=1/298.257223563,k0=.9996,lon0=45*Math.PI/180,n=f/(2-f),A=a/(1+n)*(1+n*n/4+n**4/64),e=Math.sqrt(f*(2-f));
+  const be=[n/2-2*n*n/3+37*n**3/96,n*n/48+n**3/15,17*n**3/480];
+  const xi=N/(k0*A),eta=(E-500000)/(k0*A);let xp=xi,ep=eta;
+  for(let j=1;j<=3;j++){xp-=be[j-1]*Math.sin(2*j*xi)*Math.cosh(2*j*eta);ep-=be[j-1]*Math.cos(2*j*xi)*Math.sinh(2*j*eta)}
+  const tau0=Math.sin(xp)/Math.sqrt(Math.sinh(ep)**2+Math.cos(xp)**2);let tau=tau0;
+  for(let i=0;i<6;i++){const s=Math.sinh(e*Math.atanh(e*tau/Math.sqrt(1+tau*tau))),tp=tau*Math.sqrt(1+s*s)-s*Math.sqrt(1+tau*tau);
+    const d=(tau0-tp)/Math.sqrt(1+tp*tp)*(1+(1-e*e)*tau*tau)/((1-e*e)*Math.sqrt(1+tau*tau));tau+=d;if(Math.abs(d)<1e-12)break}
+  return [Math.atan(tau)*180/Math.PI,(lon0+Math.atan2(Math.sinh(ep),Math.cos(xp)))*180/Math.PI];
+}
+function llToUtm38(lat,lon){
+  const a=6378137,f=1/298.257223563,k0=.9996,lon0=45*Math.PI/180,n=f/(2-f),A=a/(1+n)*(1+n*n/4+n**4/64),
+    al=[n/2-2*n*n/3+5*n**3/16,13*n*n/48-3*n**3/5,61*n**3/240],phi=lat*Math.PI/180,l=lon*Math.PI/180-lon0,e=Math.sqrt(f*(2-f)),
+    t=Math.sinh(Math.atanh(Math.sin(phi))-e*Math.atanh(e*Math.sin(phi))),xi=Math.atan2(t,Math.cos(l)),eta=Math.atanh(Math.sin(l)/Math.sqrt(1+t*t));
+  let E=eta,N=xi;for(let j=1;j<=3;j++){E+=al[j-1]*Math.cos(2*j*xi)*Math.sinh(2*j*eta);N+=al[j-1]*Math.sin(2*j*xi)*Math.cosh(2*j*eta)}
+  return [500000+k0*A*E,k0*A*N];
+}
+function satTile(z,x,y,cb){const k=z+'/'+x+'/'+y;let t=satCache.get(k);
+  if(t){if(t.ok)return t.img;if(cb&&!t.err)t.cbs.push(cb);return null}
+  const img=new Image();img.crossOrigin='anonymous';t={img,ok:false,cbs:cb?[cb]:[]};satCache.set(k,t);
+  img.onload=()=>{t.ok=true;const c=t.cbs;t.cbs=[];c.forEach(f=>{try{f()}catch(e){}})};img.onerror=()=>{t.err=true;t.cbs=[]};img.src=SAT_URL(z,x,y);
+  if(satCache.size>900){for(const [kk,v] of satCache){if(v.ok||v.err){satCache.delete(kk);break}}}
+  return null}
+function satRange(la0,la1,lo0,lo1,mpp,base){
+  let z=Math.round(Math.log2(156543.03*Math.cos((la0+la1)/2*Math.PI/180)/Math.max(mpp,.05)));z=Math.max(5,Math.min(19,z));
+  let x0,x1,y0,y1;for(;;){x0=Math.floor(sLon2x(lo0,z));x1=Math.floor(sLon2x(lo1,z));y0=Math.floor(sLat2y(la1,z));y1=Math.floor(sLat2y(la0,z));if((x1-x0+1)*(y1-y0+1)<=(base?400:90)||z<=5)break;z--}
+  return {z,x0,x1,y0,y1}}
+function satDraw(c,W2S,eA,eB,nA,nB,mpp,onLoad,base){
+  const LL=[utm38ToLL(eA,nA),utm38ToLL(eB,nA),utm38ToLL(eA,nB),utm38ToLL(eB,nB)];
+  const la0=Math.min(...LL.map(q=>q[0])),la1=Math.max(...LL.map(q=>q[0])),lo0=Math.min(...LL.map(q=>q[1])),lo1=Math.max(...LL.map(q=>q[1]));
+  const {z,x0,x1,y0,y1}=satRange(la0,la1,lo0,lo1,mpp,base);
+  const S=(x,y)=>{const ll=[sY2lat(y,z),sX2lon(x,z)],u=llToUtm38(ll[0],ll[1]);return W2S(u[0],u[1])};
+  const m0=c.getTransform();
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    let img=satTile(z,x,y,onLoad),tz=z,tx=x,ty=y,sub=null;
+    if(!img&&!base){for(let d=1;d<=4&&!img;d++){const pz=z-d;if(pz<5)break;const k=satCache.get(pz+'/'+(x>>d)+'/'+(y>>d));if(k&&k.ok){img=k.img;tz=pz;tx=x>>d;ty=y>>d;const n=1<<d;sub=[(x-(tx<<d))*256/n,(y-(ty<<d))*256/n,256/n]}}}
+    if(!img)continue;
+    const a=S(x,y),b=S(x+1,y),d=S(x,y+1);
+    c.setTransform(m0.a*(b[0]-a[0])/256,m0.a*(b[1]-a[1])/256,m0.a*(d[0]-a[0])/256,m0.a*(d[1]-a[1])/256,m0.a*a[0]+m0.e,m0.a*a[1]+m0.f);
+    try{sub?c.drawImage(img,sub[0],sub[1],sub[2],sub[2],0,0,256.6,256.6):c.drawImage(img,0,0,256.6,256.6)}catch(e){}
+  }
+  c.setTransform(m0);return z}
+function fixTok(t){
+  t=t.replace(/,/g,'.').replace(/[^0-9.\-]/g,'');
+  if(!t||t==='-'||t==='.')return NaN;
+  if(t.indexOf('.')<0){
+    const neg=t[0]==='-',d=neg?t.slice(1):t,sg=neg?-1:1;
+    if(d.length===10&&d[0]==='2')return sg*+(d.slice(0,7)+'.'+d.slice(7));   // northing, 2762465195
+    if(d.length===9&&d[0]==='2')return sg*+(d.slice(0,7)+'.'+d.slice(7));
+    if(d.length===9&&d[0]==='6')return sg*+(d.slice(0,6)+'.'+d.slice(6));    // easting, 666523059
+    if(d.length===6&&/^[5-9]/.test(d))return sg*+(d.slice(0,3)+'.'+d.slice(3)); // level, 636701
+    return sg*+d;
+  }
+  const parts=t.split('.');if(parts.length>2)t=parts[0]+'.'+parts.slice(1).join('');
+  return +t;
+}
+function prepImage(file){
+  return new Promise((res,rej)=>{
+    const img=new Image();img.onload=()=>{
+      const sc=Math.min(2.5,2600/img.width),W=Math.round(img.width*sc),H=Math.round(img.height*sc);
+      const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+      c.drawImage(img,0,0,W,H);const id=c.getImageData(0,0,W,H),d=id.data;
+      let lo=255,hi=0;for(let i=0;i<d.length;i+=4){const g=.3*d[i]+.59*d[i+1]+.11*d[i+2];d[i]=d[i+1]=d[i+2]=g;if(g<lo)lo=g;if(g>hi)hi=g}
+      const k=255/Math.max(40,hi-lo);for(let i=0;i<d.length;i+=4){const g=Math.max(0,Math.min(255,(d[i]-lo)*k));d[i]=d[i+1]=d[i+2]=g}
+      c.putImageData(id,0,0);URL.revokeObjectURL(img.src);res(cv);
+    };img.onerror=()=>rej(new Error('Could not open the photo'));img.src=URL.createObjectURL(file);
+  });
+}
+function satMap(x){const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(0,0),[e1,n0]=S2W(W,H);
+  try{satDraw(x,W2S,e0,e1,n0,n1,1/view.s/Math.min(2,dp),()=>{if(!satRaf)satRaf=requestAnimationFrame(()=>{satRaf=0;draw()})})}catch(e){}}
+function satBtn(){const b=$('#zSat');if(b){b.classList.toggle('on',satOn);b.title=satOn?'Satellite on':'Satellite off'}}
+function satToggle(){satOn=!satOn;lsSet('as2_sat',satOn);satBtn();legend();draw();if(satOn&&!navigator.onLine)toast('Satellite photo needs internet')}
+
+/* ============================== small loaders (only when used, need internet the first time) ============================== */
+function loadJs(src,ok){return new Promise((res,rej)=>{if(ok())return res();const s=document.createElement('script');s.crossOrigin='anonymous';s.src=src;s.onload=()=>ok()?res():rej(new Error('load'));s.onerror=()=>rej(new Error('This needs internet the first time.'));document.head.append(s)})}
+const THREE_URL='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',TESS_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',XLSX_URL='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ============================== DATA IN: CSV / TXT · Excel · LandXML surface · camera / photo of a sheet · PDF ============================== */
+/* rows read from a photo, a PDF or an Excel sheet -> "Point,N,E,Z". On WIR sheets with Design / Before / Finished levels the finished level is used. */
+function sheetToPts(text,levelPick){const out=[];const zr=(()=>{let a=1e9,b=-1e9;for(let i=0;i<B.n;i+=7){const z=B.Z[i];if(z===z){if(z<a)a=z;if(z>b)b=z}}return [a-80,b+80]})();
+  const e0=B.e0-20000,e1=B.e1+20000,n0=B.n0-20000,n1=B.n1+20000;let seq=1;
+  for(const raw of String(text||'').split(/\r?\n/)){const toks=(raw.match(/-?\d[\d.,]*/g)||[]).map(fixTok).filter(x=>!isNaN(x));if(toks.length<3)continue;
+    let id=null,N=null,E=null;const lv=[];
+    toks.forEach((v,i)=>{if(N===null&&E===null&&id===null&&Number.isInteger(v)&&v>=0&&v<1e6&&!(v>=n0&&v<=n1)&&!(v>=e0&&v<=e1)){id=v;return}
+      if(N===null&&v>=n0&&v<=n1){N=v;return}if(E===null&&v>=e0&&v<=e1){E=v;return}if(N!==null&&E!==null&&v>=zr[0]&&v<=zr[1])lv.push(v)});
+    if(N===null||E===null||!lv.length)continue;
+    const z=levelPick==='1'?lv[0]:levelPick==='2'?(lv[1]??lv[lv.length-1]):levelPick==='last'?lv[lv.length-1]:lv.length>=3?lv[2]:lv[lv.length-1];
+    out.push([id==null?seq:id,N.toFixed(3),E.toFixed(3),z.toFixed(3)].join(','));seq++}
+  return out.join('\n')}
+async function ocrImages(files,say){await loadJs(TESS_URL,()=>typeof Tesseract!=='undefined');say('Starting the reader…');
+  const w=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')say('Reading the photo… '+Math.round(m.progress*100)+'%')}});
+  await w.setParameters({tessedit_char_whitelist:'0123456789.,- ',preserve_interword_spaces:'1',tessedit_pageseg_mode:'6'});let t='';
+  for(let i=0;i<files.length;i++){say('Photo '+(i+1)+' of '+files.length+'…');const cv=await prepImage(files[i]);const r=await w.recognize(cv);t+=r.data.text+'\n'}
+  await w.terminate();return t}
+async function pdfText(file,say){await loadJs(PDFJS_URL,()=>!!window.pdfjsLib);try{const t=await (await fetch(PDFJS_WORKER)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([t],{type:'text/javascript'}))}catch(e){pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER}
+  const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;let out='';
+  for(let p=1;p<=doc.numPages;p++){say('PDF page '+p+' of '+doc.numPages+'…');const tc=await (await doc.getPage(p)).getTextContent();const L=[];
+    for(const it of tc.items){if(!it.str||!it.str.trim())continue;const y=it.transform[5],x=it.transform[4];let l=L.find(q=>Math.abs(q.y-y)<3);if(!l)L.push(l={y,it:[]});l.it.push([x,it.str.trim()])}
+    L.sort((a,b)=>b.y-a.y);for(const l of L){l.it.sort((a,b)=>a[0]-b[0]);out+=l.it.map(q=>q[1]).join('  ')+'\n'}}
+  return out}
+async function xlsxText(file){await loadJs(XLSX_URL,()=>!!window.XLSX);const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});return wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n],{FS:'\t'})).join('\n')}
+/* the row of buttons; cb(text, fileName, how) with how = 'plain' (CSV/TXT/LandXML as it is) or 'rows' (already "Point,N,E,Z") */
+function srcRow(cb,say){const B2=[];const mk=(label,accept,opt,fn)=>{const inp=h('input',{type:'file',accept,style:'display:none'});if(opt.cam)inp.setAttribute('capture','environment');if(opt.multi)inp.multiple=true;
+    inp.onchange=async()=>{const fl=[...inp.files];inp.value='';if(!fl.length)return;try{await fn(fl)}catch(e){say('Could not read it: '+((e&&e.message)||e))}};
+    B2.push(h('button',{class:'btn sm',type:'button',onclick:()=>inp.click()},label),inp)};
+  mk('📄 CSV / TXT','.csv,.txt,.xyz,.pts,.asc,.dat',{},async f=>cb(await f[0].text(),f[0].name,'plain'));
+  mk('📊 Excel','.xlsx,.xls,.xlsm',{},async f=>{say('Opening the Excel file…');const t=sheetToPts(await xlsxText(f[0]));cb(t,f[0].name,'rows')});
+  mk('🗺 Surface (LandXML)','.xml,.landxml',{},async f=>cb(await f[0].text(),f[0].name,'plain'));
+  mk('📷 Camera','image/*',{cam:1},async f=>{const t=sheetToPts(await ocrImages(f,say));cb(t,f[0].name,'rows','photo')});
+  mk('🖼 Photos of sheet','image/*',{multi:1},async f=>{const t=sheetToPts(await ocrImages(f,say));cb(t,f[0].name,'rows','photo')});
+  mk('📑 PDF','.pdf,application/pdf',{},async f=>{const t=sheetToPts(await pdfText(f[0],say));cb(t,f[0].name,'rows')});
+  return h('div',{class:'srcs'},...B2)}
+
+/* ============================== 3D VIEW: any surface, any colour, satellite on the ground, before/after compare ============================== */
+const V3=Object.assign({surf:'cur',col:'grade',cmp:'ngl',ex:3,area:-1,date:'',cdate:'',lay:1},lsGet('as2_v3',{}));
+let T3=null;
+function v3Save(){lsSet('as2_v3',{surf:V3.surf,col:V3.col,cmp:V3.cmp,ex:V3.ex,lay:V3.lay})}
+function v3Surf(key){const D=DZ[activeDesign().id],n=B.n;
+  if(key==='cur')return CUR;if(key==='des')return D;if(key==='ngl')return G;
+  if(key==='prep'){const o=new Float32Array(n);for(let i=0;i<n;i++)o[i]=prepLevel(i);return o}
+  if(key==='lay'){const o=new Float32Array(n).fill(NaN),L=Math.max(1,V3.lay|0);for(let i=0;i<n;i++){const z=D[i],g=G[i];if(z===z&&g===g&&z>g)o[i]=Math.min(prepLevel(i)+LT()*L,z)}return o}
+  if(key==='date'||key==='cdate'){const d=V3[key]||today();return stateAt(d).CUR}
+  if(key.startsWith('d:'))return DZ[key.slice(2)]||D;return CUR}
+const v3Name=k=>({cur:'Ground now',des:'Design ('+activeDesign().name.split(' – ')[0]+')',ngl:'NGL',prep:'Preparation level (NGL − '+PD().toFixed(2)+')',lay:'Layer '+V3.lay,date:'Ground on '+dmy(V3.date||today()),cdate:'ground on '+dmy(V3.cdate||today())}[k]||((designs().find(d=>'d:'+d.id===k)||{}).name||k));
+function v3Open(areaIdx){if(!ready){toast('Still loading…');return}if(areaIdx!=null)V3.area=areaIdx;
+  let ov=$('#v3');if(ov)ov.remove();ov=h('div',{id:'v3'},h('div',{id:'v3Bar'}),h('div',{id:'v3Box'},h('canvas',{id:'v3c'}),h('div',{id:'v3Leg'}),h('div',{id:'v3Info'}),h('div',{class:'zb'},h('button',{title:'Reset view',onclick:()=>{v3Home();v3Draw()}},'⟲'),h('button',{title:'Save picture',onclick:v3Png},'⬇'))),h('div',{id:'v3Msg'},'Loading 3D…'));
+  document.body.append(ov);document.body.style.overflow='hidden';v3Bar();
+  loadJs(THREE_URL,()=>typeof THREE!=='undefined').then(()=>{v3Init();v3Build()}).catch(e=>{$('#v3Msg').textContent='3D needs internet the first time it opens. '+(e.message||'')})}
+function v3Close(){const ov=$('#v3');if(ov)ov.remove();document.body.style.overflow='';if(T3){try{T3.r.dispose()}catch(e){}T3=null}}
+function v3Bar(){const sel=(val,opts,on)=>h('select',{onchange:e=>on(e.target.value)},...opts.map(([k,l])=>h('option',{value:k,selected:String(val)===String(k)},l)));
+  const DL=designs(),act=activeDesign();
+  const surfs=[['cur','Ground now'],['des','Design – '+act.name.split(' – ')[0]],['ngl','NGL (natural ground)'],['prep','Preparation (NGL − '+PD().toFixed(2)+')'],['lay','Fill layer …'],['date','Ground on a date …']].concat(DL.filter(d=>d.id!==act.id).map(d=>['d:'+d.id,'Design – '+d.name.split(' – ')[0]]));
+  const cols=[['grade','Grade status'],['cf','Cut / fill to design'],['chg','Change vs …'],['h','Height colours'],['sat','Satellite photo']];
+  const cmps=[['ngl','NGL'],['cdate','Ground on a date …'],['des','Design'],['cur','Ground now']];
+  const lab=(t,e)=>h('label',{class:'v3f'},h('span',{},t),e);
+  const reb=()=>{v3Save();v3Bar();if(T3)v3Build()};
+  $('#v3Bar').replaceChildren(...kids(h('button',{class:'btn sm',onclick:v3Close},'✕ Close'),
+    lab('Show',sel(V3.surf,surfs,v=>{V3.surf=v;reb()})),
+    V3.surf==='lay'?lab('Layer',sel(V3.lay,Array.from({length:12},(_,i)=>[i+1,'Layer '+(i+1)]),v=>{V3.lay=+v;reb()})):null,
+    V3.surf==='date'?lab('Date',h('input',{type:'date',value:V3.date||today(),onchange:e=>{V3.date=e.target.value;reb()}})):null,
+    lab('Colour',sel(V3.col,cols,v=>{V3.col=v;reb()})),
+    V3.col==='chg'?lab('Compare with',sel(V3.cmp,cmps,v=>{V3.cmp=v;reb()})):null,
+    V3.col==='chg'&&V3.cmp==='cdate'?lab('Date',h('input',{type:'date',value:V3.cdate||today(),onchange:e=>{V3.cdate=e.target.value;reb()}})):null,
+    lab('Area',sel(V3.area,[[-1,'Whole site']].concat(K.areas.map((a,i)=>[i,a.name])),v=>{V3.area=+v;v3Save();if(T3){T3.home=null;v3Build()}})),
+    lab('Height ×',sel(V3.ex,[1,2,3,5,10].map(x=>[x,x+'×']),v=>{V3.ex=+v;reb()}))))}
+function v3Init(){const c=$('#v3c'),r=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:true});r.setPixelRatio(Math.min(2,devicePixelRatio||1));r.setClearColor(0x0b0e10);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(45,1,1,60000);sc.add(new THREE.HemisphereLight(0xffffff,0x3a3328,0.75));const dl=new THREE.DirectionalLight(0xffffff,0.75);dl.position.set(-1,2,1.2);sc.add(dl);
+  T3={r,sc,cam,mesh:null,lines:null,o:{tx:0,ty:0,tz:0,d:1000,az:0.6,el:0.75},raf:0};v3Events();addEventListener('resize',v3Size);v3Size()}
+function v3Size(){if(!T3)return;const b=$('#v3Box').getBoundingClientRect();T3.r.setSize(b.width,b.height,false);T3.cam.aspect=b.width/Math.max(1,b.height);T3.cam.updateProjectionMatrix();v3Draw()}
+function v3Draw(){if(!T3||T3.raf)return;T3.raf=requestAnimationFrame(()=>{T3.raf=0;const o=T3.o,c=T3.cam;c.position.set(o.tx+o.d*Math.cos(o.el)*Math.sin(o.az),o.ty+o.d*Math.sin(o.el),o.tz+o.d*Math.cos(o.el)*Math.cos(o.az));c.lookAt(o.tx,o.ty,o.tz);T3.r.render(T3.sc,c)})}
+function v3Home(){if(!T3||!T3.home)return;Object.assign(T3.o,T3.home)}
+function v3Png(){if(!T3)return;T3.r.render(T3.sc,T3.cam);const a=h('a',{href:T3.r.domElement.toDataURL('image/png'),download:'3D_'+v3Name(V3.surf).replace(/[^\w]+/g,'_')+'_'+today()+'.png'});document.body.append(a);a.click();a.remove()}
+function v3Build(){const msg=$('#v3Msg');msg.textContent='Building the 3D ground…';const ib=$('#v3Info');if(ib)ib.style.display='none';msg.style.display='block';
+  setTimeout(()=>{try{v3Mesh()}catch(e){console.error(e);msg.textContent='3D could not be built: '+e.message;return}msg.style.display='none';v3Draw()},30)}
+function v3Mesh(){const D=DZ[activeDesign().id],S=v3Surf(V3.surf),C=V3.col==='chg'?v3Surf(V3.cmp):null,tol=M.tol||0.1;
+  // extent: whole site or one area (+ margin)
+  let e0=B.e0,e1=B.e1,n0=B.n0,n1=B.n1;const ar=V3.area>=0?K.areas[V3.area]:null;if(ar){const bb=ar.bb||(ar.bb=bboxOf(ar.c));e0=bb.e0-25;e1=bb.e1+25;n0=bb.n0-25;n1=bb.n1+25}
+  const r=Math.max(ar?2:4,Math.sqrt((e1-e0)*(n1-n0)/180000)),nx=Math.ceil((e1-e0)/r)+1,ny=Math.ceil((n1-n0)/r)+1,ec=(e0+e1)/2,nc=(n0+n1)/2;
+  // every grid node: height from the points around it (inverse distance), colour from the nearest point
+  const Zg=new Float32Array(nx*ny).fill(NaN),Ig=new Int32Array(nx*ny).fill(-1),RR=Math.max(7.6,r*0.9),RR2=RR*RR;let zmin=1e9,zmax=-1e9;
+  for(let y=0;y<ny;y++){const n=n1-y*r;for(let x=0;x<nx;x++){const e=e0+x*r;const ix=Math.floor(e/GS),iy=Math.floor(n/GS);let sw=0,sz=0,bd=1e9,bi=-1;
+    for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const l=B.grid.get((ix+a)*200000+iy+c);if(!l)continue;for(const i of l){const d=(B.E[i]-e)**2+(B.N[i]-n)**2;if(d>RR2)continue;const z=S[i];if(!(z===z))continue;if(ar&&B.A[i]!==V3.area&&d>4)continue;const w=1/(d+0.5);sw+=w;sz+=w*z;if(d<bd){bd=d;bi=i}}}
+    if(bi>=0){const k=y*nx+x,z=sz/sw;Zg[k]=z;Ig[k]=bi;if(z<zmin)zmin=z;if(z>zmax)zmax=z}}}
+  if(zmin>zmax)throw new Error('nothing to show for '+v3Name(V3.surf)+(ar?' in '+ar.name:''));
+  const ex=V3.ex,pos=new Float32Array(nx*ny*3),colr=new Float32Array(nx*ny*3),uv=new Float32Array(nx*ny*2),idx=[];
+  const hx=s=>[parseInt(s.slice(1,3),16)/255,parseInt(s.slice(3,5),16)/255,parseInt(s.slice(5,7),16)/255];
+  const GRc=GR.map(g=>g?hx(g[1]):null);let up=0,dn=0,same=0;
+  const colOf=i=>{const z=S[i];
+    if(V3.col==='grade'){const k=withState({CUR:S,LL,PZ},()=>gradeOf(i,D));if(k===2&&D[i]<G[i])return [.54,.29,.29];return k?GRc[k]:[.3,.32,.34]}
+    if(V3.col==='cf'){const d=D[i]-z;if(!(d===d))return [.35,.36,.37];if(Math.abs(d)<=tol)return [.24,.81,.56];const t=Math.min(1,0.25+Math.abs(d)/2),q=d>0?[1,.69,.12]:[1,.36,.36];return [.33+(q[0]-.33)*t,.36+(q[1]-.36)*t,.38+(q[2]-.38)*t]}
+    if(V3.col==='chg'){const d=z-C[i];if(!(d===d))return [.3,.32,.34];if(Math.abs(d)<0.02)return [.33,.36,.38];const t=Math.min(1,Math.abs(d)/1.5);return d>0?[.33+.67*t,.36+.18*t,.38-.38*t]:[.33-.2*t,.36+.36*t,.38+.62*t]}
+    const t=(z-zmin)/Math.max(0.5,zmax-zmin);return t<.5?[.1+.3*t*2,.35+.4*t*2,.55-.2*t*2]:[.4+.55*(t-.5)*2,.75-.15*(t-.5)*2,.35-.15*(t-.5)*2]};
+  for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const k=y*nx+x,z=Zg[k];pos[k*3]=e0+x*r-ec;pos[k*3+2]=-(n1-y*r-nc);pos[k*3+1]=z===z?(z-zmin)*ex:0;uv[k*2]=x/(nx-1);uv[k*2+1]=1-y/(ny-1);
+    if(Ig[k]>=0){const c=colOf(Ig[k]);colr[k*3]=c[0];colr[k*3+1]=c[1];colr[k*3+2]=c[2]}}
+  for(let y=0;y<ny-1;y++)for(let x=0;x<nx-1;x++){const a=y*nx+x,b=a+1,c=a+nx,d=c+1;if(Ig[a]>=0&&Ig[c]>=0&&Ig[b]>=0)idx.push(a,c,b);if(Ig[b]>=0&&Ig[c]>=0&&Ig[d]>=0)idx.push(b,c,d)}
+  // totals for the change view (whole site or the area)
+  if(C)for(let i=0;i<B.n;i++){if(ar&&B.A[i]!==V3.area)continue;const d=S[i]-C[i];if(!(d===d))continue;const v=d*B.C[i];if(d>0.02)up+=v;else if(d<-0.02)dn-=v;else same+=B.C[i]}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(colr,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+  let mat;if(V3.col==='sat'){const tex=v3SatTex(e0,e1,n0,n1);mat=new THREE.MeshLambertMaterial({map:tex,side:THREE.DoubleSide})}else mat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
+  if(T3.mesh){T3.sc.remove(T3.mesh);T3.mesh.geometry.dispose();T3.mesh.material.dispose()}if(T3.lines){T3.sc.remove(T3.lines);T3.lines.geometry.dispose()}
+  T3.mesh=new THREE.Mesh(g,mat);T3.sc.add(T3.mesh);
+  // area outlines draped on the ground
+  const lp=[];const hAt=(e,n)=>{const i=nearestBase(e,n,400);const z=i>=0?S[i]:NaN;return z===z?(z-zmin)*ex+0.4*ex:null};
+  for(const a of (ar?[ar]:K.areas)){const R=a.c;for(let j=0;j<R.length;j++){const p=R[j],q=R[(j+1)%R.length],L=Math.hypot(q[0]-p[0],q[1]-p[1]),st=Math.max(1,Math.ceil(L/(r*2)));
+      for(let s=0;s<st;s++){const e=p[0]+(q[0]-p[0])*s/st,n=p[1]+(q[1]-p[1])*s/st,e2=p[0]+(q[0]-p[0])*(s+1)/st,n2=p[1]+(q[1]-p[1])*(s+1)/st,h1=hAt(e,n),h2=hAt(e2,n2);if(h1==null||h2==null)continue;lp.push(e-ec,h1,-(n-nc),e2-ec,h2,-(n2-nc))}}}
+  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(lp),3));T3.lines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.45}));T3.sc.add(T3.lines);
+  T3.meta={e0,n1,ec,nc,zmin,ex,S,C,ar};
+  const ext=Math.max(e1-e0,n1-n0);if(!T3.home||T3.home.key!==(V3.area+'|'+ex)){T3.home={key:V3.area+'|'+ex,tx:0,ty:(zmax-zmin)*ex/2,tz:0,d:ext*(ar?1.5:1.0),az:ar?0.5:0.35,el:0.72};v3Home()}
+  else T3.o.ty=(zmax-zmin)*ex/2;
+  // legend
+  const sw=(c,t)=>h('span',{},h('i',{style:'background:'+c}),t);let L=[];
+  if(V3.col==='grade')L=[sw(GR[5][1],'final'),sw(GR[4][1],'touch'),sw(GR[3][1],'near'),sw('#4a6a8a','working'),sw(GR[1][1],'not started'),sw(GR[6][1],'over design')];
+  else if(V3.col==='cf')L=[sw('#ffaf1f','fill to go'),sw('#ff5d5d','cut to go'),sw('#3ecf8e','on design ±'+(tol*100).toFixed(0)+' cm')];
+  else if(V3.col==='chg')L=[sw('#ff8a00','higher'),sw('#2ab0ff','lower'),sw('#545c61','same ±2 cm')];
+  else if(V3.col==='h')L=[sw('#1a598c','low'),sw('#66bf59','middle'),sw('#f29933','high')];
+  $('#v3Leg').replaceChildren(...kids(h('b',{},v3Name(V3.surf)+(ar?' · '+ar.name:'')),h('div',{class:'lg2'},...L),
+    C?h('div',{style:'margin-top:5px'},'vs '+v3Name(V3.cmp)+': ',h('b',{style:'color:#ff8a00'},'+'+fmt(up)+' m³'),' higher · ',h('b',{style:'color:#2ab0ff'},'−'+fmt(dn)+' m³'),' lower'):null,
+    h('div',{class:'mut',style:'margin-top:4px'},'Levels '+zmin.toFixed(2)+' – '+zmax.toFixed(2)+' m · height ×'+ex+' · one finger turns, two fingers zoom and move, tap = levels')))}
+function v3SatTex(e0,e1,n0,n1){const ext=Math.max(e1-e0,n1-n0),PXs=Math.max(0.5,ext/2048),W=Math.ceil((e1-e0)/PXs),H=Math.ceil((n1-n0)/PXs),cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');c.fillStyle='#8a7a62';c.fillRect(0,0,W,H);
+  const tex=new THREE.CanvasTexture(cv);tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;let pend=0;
+  const paint=()=>{try{c.setTransform(1,0,0,1,0,0);satDraw(c,(E,N)=>[(E-e0)/PXs,(n1-N)/PXs],e0,e1,n0,n1,PXs,null,true);tex.needsUpdate=true;v3Draw()}catch(e){toast('The satellite photo could not be put on the 3D ground')}};
+  const onL=()=>{if(!pend)pend=setTimeout(()=>{pend=0;paint()},250)};satDraw(c,(E,N)=>[(E-e0)/PXs,(n1-N)/PXs],e0,e1,n0,n1,PXs,onL,true);tex.needsUpdate=true;
+  if(!navigator.onLine)toast('Satellite photo needs internet');return tex}
+function v3Events(){const c=$('#v3c'),P=new Map();let last=null,pinch=null,moved=0,btn=0;const o=()=>T3.o;
+  const pan=(dx,dy)=>{const s=o().d/900,a=o().az,rx=Math.cos(a),rz=-Math.sin(a),fx=-Math.sin(a),fz=-Math.cos(a);o().tx+=(-rx*dx+fx*dy)*s;o().tz+=(-rz*dx+fz*dy)*s};
+  c.addEventListener('contextmenu',e=>e.preventDefault());
+  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.offsetX,e.offsetY]);btn=e.button===2||e.shiftKey?2:0;last=[e.offsetX,e.offsetY];moved=0;
+    if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),dist:o().d,m:[(a[0]+b[0])/2,(a[1]+b[1])/2]}}});
+  c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId)||!T3)return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
+    if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),m=[(a[0]+b[0])/2,(a[1]+b[1])/2];o().d=Math.max(20,Math.min(40000,pinch.dist*pinch.d/Math.max(1,d)));pan(m[0]-pinch.m[0],m[1]-pinch.m[1]);pinch.m=m;moved=99;v3Draw();return}
+    const dx=e.offsetX-last[0],dy=e.offsetY-last[1];last=[e.offsetX,e.offsetY];moved+=Math.abs(dx)+Math.abs(dy);
+    if(btn===2)pan(dx,dy);else{o().az-=dx*0.007;o().el=Math.max(0.06,Math.min(1.55,o().el+dy*0.006))}v3Draw()});
+  const up=e=>{if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(P.size<2)pinch=null;if(P.size===1)last=[...P.values()][0];if(!P.size&&moved<6)v3Tap(e.offsetX,e.offsetY)};
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
+  c.addEventListener('wheel',e=>{e.preventDefault();o().d=Math.max(20,Math.min(40000,o().d*Math.exp(e.deltaY*0.0012)));v3Draw()},{passive:false})}
+function v3Tap(x,y){if(!T3||!T3.mesh)return;const c=$('#v3c'),b=c.getBoundingClientRect(),rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2(x/b.width*2-1,-(y/b.height)*2+1),T3.cam);const hit=rc.intersectObject(T3.mesh)[0],box=$('#v3Info');
+  if(!hit){box.style.display='none';return}const m=T3.meta,e=hit.point.x+m.ec,n=-hit.point.z+m.nc,i=nearestBase(e,n,200);if(i<0){box.style.display='none';return}
+  const D=DZ[activeDesign().id],f3=v=>v===v?v.toFixed(3):'–',a=B.A[i]>=0?K.areas[B.A[i]]:null,sh=m.S[i];
+  const rows=[['N',B.N[i].toFixed(3)],['E',B.E[i].toFixed(3)],['Area',a?a.name+' · Phase '+B.P[i]:'Phase '+B.P[i]],[v3Name(V3.surf),f3(sh)],['Design',f3(D[i])],['NGL',f3(G[i])]].concat(V3.surf==='cur'?[]:[['Ground now',f3(CUR[i])]]);
+  if(m.C)rows.push(['vs '+v3Name(V3.cmp),f3(m.C[i])],['Difference',sh===sh&&m.C[i]===m.C[i]?((sh-m.C[i])>=0?'+':'')+(sh-m.C[i]).toFixed(3)+' m':'–']);
+  if(D[i]===D[i]&&sh===sh)rows.push([D[i]-sh>0?'Fill to design':'Cut to design',Math.abs(D[i]-sh).toFixed(3)+' m']);
+  box.replaceChildren(h('button',{class:'x',onclick:()=>box.style.display='none'},'×'),h('div',{class:'kv'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])));box.style.display='block'}
+
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
   if(RO)for(const x of M.designs.concat(M.ngl)){if(!nPts(await ptsOf(x.id))){const c=await dbGet('cpts:'+x.id);if(c)PTS[x.id]=c}}
