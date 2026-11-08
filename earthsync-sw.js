@@ -1,6 +1,6 @@
 // EarthSync offline helper: keeps the app, its icons and the PDF/3D libraries on the phone.
 // Live data (Firebase) is never cached here - it always goes to the internet.
-const CACHE = 'earthsync-v60';
+const CACHE = 'earthsync-v62';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -23,6 +23,7 @@ self.addEventListener('fetch', e => {
   }
   if (u.origin !== location.origin) return;
   // the app itself: newest from the internet, cached copy when offline
-  e.respondWith(fetch(req).then(r => { if (r.ok) { const c = r.clone(); caches.open(CACHE).then(x => x.put(req, c)); } return r; })
+  // ask GitHub every time (no-cache), so a new upload shows on the next open instead of up to 10 minutes later
+  e.respondWith(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(r => { if (r.ok) { const c = r.clone(); caches.open(CACHE).then(x => x.put(req, c)); } return r; })
     .catch(() => caches.match(req).then(hit => hit || caches.match('./index.html') || caches.match('./'))));
 });
