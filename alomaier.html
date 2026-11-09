@@ -307,7 +307,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
     h('div',{class:'row mut',style:'font-size:12px'},h('span',{},pc(Q.fD,Q.fR).toFixed(1)+'% done'),h('span',{class:'sp'}),h('span',{},fmt(Q.fR-Q.fD)+' m³ still to place')),
     h('div',{class:'kk',style:'margin-top:12px'},h('div',{class:'k'},h('b',{},fmt(Q.cD)),h('small',{},'m³ cut done of '+fmt(Q.cR))),h('div',{class:'k'},h('b',{},fmt(Q.on)),h('small',{},'m² on final design (±'+(M.tol*100).toFixed(0)+' cm)')))));
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
-    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.4 · 9 Nov 2026')),h('div',{class:'qg'},
+    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.5 · 9 Nov 2026')),h('div',{class:'qg'},
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -1451,8 +1451,8 @@ function subPaste(){const ta=h('textarea',{placeholder:'One corner per line: N, 
     if(P.length<3){toast('Need at least 3 corners');return}DRAW.pts=P;close();drawBar();fitTo(P.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
 function subFromSurvey(){const ai=DRAW.ai,L=surveys().filter(s=>PTS[s.id]&&(ai==null||survArea(s).split(' · ')[0]===K.areas[ai].name)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,40);
   if(!L.length){toast('No survey in this area yet');return}const sel=h('select',{},...L.map(s=>h('option',{value:s.id},dmy(s.date)+' · '+wirNo(s)+' · '+kindName(s.kind,s.layer)+' · '+survArea(s).split(' · ')[0])));
-  modal('Sub-area from survey points',h('div',{},sel,h('div',{class:'mut',style:'font-size:12px;margin-top:8px'},'The outer points of the survey make the border of the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const s=L.find(x=>x.id===sel.value);const H=hull(ptsEN(s));if(H.length<3){toast('Not enough points');return}DRAW.pts=H;close();drawBar();fitTo(H.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
-function subFromPts(s){const H=hull(ptsEN(s));if(H.length<3){toast('Not enough points');return}const i=nearestBase(...(()=>{let e=0,n=0;for(const q of H){e+=q[0];n+=q[1]}return [e/H.length,n/H.length]})(),400);subDraw(i>=0&&B.A[i]>=0?B.A[i]:null);setTimeout(()=>{DRAW.pts=H;drawBar();draw()},120)}
+  modal('Sub-area from survey points',h('div',{},sel,h('div',{class:'mut',style:'font-size:12px;margin-top:8px'},'The outer points of the survey make the border of the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const s=L.find(x=>x.id===sel.value);const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}DRAW.pts=H;close();drawBar();fitTo(H.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
+function subFromPts(s){const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}const i=nearestBase(...(()=>{let e=0,n=0;for(const q of H){e+=q[0];n+=q[1]}return [e/H.length,n/H.length]})(),400);subDraw(i>=0&&B.A[i]>=0?B.A[i]:null);setTimeout(()=>{DRAW.pts=H;drawBar();draw()},120)}
 function subSave(){if(!DRAW||DRAW.pts.length<3){toast('Tap at least 3 corners');return}let cx=0,cy=0;for(const q of DRAW.pts){cx+=q[0];cy+=q[1]}cx/=DRAW.pts.length;cy/=DRAW.pts.length;
   let ai=DRAW.ai;if(ai==null){const i=nearestBase(cx,cy,400);ai=i>=0?B.A[i]:-1}if(ai<0){toast('The sub-area must be inside an area');return}
   const a=K.areas[ai],n0=subs().filter(s=>s.area===a.name).length;let col=DRAW.edit?subCol(DRAW.edit):SUBCOL[(subs().length)%SUBCOL.length];const sw=h('div',{class:'row',style:'gap:6px;flex-wrap:wrap'});const paint=()=>sw.replaceChildren(...SUBCOL.map(c=>h('button',{type:'button',onclick:()=>{col=c;paint()},style:'width:28px;height:28px;border-radius:50%;background:'+c+';border:3px solid '+(c===col?'#fff':'transparent')+';cursor:pointer'})));paint();const nm=h('input',{value:DRAW.edit?DRAW.edit.name:a.name.replace('AREA ','')+'-'+String.fromCharCode(65+n0)}),nt=h('input',{value:DRAW.edit?DRAW.edit.note||'':'',placeholder:'e.g. east side, near the crusher'});
@@ -1865,13 +1865,13 @@ const AREACOL=['#ff8787','#74c0fc','#8ce99a','#ffe066','#e599f7','#ffa94d','#63e
 const areaCol=ai=>AREACOL[ai%AREACOL.length];
 let SEL=null; // {t:'sub'|'area', id}
 /* a survey's outer points become a sub-area of the area it is in – once per place (layers on the same spot share it) */
-function autoSub(sv,quiet){const P=ptsEN(sv);if(P.length<3)return null;const H=hull(P);if(H.length<3||polyArea(H)<100)return null;
+function autoSub(sv,quiet){const P=ptsEN(sv);if(P.length<3)return null;const H=outline(P);if(H.length<3||polyArea(H)<100)return null;
   let cx=0,cy=0;for(const q of H){cx+=q[0];cy+=q[1]}cx/=H.length;cy/=H.length;const i=nearestBase(cx,cy,900);const ai=i>=0?B.A[i]:-1;if(ai<0||K.areas[ai].w)return null;const a=K.areas[ai],A0=polyArea(H);
   const same=subs().find(x=>x.area===a.name&&(x.from===sv.id||(inPoly(cx,cy,x.c)&&(()=>{const r=polyArea(x.c)/A0;return r>0.6&&r<1.6})())));if(same)return same;
   const used=new Set(subs().filter(x=>x.area===a.name).map(x=>x.name));let k=0,nm;do{nm=a.name.replace('AREA ','')+'-'+String.fromCharCode(65+k%26)+(k>=26?Math.floor(k/26):'');k++}while(used.has(nm));
   const o={id:'sa'+uid(),name:nm,area:a.name,c:H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]),col:SUBCOL[subs().length%SUBCOL.length],note:'from '+(sv.wir?wirTxt(sv):'survey '+dmy(sv.date))+' outer points',from:sv.id,u:Date.now()};
   M.subs=M.subs||[];M.subs.push(o);if(!quiet){saveMeta();toast('Sub-area '+nm+' made from the outer points')}return o}
-function autoSubOnce(){if(RO||M.asDone||!canEdit())return;const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);M.asDone=1;saveMeta();const n=subs().length-before;if(n){toast(n+' sub-area borders made from the survey outer points');if(cur==='map')draw();else render()}}
+function autoSubOnce(){if(RO||!canEdit()||(M.asDone||0)>=2)return;let fixed=0;for(const sa of (M.subs||[]))if(sa.from&&!M.del[sa.id]){const sv=surveys().find(x=>x.id===sa.from);if(sv){const H=outline(ptsEN(sv));if(H.length>=3){sa.c=H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]);delete sa.bb;sa.u=Date.now();fixed++}}}const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);M.asDone=2;saveMeta();const n=subs().length-before+fixed;if(n){toast(n+' sub-area borders made from the survey outer points');if(cur==='map')draw();else render()}}
 function autoSubAll(){if(!guard())return;const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);const n=subs().length-before;saveMeta();toast(n?n+' sub-area'+(n===1?'':'s')+' made from survey outer points':'Every survey already has its sub-area');render()}
 /* the record of the area / sub-area under a tap: number, size, points, cut and fill (total, done, left) */
 function subNear(e,n){const inside=subs().filter(sa=>{const bb=sa.bb||(sa.bb=bboxOf(sa.c));return e>=bb.e0&&e<=bb.e1&&n>=bb.n0&&n<=bb.n1&&inPoly(e,n,sa.c)});if(inside.length)return inside.sort((a,b)=>polyArea(a.c)-polyArea(b.c))[0];
@@ -1884,6 +1884,37 @@ function recordCard(g,col,size){const Z=DZ[activeDesign().id],o=qtyOf(g.test,Z),
       ...(o.fR>1?r('Fill total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)+' m³','#3ecf8e'):[]),...(o.cR>1?r('Cut total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)+' m³','#ff5d5d'):[]),
       ...(t.need?r('Layers',t.need+' needed · '+(t.dn?t.dn+' done':'prep')+' · '+t.left+' to go'):[])),
     h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet(g.type,g.key)},'Full record & report ›'))}
+
+/* ============================== OUTLINE THROUGH THE OUTER POINTS (concave hull) ============================== */
+/* Delaunay triangulation (Bowyer–Watson), then triangles with a side longer than ~2.5 point spacings are dropped;
+   the edges left on the outside, joined up, are the border – every corner is a real surveyed point. */
+function delaunay(P){const n=P.length;let mx=1e18,my=1e18,Mx=-1e18,My=-1e18;for(const [x,y] of P){if(x<mx)mx=x;if(y<my)my=y;if(x>Mx)Mx=x;if(y>My)My=y}
+  const d=Math.max(Mx-mx,My-my)*20,cx=(mx+Mx)/2,cy=(my+My)/2,V=P.map(p=>[p[0]-cx,p[1]-cy]);V.push([-d,-d],[d,-d],[0,d]);
+  const cc=(a,b,c)=>{const [ax,ay]=V[a],[bx,by]=V[b],[qx,qy]=V[c],D=2*(ax*(by-qy)+bx*(qy-ay)+qx*(ay-by));if(Math.abs(D)<1e-12)return [0,0,1e30];const a2=ax*ax+ay*ay,b2=bx*bx+by*by,c2=qx*qx+qy*qy,ux=(a2*(by-qy)+b2*(qy-ay)+c2*(ay-by))/D,uy=(a2*(qx-bx)+b2*(ax-qx)+c2*(bx-ax))/D;return [ux,uy,(ax-ux)**2+(ay-uy)**2]};
+  let T=[[n,n+1,n+2,...cc(n,n+1,n+2)]];
+  for(let i=0;i<n;i++){const [x,y]=V[i],bad=[],keep=[];for(const t of T)((x-t[3])**2+(y-t[4])**2<t[5]?bad:keep).push(t);
+    const E=new Map();for(const t of bad)for(const [a,b] of [[t[0],t[1]],[t[1],t[2]],[t[2],t[0]]]){const k=a<b?a+'_'+b:b+'_'+a;E.set(k,E.has(k)?null:[a,b])}
+    for(const e of E.values())if(e)keep.push([e[0],e[1],i,...cc(e[0],e[1],i)]);T=keep}
+  return T.filter(t=>t[0]<n&&t[1]<n&&t[2]<n).map(t=>[t[0],t[1],t[2]])}
+function outline(P0){if(P0.length<3)return P0;let P=P0;
+  if(P.length>2500){const st=P.length/2500;P=[];for(let k=0;k<P0.length;k+=st)P.push(P0[Math.floor(k)])}
+  // de-duplicate points closer than 5 cm
+  const seen=new Set();P=P.filter(([x,y])=>{const k=Math.round(x*20)+'_'+Math.round(y*20);if(seen.has(k))return false;seen.add(k);return true});if(P.length<4)return hull(P);
+  // typical spacing: median distance to the nearest neighbour
+  const G_=new Map(),cs=20;P.forEach(([x,y],i)=>{const k=Math.floor(x/cs)+'_'+Math.floor(y/cs);(G_.get(k)||G_.set(k,[]).get(k)).push(i)});
+  const nn=P.map(([x,y],i)=>{let b=1e18;const ix=Math.floor(x/cs),iy=Math.floor(y/cs);for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++)for(const j of G_.get((ix+a)+'_'+(iy+c))||[])if(j!==i){const d=(P[j][0]-x)**2+(P[j][1]-y)**2;if(d<b)b=d}return Math.sqrt(b)}).filter(v=>v<1e8).sort((a,b)=>a-b);
+  const sp=nn.length?nn[nn.length>>1]:10,alpha=Math.max(2.6*sp,6);
+  let T;try{T=delaunay(P)}catch(e){return hull(P)}
+  const L=(a,b)=>Math.hypot(P[a][0]-P[b][0],P[a][1]-P[b][1]);T=T.filter(([a,b,c])=>L(a,b)<=alpha&&L(b,c)<=alpha&&L(c,a)<=alpha);if(!T.length)return hull(P);
+  const cnt=new Map();for(const [a,b,c] of T)for(const [u,v] of [[a,b],[b,c],[c,a]]){const k=u<v?u+'_'+v:v+'_'+u;cnt.set(k,(cnt.get(k)||0)+1)}
+  const adj=new Map();for(const [k,n_] of cnt)if(n_===1){const [u,v]=k.split('_').map(Number);(adj.get(u)||adj.set(u,[]).get(u)).push(v);(adj.get(v)||adj.set(v,[]).get(v)).push(u)}
+  // walk the border loops, keep the biggest
+  const used=new Set(),loops=[];for(const s0 of adj.keys()){if(used.has(s0))continue;const loop=[s0];used.add(s0);let prev=-1,cur_=s0;
+    for(let g=0;g<20000;g++){const nx=(adj.get(cur_)||[]).find(v=>v!==prev&&(!used.has(v)||(v===s0&&loop.length>2)));if(nx==null||nx===s0)break;loop.push(nx);used.add(nx);prev=cur_;cur_=nx}
+    if(loop.length>2)loops.push(loop.map(i=>P[i]))}
+  if(!loops.length)return hull(P);loops.sort((a,b)=>polyArea(b)-polyArea(a));const best=loops[0];
+  // a border that keeps less than half the area of the full shape is not trusted
+  return polyArea(best)>polyArea(hull(P))*0.35?best:hull(P)}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
