@@ -794,7 +794,7 @@ function rData(){const el=$('#p-data');el.replaceChildren(h('h1',{class:'pt'},'D
   const who=h('textarea',{style:'min-height:90px;font-family:var(--sans)'},M.surveyors.join('\n'));
   el.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Surveyors')),who,h('div',{class:'row',style:'margin-top:8px'},h('span',{class:'mut',style:'font-size:12px'},'One name per line'),h('span',{class:'sp'}),h('button',{class:'btn sm',onclick:()=>{M.surveyors=who.value.split('\n').map(s=>s.trim()).filter(Boolean);saveMeta();toast('Saved')}},'Save'))));
   el.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Look')),h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},...[['dark','🌙 Dark (night / office)'],['light','☀️ Light (sunlight on site)']].map(([k,t])=>h('button',{class:'btn'+(lsGet('as2_theme','dark')===k?' pri':''),onclick:()=>{themeSet(k);rData();if(ready&&typeof draw==='function')try{draw()}catch(e){}}},t)))));
-  if(canEdit())el.append(teamCard(),consultCard());el.append(backupCard());el.append(auditCard());
+  if(canEdit())el.append(visitsCard(),teamCard(),consultCard());el.append(backupCard());el.append(auditCard());
   el.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'About')),h('div',{class:'mut',style:'font-size:12.5px'},'ALOMAIER SURVEY 2.0 · Khuzam 4 enabling earthworks · built for Survey Eng. Muhammad Sheraz Abbasi. Grading by grade points (design XYZ, mostly 10 × 10 m).')))}
 /* ============================== start ============================== */
 /* ============================== SATELLITE PHOTO under the map (Esri World Imagery, UTM 38N) ============================== */
@@ -1979,7 +1979,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='5.0',APPD='9 Nov 2026';
+const APPV='5.1',APPD='9 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -4939,6 +4939,22 @@ function consultCard(){return h('div',{class:'card'},h('div',{class:'ct'},h('h3'
     h('button',{class:'btn sm',onclick:async()=>{try{if(navigator.share){await navigator.share({title:'Alomaier Survey – Khuzam 4',text:'Khuzam 4 survey records (view only)',url:CONS_URL()});return}}catch(e){if(e&&e.name==='AbortError')return}try{await navigator.clipboard.writeText(CONS_URL());toast('Link copied')}catch(e){toast(CONS_URL())}}},'📤 Share link'))))}
 const CONSULT=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('c')==='1'){sessionStorage.setItem('as2_c','1')}return sessionStorage.getItem('as2_c')==='1'}catch(e){return false}})();
 function consultApply(){if(!CONSULT||canEdit())return;document.documentElement.classList.add('consult');const b=document.querySelector('#nav button[data-t=eq]');if(b)b.style.display='none'}
+
+/* ============================== VISITORS – who opened the link (owner only) ============================== */
+async function loadVisits(){const o=await fbA(VIS);return Object.entries(o||{}).map(([k,v])=>Object.assign({k},v)).filter(v=>v&&v.t).sort((a,b)=>b.t.localeCompare(a.t))}
+function visitsCard(){const box=h('div',{},h('div',{class:'mut',style:'font-size:12.5px'},'Loading…'));let q='',L=[],mode='list';
+  const fill=()=>{const R=L.filter(v=>!q||[v.n,v.p,v.r,v.c,v.d].join(' ').toLowerCase().includes(q));
+    if(!L.length){box.replaceChildren(h('div',{class:'mut',style:'font-size:12.5px'},'Nobody has opened your link yet (or the list could not be read).'));return}
+    if(mode==='people'){const P=new Map();for(const v of R){const k=(v.p||v.n||v.id||'').toLowerCase();const x=P.get(k)||{v,n:0,last:v.t,first:v.t};x.n++;if(v.t>x.last)x.last=v.t;if(v.t<x.first)x.first=v.t;P.set(k,x)}
+      box.replaceChildren(...[...P.values()].sort((a,b)=>b.last.localeCompare(a.last)).slice(0,150).map(x=>h('div',{style:'padding:6px 0;border-bottom:1px solid var(--ln);font-size:12.5px'},h('div',{},h('b',{},x.v.n||'–'),' · '+(x.v.r||'')+(x.v.c?' · '+x.v.c:'')),
+        h('div',{class:'mut',style:'font-size:11.5px'},(x.v.p?'📞 '+x.v.p+' · ':'')+x.n+' day'+(x.n>1?'s':'')+' · last '+new Date(x.last).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+' · first '+new Date(x.first).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})))));return}
+    box.replaceChildren(...R.slice(0,200).map(v=>h('div',{style:'padding:6px 0;border-bottom:1px solid var(--ln);font-size:12.5px'},h('div',{},h('b',{},v.n||'–'),' · '+(v.r||'')+(v.c?' · '+v.c:'')),
+      h('div',{class:'mut',style:'font-size:11.5px'},new Date(v.t).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+(v.p?' · 📞 '+v.p:'')+(v.d?' · '+v.d:'')+' · '+(v.app==='as2'?'Survey 2.0':v.app==='eq'?'Equipment':'old app')))))};
+  (async()=>{try{L=await loadVisits()}catch(e){box.replaceChildren(h('div',{class:'mut',style:'font-size:12.5px'},e.message));return}const td=today(),nt=L.filter(v=>v.t.slice(0,10)===td).length;cnt.textContent=L.length+' visits · '+nt+' today';fill()})();
+  const cnt=h('span',{class:'mut',style:'font-size:12px'},'');
+  const seg=h('div',{class:'seg',style:'margin:6px 0'},...[['list','Every visit'],['people','By person']].map(([k,t])=>h('button',{class:k===mode?'on':'',onclick:e=>{mode=k;[...seg.children].forEach(b=>b.classList.toggle('on',b===e.target));fill()}},t)));
+  return h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Who opened your link'),cnt),h('div',{class:'mut',style:'font-size:12.5px'},'Everyone who opens the app without signing in gives name, phone, designation and company first – one line per person per day. Only you see this list.'),
+    seg,h('input',{placeholder:'Search name, phone, company…',oninput:e=>{q=e.target.value.toLowerCase();fill()},style:'margin-bottom:6px'}),h('div',{style:'max-height:380px;overflow:auto'},box))}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
