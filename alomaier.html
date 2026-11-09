@@ -230,7 +230,7 @@ let M=null;   // register: designs, ngl, surveys, surveyors, edits of built-in r
 const PTS={}; // id -> [{id,e,n,z}]
 function defMeta(){return {v:1,designs:[],ngl:[],surveys:[],surveyors:['Muhammad Sheraz Abbasi'],edits:{},tol:K.tol||0.1,prep:0.30,lay:0.30,del:{},surf:[],subs:[],bmchecks:[],phc:{}}}
 const PD=()=>+M.prep||0.30,LT=()=>+M.lay||0.30;
-function saveMeta(){if(RO)return;const now=Date.now();for(const L of ['designs','ngl','surveys','surf','subs','bmchecks','ctests'])for(const x of (M[L]||(M[L]=[])))if(!x.u)x.u=now;lsSet(MK,M);if(typeof cloudSoon==='function')cloudSoon()}
+function saveMeta(){if(RO)return;const now=Date.now();for(const L of ['designs','ngl','surveys','surf','subs','bmchecks','ctests','mbx'])for(const x of (M[L]||(M[L]=[])))if(!x.u)x.u=now;lsSet(MK,M);if(typeof cloudSoon==='function')cloudSoon()}
 /* built-in records */
 function builtDesigns(){return [Object.assign({id:'d1',name:'IFC Rev 01 – Khuzam 4 grading design',ifc:'',start:'2026-09-01',note:'Design grid points (10 × 10 m) built into the app.',builtin:true,n:B0.n},M.edits.d1||{})]}
 function builtNgl(){return [Object.assign({id:'g0',name:'NGL topography – whole project',date:'2026-09-01',note:'Natural ground surveyed at the start of the project.',builtin:true,n:B0.n},M.edits.g0||{})]}
@@ -313,7 +313,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
       qb('⛰','Stockpiles',fmt(Math.round(PS.left))+' m³ left',()=>{show('design');setTimeout(()=>{const c=[...document.querySelectorAll('#p-design .card')].pop();c&&c.scrollIntoView({behavior:'smooth'})},80)}),
-      qb('🚜','Equipment','machines & reports',()=>show('eq')),qb('📋','WIR register',surveys().filter(s=>s.wir).length+' WIRs · photos',()=>{svView='wir';lsSet('as2_svv','wir');show('surv')}),qb('📍','Level finder','design · NGL · layers',()=>levelFinder()),qb('🗓',"Today's plan",'what each place needs',()=>planSheet()),qb('💰','Measurement','monthly IPC sheet',()=>ipcSheet()),qb('🧪','Compaction',ctests().length+' tests',()=>ctSheet()),qb('📈','S-curve','plan vs actual',()=>{qView='scurve';lsSet('as2_qv','scurve');show('qty')}),qb('🎯','BM check','GNSS + levelling',()=>bmCheck()))))}
+      qb('🚜','Equipment','machines & reports',()=>show('eq')),qb('📋','WIR register',surveys().filter(s=>s.wir).length+' WIRs · photos',()=>{svView='wir';lsSet('as2_svv','wir');show('surv')}),qb('📍','Level finder','design · NGL · layers',()=>levelFinder()),qb('🗓',"Today's plan",'what each place needs',()=>planSheet()),qb('💰','Measurement','monthly IPC sheet',()=>ipcSheet()),qb('🧪','Compaction',ctests().length+' tests',()=>ctSheet()),qb('📈','S-curve','plan vs actual',()=>{qView='scurve';lsSet('as2_qv','scurve');show('qty')}),qb('⏱','Productivity','machine hours × m³',()=>prodSheet()),qb('⚖️','Mass balance','cut · fill · borrow',()=>massSheet()),qb('💧','Ponding check','low spots · slopes',()=>pondSheet()),qb('🛩','Drone','orthophoto · DSM',()=>droneSheet()),qb('📤','CAD export','DXF · LandXML',()=>cadSheet()),qb('🎯','BM check','GNSS + levelling',()=>bmCheck()))))}
   {const R=planRows(),cnt=PLANGRP.map((_,c)=>R.filter(r=>r.cls===c).length);if(R.length)L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},"Today's survey plan"),h('button',{class:'lnk',onclick:planSheet},'All →')),
     h('div',{class:'row',style:'gap:6px;flex-wrap:wrap;margin-bottom:8px'},...PLANGRP.map((gname,c)=>cnt[c]?h('span',{style:'background:'+PLANCOL[c]+'26;color:'+PLANCOL[c]+';border:1px solid '+PLANCOL[c]+'66;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700'},cnt[c]+' '+gname.toLowerCase()):null)),
     ...R.slice(0,5).map(r=>h('button',{class:'it',onclick:()=>qtySheet('sub',r.g.key)},h('span',{class:'ic',style:'background:'+PLANCOL[r.cls]+'26;color:'+PLANCOL[r.cls]+';font-size:11px'},r.g.sub.name),h('span',{style:'min-width:0'},h('b',{},r.what),h('span',{class:'s',style:'display:block'},r.g.sub.area+(r.why?' · '+r.why:''))),h('span',{class:'go'},'›')))))}
@@ -343,7 +343,10 @@ function survItem(s){const [kn,kc]=KIND[s.kind]||KIND.other,ar=s.area!=null?s.ar
   return h('button',{class:'it',onclick:()=>survSheet(s)},h('span',{class:'ic',style:'background:color-mix(in srgb,'+kc+' 18%,transparent);color:'+kc},s.kind==='fill'&&s.layer?'L'+s.layer:kn[0]),
     h('span',{style:'min-width:0'},h('b',{},kindName(s.kind,s.layer)+(ar?' · '+ar:''),qcBadge(s)),h('span',{class:'s'},dmy(s.date)+' · '+(s.surveyor||'–')+(s.wir?' · WIR-'+String(s.wir).padStart(4,'0'):'')+' · '+fmt(s.n)+' pts')),h('span',{class:'go'},'›'))}
 const AREA_CACHE={};
-function survArea(s){if(AREA_CACHE[s.id]!=null)return AREA_CACHE[s.id];const P=PTS[s.id];if(!P||!P.length)return '';const where=placeOf(P);AREA_CACHE[s.id]=where.txt;return where.txt}
+function survArea(s){const k=s.id+'|'+(s.sa||'');if(AREA_CACHE[k]!=null)return AREA_CACHE[k];const P=PTS[s.id];if(!P||!P.length)return '';const where=placeOf(P);const sa=survSub(s);AREA_CACHE[k]=where.txt+(sa?' · Sub-area '+sa.name:'');return AREA_CACHE[k]}
+function survSub(s){if(s.sa==='none')return null;if(s.sa){const x=subs().find(q=>q.id===s.sa);if(x)return x}const x=subs().find(q=>q.from===s.id);return x||null}
+function saList(P){const list=subs().slice();let best=null;if(P&&P.length){const st=Math.max(1,Math.floor(P.length/300)),cnt={};let ar=new Set();for(let i=0;i<P.length;i+=st){const p=P[i],e=p.e!=null?p.e:p[0],n=p.n!=null?p.n:p[1];for(const sa of list)if(inPoly(e,n,sa.c))cnt[sa.id]=(cnt[sa.id]||0)+1;const j=nearestBase(e,n,400);if(j>=0&&B.A[j]>=0)ar.add(K.areas[B.A[j]].name)}
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];if(top)best=top[0];if(ar.size){const near=list.filter(x=>ar.has(x.area)),rest=list.filter(x=>!ar.has(x.area));return {list:near.concat(rest),best}}}return {list:list.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})),best}}
 function placeOf(P){const cnt={};for(const p of P){const i=nearestBase(p.e,p.n,400);if(i<0)continue;const a=B.A[i];const k=a>=0?a:'p'+B.P[i];cnt[k]=(cnt[k]||0)+1}
   const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];if(!top)return {txt:'Outside the design',area:null,zone:'',phase:0};
   if(String(top[0])[0]==='p')return {txt:'Phase '+top[0].slice(1),area:null,zone:'',phase:+top[0].slice(1)};
@@ -402,9 +405,11 @@ function parsePts(text){const out=[];let order=null;
 function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('as2_lastwho','Muhammad Sheraz Abbasi'),kind:'fill',layer:'',note:'',wir:nextWir(),sub:today()};
   const who=[...new Set(M.surveyors.concat(surveys().map(x=>x.surveyor).filter(x=>x&&x!=='Survey team')))];
   const f={date:h('input',{type:'date',value:s.date}),who:h('input',{list:'whoL',value:s.surveyor||''}),kind:h('select',{},...Object.entries(KIND).map(([k,[n]])=>h('option',{value:k,selected:s.kind===k},n))),
-    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),wir:h('input',{type:'number',min:'1',value:s.wir||'',placeholder:'e.g. '+nextWir()}),sub:h('input',{type:'date',value:s.sub||''}),wref:h('input',{value:s.wref||'',placeholder:'e.g. M4P1-015'}),desc:h('input',{value:s.desc||'',placeholder:'e.g. Layer 03 Zone 07 in Area 02'}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'})};
+    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),wir:h('input',{type:'number',min:'1',value:s.wir||'',placeholder:'e.g. '+nextWir()}),sub:h('input',{type:'date',value:s.sub||''}),wref:h('input',{value:s.wref||'',placeholder:'e.g. M4P1-015'}),desc:h('input',{value:s.desc||'',placeholder:'e.g. Layer 03 Zone 07 in Area 02'}),sa:h('select',{}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'})};
   const prev=h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'});
-  const upd=()=>{const P=parsePts(f.txt.value);if(!P.length){prev.textContent=isNew?'No points read yet.':'Leave empty to keep the '+fmt(s.n)+' points already saved.';return}const pl=placeOf(P);prev.textContent=P.length+' points read · '+pl.txt};
+  let saPick=s.sa||'';const saFill=P=>{const L=saList(P&&P.length?P:(PTS[s.id]?(PTS[s.id].E?toObjs(PTS[s.id],3000):PTS[s.id]):null));f.sa.replaceChildren(h('option',{value:''},isNew?'Auto – new from the outer points':'Auto (from the points)'),h('option',{value:'none',selected:saPick==='none'},'No sub-area'),...L.list.map(x=>h('option',{value:x.id,selected:saPick===x.id||(!saPick&&L.best===x.id&&false)},x.name+' · '+x.area.replace('AREA ','Area ')+(L.best===x.id?'  ✓ points are here':''))));if(!saPick&&L.best&&!isNew){}};
+  f.sa.onchange=()=>{saPick=f.sa.value};
+  const upd=()=>{const P=parsePts(f.txt.value);saFill(P);if(!P.length){prev.textContent=isNew?'No points read yet.':'Leave empty to keep the '+fmt(s.n)+' points already saved.';return}const pl=placeOf(P);const L=saList(P);prev.textContent=P.length+' points read · '+pl.txt+(L.best?' · inside sub-area '+subs().find(x=>x.id===L.best).name:'')};
   f.txt.oninput=upd;const say=t=>{prev.textContent=t};
   const src=srcRow((t,name,how,photo)=>{if(how==='plain'&&(/\.xml$/i.test(name)||/<LandXML/i.test(t.slice(0,4000)))){const r=readPoints(t,name,'vertices');f.txt.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else f.txt.value=t;upd();if(how==='rows'){const n=t?t.split('\n').length:0;prev.textContent=(n?n+' rows read from '+name+(photo?' (photo – please check the numbers below; on WIR sheets the finished level is used)':'')+' · ':'No point rows found in '+name+'. ')+prev.textContent}},say);upd();
   const body=h('div',{},h('datalist',{id:'whoL'},...who.map(w=>h('option',{value:w}))),
@@ -412,18 +417,18 @@ function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Work'),f.kind),h('label',{class:'f'},h('span',{},'Layer (fill only – empty = found from the points)'),f.layer)),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'WIR No.'),f.wir),h('label',{class:'f'},h('span',{},'Submitted on'),f.sub)),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Location ref.'),f.wref),h('label',{class:'f'},h('span',{},'Description'),f.desc)),
-    h('label',{class:'f'},h('span',{},'Note'),f.note),
+    h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Sub-area'),f.sa),h('label',{class:'f'},h('span',{},'Note'),f.note)),
     s.builtin?h('div',{class:'mut',style:'font-size:12px'},'Points of this WIR are built in and stay as they are.'):[h('div',{class:'f'},h('span',{},'Get the points from'),src),h('label',{class:'f'},h('span',{},'Points (check or type them here)'),f.txt),prev],
     h('div',{class:'mut',style:'font-size:12px'},'Area, zone and phase are found from the points. The quantity is the change from the ground before this survey.'));
   modal(isNew?'New survey':'Edit survey',body,close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:async()=>{
       const P=s.builtin?null:parsePts(f.txt.value);if(isNew&&(!P||!P.length)){toast('Add the survey points first');return}
-      const o={date:f.date.value||today(),surveyor:f.who.value.trim()||'–',kind:f.kind.value,layer:f.kind.value==='fill'&&+f.layer.value?+f.layer.value:null,note:f.note.value.trim(),wir:+f.wir.value||null,sub:f.sub.value||'',wref:f.wref.value.trim(),desc:f.desc.value.trim()};
+      const o={date:f.date.value||today(),surveyor:f.who.value.trim()||'–',kind:f.kind.value,layer:f.kind.value==='fill'&&+f.layer.value?+f.layer.value:null,note:f.note.value.trim(),wir:+f.wir.value||null,sub:f.sub.value||'',wref:f.wref.value.trim(),desc:f.desc.value.trim(),sa:f.sa.value||''};
       if(o.wir&&surveys().some(x=>x.id!==(s.id||'')&&+x.wir===o.wir)&&!confirm('WIR '+o.wir+' is already used by another survey. Save anyway?'))return;
       if(o.surveyor!=='–'&&!M.surveyors.includes(o.surveyor))M.surveyors.push(o.surveyor);lsSet('as2_lastwho',o.surveyor);
       close();await onSave(o,P&&P.length?P:null)}},'Save')])}
 function newSurvey(){if(!guard())return;surveyForm(null,async(o,P)=>{if(o.kind==='fill'&&!o.layer){const cnt={};for(const [i] of cover(P)){const L=LL[i]+1;cnt[L]=(cnt[L]||0)+1}const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];if(top)o.layer=+top[0]}const id='s'+uid();await dbPut('pts:'+id,P);PTS[id]=P;const pl=placeOf(P);
-  M.surveys.push(Object.assign({id,n:P.length,area:pl.txt,u:Date.now()},o));saveMeta();cloudPushPts(id);await recalc();toast('Survey saved · '+pl.txt);if(o.kind!=='other'&&o.kind!=='waste'&&lsGet('as2_autosub',true)!==false){const sv=surveys().find(x=>x.id===id);if(sv)autoSub(sv)}})}
-function editSurvey(s){if(!guard())return;surveyForm(s,async(o,P)=>{if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},{date:o.date,surveyor:o.surveyor,kind:o.kind,layer:o.layer,note:o.note,wir:o.wir,sub:o.sub,wref:o.wref,desc:o.desc,u:Date.now()})}
+  M.surveys.push(Object.assign({id,n:P.length,area:pl.txt,u:Date.now()},o));saveMeta();cloudPushPts(id);await recalc();toast('Survey saved · '+pl.txt);if(!o.sa&&o.kind!=='other'&&o.kind!=='waste'&&lsGet('as2_autosub',true)!==false){const sv=surveys().find(x=>x.id===id);if(sv){const sa=autoSub(sv);if(sa&&sa.id){sv.sa=sa.id;const x=M.surveys.find(q=>q.id===id);if(x)x.sa=sa.id;saveMeta()}}}})}
+function editSurvey(s){if(!guard())return;surveyForm(s,async(o,P)=>{if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},{sa:o.sa,date:o.date,surveyor:o.surveyor,kind:o.kind,layer:o.layer,note:o.note,wir:o.wir,sub:o.sub,wref:o.wref,desc:o.desc,u:Date.now()})}
   else{const x=M.surveys.find(q=>q.id===s.id);Object.assign(x,o,{u:Date.now()});if(P){await dbPut('pts:'+s.id,P);PTS[s.id]=P;x.n=P.length;x.area=placeOf(P).txt;delete AREA_CACHE[s.id];cloudPushPts(s.id)}}
   saveMeta();await recalc();toast('Saved')})}
 async function recalc(){ready=false;render();await new Promise(r=>setTimeout(r,30));DZ={};await rebuild();LYR={};render()}
@@ -560,7 +565,7 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
   cx.putImageData(im,0,0);LYR[mode]={cv,r};return LYR[mode]}
 function legend(){const L={need:[['#5cb8ff','fill needed'],['#ff5d5d','cut needed'],['#2a3035','on NGL']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
     last:Object.values(KIND).map(([n,c])=>[c,n]).concat([['#2c3237','not surveyed']]),ngl:[['#465057','NGL at project start'],['#ffb020','NGL surveyed later']],grade:[[GR[5][1],'final grade'],[GR[4][1],'touch grade'],[GR[3][1],'near grade'],['#4a6a8a','fill working'],['#8a4a4a','cut working'],[GR[1][1],'not started'],[GR[6][1],'over design']],lay:[['#373d42','not prepared'],['#e0b25a','prepared (NGL − 0.30)'],['#285a96','first layers'],['#78c8ff','last layers'],['#3ecf8e','on final design'],['#462828','cut area']],cmp:[['#ff8a00','raised'],['#5cb8ff','lowered'],['#32383d','same (±2 cm)']]}[mapMode]||[];
-  $('#mapLeg').replaceChildren(...kids(QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffd43b'},'● thin '),h('span',{style:'color:#ff922b'},'● thick '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
+  $('#mapLeg').replaceChildren(...kids(pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffd43b'},'● thin '),h('span',{style:'color:#ff922b'},'● thick '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
     mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null,
     satOn?h('label',{class:'satop'},h('span',{},'🛰 Colours'),h('input',{type:'range',min:'0',max:'1',step:'0.05',value:String(satOp),oninput:e=>{satOp=+e.target.value;lsSet('as2_satop',satOp);draw()}})):null));satBtn()}
 function sizeMap(){const c=$('#map'),b=$('#mapBox').getBoundingClientRect(),dp=devicePixelRatio||1;c.width=Math.max(10,b.width*dp);c.height=Math.max(10,b.height*dp)}
@@ -570,17 +575,20 @@ function fitTo(P){if(!P||!P.length)return;let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;
 const W2S=(e,n)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(e-view.e)*view.s+c.width/dp/2,(view.n-n)*view.s+c.height/dp/2]};
 const S2W=(x,y)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(x-c.width/dp/2)/view.s+view.e,view.n-(y-c.height/dp/2)/view.s]};
 function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getContext('2d'),dp=devicePixelRatio||1;x.setTransform(dp,0,0,dp,0,0);x.fillStyle='#0b0e10';x.fillRect(0,0,c.width,c.height);if(satOn)satMap(x);
-  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=view.s*L.r<3;x.globalAlpha=satOn?satOp:1;if(x.globalAlpha>0.01)x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);x.globalAlpha=1;
+  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=view.s*L.r<3;orthoDraw(x);x.globalAlpha=(satOn||(ORTHO&&ORTHO_ON))?satOp:1;if(x.globalAlpha>0.01)x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);x.globalAlpha=1;
   const poly=(R,close=true)=>{x.beginPath();R.forEach((q,i)=>{const [a,b]=W2S(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(close)x.closePath()};
   x.lineWidth=1.6;K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);
   if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
-  if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}}
+  if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
+    if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
+  if(DRAW&&view.s>0.5){x.font='700 10px IBM Plex Sans,system-ui';x.textAlign='center';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#ffd43b';DRAW.pts.forEach((q,k)=>{const [a,b]=W2S(q[0],q[1]);x.strokeText(String(k+1),a,b-11);x.fillText(String(k+1),a,b-11)})}
+  if(PTSEL){const [a,b]=W2S(PTSEL.e,PTSEL.n);x.strokeStyle='#00e5ff';x.lineWidth=3;x.beginPath();x.arc(a,b,10,0,7);x.stroke()}
   if(pick){const [a,b]=W2S(pick.e,pick.n);x.strokeStyle='#ffb020';x.lineWidth=2.5;x.beginPath();x.arc(a,b,9,0,7);x.stroke()}}
 let pick=null;
-function info(e,n){const cth=ctAt(e,n);if(cth){const box=$('#mapInfo');box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none'}},'×'),ctCard(cth));box.style.display='block';return}const bmh=bmAt(e,n);if(bmh){const box=$('#mapInfo');SEL=null;box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';draw()}},'×'),bmCard(bmh));box.style.display='block';draw();return}const sn=subNear(e,n);const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0&&!sn){box.style.display='none';pick=null;SEL=null;draw();return}if(i<0){SEL={t:'sub',id:sn.id};box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';SEL=null;draw()}},'×'),recordCard(grp('sub',sn.id),subCol(sn),polyArea(sn.c)));box.style.display='block';draw();return}pick={e:B.E[i],n:B.N[i]};
+function info(e,n){$('#mapInfo').style.marginTop='';const cth=ctAt(e,n);if(cth){const box=$('#mapInfo');box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none'}},'×'),ctCard(cth));box.style.display='block';return}const bmh=bmAt(e,n);if(bmh){const box=$('#mapInfo');SEL=null;box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';draw()}},'×'),bmCard(bmh));box.style.display='block';draw();return}const sn=subNear(e,n);const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0&&!sn){box.style.display='none';pick=null;SEL=null;draw();return}if(i<0){SEL={t:'sub',id:sn.id};box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';SEL=null;draw()}},'×'),recordCard(grp('sub',sn.id),subCol(sn),polyArea(sn.c)));box.style.display='block';draw();return}pick={e:B.E[i],n:B.N[i]};
   const D=activeDesign(),z=DZ[D.id][i],g=G[i],c=CUR[i],a=B.A[i]>=0?K.areas[B.A[i]]:null,tol=M.tol||0.1,f3=v=>v===v?v.toFixed(3):'–';
   const rows=[['N',B.N[i].toFixed(3)],['E',B.E[i].toFixed(3)],['Area',a?a.name:'–'],['Zone · phase',(a?a.zone+' · ':'')+'Phase '+B.P[i]],['Design ('+D.name.split(' – ')[0]+')',f3(z)],['NGL'+(NGLSRC[i]>=0?' (later survey)':''),f3(g)],['Ground now',f3(c)],['Last survey',LAST[i]?dmy(LAST[i])+' · '+(Object.values(KIND)[LKIND[i]-1]||['–'])[0]:'not surveyed']];
   if(z===z&&g===g&&z>g){const ln=layersNeeded(i,DZ[D.id]),ld=layersDone(i,DZ[D.id]),base=prepLevel(i);rows.push(['Preparation'+(PZ[i]===PZ[i]?' (surveyed)':' (NGL − '+PD().toFixed(2)+')'),f3(base)]);
@@ -596,7 +604,7 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);view.s=Math.max(0.01,Math.min(20,pinch.s*d/pinch.d));moved=9;draw();return}
     const dx=e.offsetX-last[0],dy=e.offsetY-last[1];if(Math.abs(dx)+Math.abs(dy)>0){moved+=Math.abs(dx)+Math.abs(dy);view.e-=dx/view.s;view.n+=dy/view.s;last=[e.offsetX,e.offsetY];draw()}});
-  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);if(DRAW){DRAW.pts.push([we,wn]);drawBar();draw()}else info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
+  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(hit)ptCard(hit);else info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
   $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
@@ -702,7 +710,7 @@ function encPts(P){if(P.E){const n=P.E.length;let e0=1e12,n0=1e12;for(let i=0;i<
 function decPts(o){if(!o)return null;if(o.t===1){const I=new Int32Array(unb64(o.b)),n=I.length/3,T={E:new Float64Array(n),N:new Float64Array(n),Z:new Float32Array(n)};for(let i=0;i<n;i++){T.E[i]=o.e0+I[3*i]/1000;T.N[i]=o.n0+I[3*i+1]/1000;T.Z[i]=I[3*i+2]/1000}return T}
   return String(o.s||'').split(';').filter(Boolean).map(r=>{const q=r.split(',');return {id:q[0],n:+q[1],e:+q[2],z:+q[3]}})}
 function mergeMeta(a,b){if(!b)return a;const o=Object.assign(defMeta(),b,a);
-  for(const L of ['designs','ngl','surveys','surf','subs','bmchecks','ctests']){const m=new Map();for(const x of (b[L]||[]))m.set(x.id,x);for(const x of (a[L]||[])){const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)}o[L]=[...m.values()]}
+  for(const L of ['designs','ngl','surveys','surf','subs','bmchecks','ctests','mbx']){const m=new Map();for(const x of (b[L]||[]))m.set(x.id,x);for(const x of (a[L]||[])){const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)}o[L]=[...m.values()]}
   o.del=Object.assign({},b.del||{},a.del||{});o.edits={};for(const k of new Set([...Object.keys(a.edits||{}),...Object.keys(b.edits||{})])){const x=(a.edits||{})[k],y=(b.edits||{})[k];o.edits[k]=!y?x:!x?y:((x.u||0)>=(y.u||0)?x:y)}
   o.surveyors=[...new Set([...(b.surveyors||[]),...(a.surveyors||[])])];o.phc=Object.assign({},b.phc||{});for(const [k,v] of Object.entries(a.phc||{}))o.phc[k]=Math.max(v,o.phc[k]||0);const sa=a.su||0,sb=b.su||0;for(const k of ['tol','prep','lay','gF','gT','gN'])o[k]=sa>=sb?a[k]:b[k];o.su=Math.max(sa,sb);return o}
 const userIds=m=>[...(m.designs||[]),...(m.ngl||[]),...(m.surveys||[]),...(m.surf||[])].filter(x=>!(m.del||{})[x.id]).map(x=>x.id);
@@ -893,6 +901,7 @@ function srcRow(cb,say){const B2=[];const mk=(label,accept,opt,fn)=>{const inp=h
   mk('📊 Excel','.xlsx,.xls,.xlsm',{},async f=>{say('Opening the Excel file…');const t=sheetToPts(await xlsxText(f[0]));cb(t,f[0].name,'rows')});
   mk('🗺 Surface (LandXML)','.xml,.landxml',{},async f=>cb(await f[0].text(),f[0].name,'plain'));
   mk('📐 Instrument (GSI / JobXML / SDR)','.gsi,.jxl,.jobxml,.xml,.sdr,.txt',{},async f=>{const t=await f[0].text(),r=instrumentText(f[0].name,t);if(!r){cb(t,f[0].name,'plain');return}cb(r.rows,f[0].name,'rows');say((r.rows?r.rows.split('\n').length:0)+' points read from the '+r.fmt+' file')});
+  mk('🛩 Drone DSM (GeoTIFF / ASC)','.tif,.tiff,.asc',{},async f=>{const r=await dsmRows(f[0],say);if(r==null){cb(await f[0].text(),f[0].name,'plain');return}cb(r,f[0].name,'rows')});
   mk('🌍 Google Earth (KML/KMZ)','.kml,.kmz',{},async f=>{say('Opening '+f[0].name+'…');const buf=await f[0].arrayBuffer();const t=/\.kmz$/i.test(f[0].name)?await unzipFirst(buf,/\.kml$/i):new TextDecoder().decode(buf);const r=kmlToPts(t);cb(r.text,f[0].name,'rows');if(r.zero)say(r.n+' points read · '+r.zero+' have no height (0). In Google Earth the height is only kept when the path is saved with “absolute” altitude.')});
   mk('📷 Camera','image/*',{cam:1},async f=>{const t=sheetToPts(await ocrImages(f,say));cb(t,f[0].name,'rows','photo')});
   mk('🖼 Photos of sheet','image/*',{multi:1},async f=>{const t=sheetToPts(await ocrImages(f,say));cb(t,f[0].name,'rows','photo')});
@@ -1450,19 +1459,19 @@ const subCol=s=>s.col||SUBCOL[Math.abs([...s.id].reduce((a,c)=>a*31+c.charCodeAt
 function subOf(s){const ai=K.areas.findIndex(a=>a.name===s.area);return ai}
 function subTest(s){const ai=subOf(s),bb=s.bb||(s.bb=bboxOf(s.c));return i=>B.A[i]===ai&&B.E[i]>=bb.e0&&B.E[i]<=bb.e1&&B.N[i]>=bb.n0&&B.N[i]<=bb.n1&&inPoly(B.E[i],B.N[i],s.c)}
 let DRAW=null;
-function subDraw(ai,edit){if(!guard())return;show('map');DRAW={ai,pts:edit?edit.c.slice():[],edit};mapFocus=null;
+function subDraw(ai,edit){if(!guard())return;show('map');DRAW={ai,pts:edit?edit.c.slice():[],edit,lock:!!edit};mapFocus=null;
   setTimeout(()=>{if(ai!=null){const b=K.areas[ai].bb||bboxOf(K.areas[ai].c);fitBox(b.e0-30,b.e1+30,b.n0-30,b.n1+30)}drawBar();draw()},60)}
 function drawBar(){let b=$('#drawBar');if(!DRAW){if(b)b.remove();return}if(!b){b=h('div',{id:'drawBar'});$('#mapBox').append(b)}
-  b.replaceChildren(h('div',{style:'font-weight:700'},'New sub-area'+(DRAW.ai!=null?' in '+K.areas[DRAW.ai].name:'')),h('div',{class:'mut',style:'font-size:12px'},'Tap the corners on the map · '+DRAW.pts.length+' corner'+(DRAW.pts.length===1?'':'s')),
-    h('div',{class:'row',style:'gap:6px;margin-top:6px;flex-wrap:wrap'},h('button',{class:'btn sm',onclick:()=>{DRAW.pts.pop();drawBar();draw()}},'↶ Undo'),h('button',{class:'btn sm',onclick:subPaste},'Type N, E'),h('button',{class:'btn sm',onclick:subFromSurvey},'From a survey'),
+  b.replaceChildren(h('div',{style:'font-weight:700'},'New sub-area'+(DRAW.ai!=null?' in '+K.areas[DRAW.ai].name:'')),h('div',{class:'mut',style:'font-size:12px'},(DRAW.lock?'Border locked – tap a point to see its number · ':'Tap the corners on the map · ')+DRAW.pts.length+' corner'+(DRAW.pts.length===1?'':'s')),
+    h('div',{class:'row',style:'gap:6px;margin-top:6px;flex-wrap:wrap'},h('button',{class:'btn sm'+(DRAW.lock?'':' pri'),onclick:()=>{DRAW.lock=!DRAW.lock;drawBar()}},DRAW.lock?'✎ Add corners':'🔒 Lock'),DRAW.lock?null:h('button',{class:'btn sm',onclick:()=>{DRAW.pts.pop();drawBar();draw()}},'↶ Undo'),h('button',{class:'btn sm',onclick:subPaste},'Type N, E'),h('button',{class:'btn sm',onclick:subFromSurvey},'From a survey'),
       h('button',{class:'btn sm',onclick:()=>{DRAW=null;drawBar();draw()}},'Cancel'),h('button',{class:'btn sm pri',onclick:subSave},'Save')))}
 function subPaste(){const ta=h('textarea',{placeholder:'One corner per line: N, E\n2762640.05, 666145.40\n…',style:'min-height:140px'});
   modal('Sub-area corners',h('div',{},ta,h('div',{class:'mut',style:'font-size:12px;margin-top:6px'},'Northing and Easting of each corner, in order around the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const P=[];for(const l of ta.value.split(/\n/)){const v=(l.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);const N=v.find(x=>x>B.n0-5000&&x<B.n1+5000),E=v.find(x=>x>B.e0-5000&&x<B.e1+5000);if(N&&E)P.push([E,N])}
-    if(P.length<3){toast('Need at least 3 corners');return}DRAW.pts=P;close();drawBar();fitTo(P.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
+    if(P.length<3){toast('Need at least 3 corners');return}DRAW.pts=P;DRAW.lock=true;close();drawBar();fitTo(P.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
 function subFromSurvey(){const ai=DRAW.ai,L=surveys().filter(s=>PTS[s.id]&&(ai==null||survArea(s).split(' · ')[0]===K.areas[ai].name)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,40);
   if(!L.length){toast('No survey in this area yet');return}const sel=h('select',{},...L.map(s=>h('option',{value:s.id},dmy(s.date)+' · '+wirNo(s)+' · '+kindName(s.kind,s.layer)+' · '+survArea(s).split(' · ')[0])));
-  modal('Sub-area from survey points',h('div',{},sel,h('div',{class:'mut',style:'font-size:12px;margin-top:8px'},'The outer points of the survey make the border of the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const s=L.find(x=>x.id===sel.value);const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}DRAW.pts=H;close();drawBar();fitTo(H.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
-function subFromPts(s){const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}const i=nearestBase(...(()=>{let e=0,n=0;for(const q of H){e+=q[0];n+=q[1]}return [e/H.length,n/H.length]})(),400);subDraw(i>=0&&B.A[i]>=0?B.A[i]:null);setTimeout(()=>{DRAW.pts=H;drawBar();draw()},120)}
+  modal('Sub-area from survey points',h('div',{},sel,h('div',{class:'mut',style:'font-size:12px;margin-top:8px'},'The outer points of the survey make the border of the sub-area.')),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const s=L.find(x=>x.id===sel.value);const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}DRAW.pts=H;DRAW.lock=true;DRAW.src=s.id;close();drawBar();fitTo(H.map(q=>({e:q[0],n:q[1]})));draw()}},'Use')])}
+function subFromPts(s){const H=outline(ptsEN(s));if(H.length<3){toast('Not enough points');return}const i=nearestBase(...(()=>{let e=0,n=0;for(const q of H){e+=q[0];n+=q[1]}return [e/H.length,n/H.length]})(),400);subDraw(i>=0&&B.A[i]>=0?B.A[i]:null);setTimeout(()=>{DRAW.pts=H;DRAW.lock=true;DRAW.src=s.id;drawBar();draw()},120)}
 function subSave(){if(!DRAW||DRAW.pts.length<3){toast('Tap at least 3 corners');return}let cx=0,cy=0;for(const q of DRAW.pts){cx+=q[0];cy+=q[1]}cx/=DRAW.pts.length;cy/=DRAW.pts.length;
   let ai=DRAW.ai;if(ai==null){const i=nearestBase(cx,cy,400);ai=i>=0?B.A[i]:-1}if(ai<0){toast('The sub-area must be inside an area');return}
   const a=K.areas[ai],n0=subs().filter(s=>s.area===a.name).length;let col=DRAW.edit?subCol(DRAW.edit):SUBCOL[(subs().length)%SUBCOL.length];const sw=h('div',{class:'row',style:'gap:6px;flex-wrap:wrap'});const paint=()=>sw.replaceChildren(...SUBCOL.map(c=>h('button',{type:'button',onclick:()=>{col=c;paint()},style:'width:28px;height:28px;border-radius:50%;background:'+c+';border:3px solid '+(c===col?'#fff':'transparent')+';cursor:pointer'})));paint();const nm=h('input',{value:DRAW.edit?DRAW.edit.name:a.name.replace('AREA ','')+'-'+String.fromCharCode(65+n0)}),nt=h('input',{value:DRAW.edit?DRAW.edit.note||'':'',placeholder:'e.g. east side, near the crusher'});
@@ -1508,7 +1517,7 @@ function qtySheet(type,key){if(!ready)return;const D=activeDesign(),Z=DZ[D.id];Q
       h('div',{class:'grid2',style:'margin-bottom:12px'},h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Fill area by grade'),gradeBar(go.gF)),h('div',{class:'card',style:'margin:0'},h('div',{class:'lbl'},'Cut area by grade'),gradeBar(go.gC))),
       kids.length?h('div',{class:'card',style:'padding:0'},h('div',{class:'ct',style:'padding:12px 14px 0'},h('h3',{},{phase:'Zones',zone:'Areas',area:'Sub-areas',all:'Phases'}[g.type]||'Parts')),h('div',{class:'tw',style:'border:0'},h('table',{class:'t'},h('tr',{},h('th',{},''),h('th',{class:'n'},'Fill req.'),h('th',{class:'n'},'Fill done'),h('th',{class:'n'},'To go'),h('th',{class:'n'},'%'),h('th',{class:'n'},'Cut req.'),h('th',{class:'n'},'Cut done'),h('th',{class:'n'},'To go'),h('th',{class:'n'},'Layer')),
         ...kids.map(({g:k,o:r})=>h('tr',{style:'cursor:pointer',onclick:()=>qtySheet(k.type,k.key)},h('td',{},k.name.split(' · ')[k.type==='zone'?1:0]+' ›'),h('td',{class:'n'},fmt(r.fR)),h('td',{class:'n'},fmt(r.fD)),h('td',{class:'n'},fmt(r.fR-r.fD)),h('td',{class:'n'},pc(r.fD,r.fR)),h('td',{class:'n'},fmt(r.cR)),h('td',{class:'n'},fmt(r.cD)),h('td',{class:'n'},fmt(r.cR-r.cD)),h('td',{class:'n'},layTxt(r))))))):null,
-      g.type==='area'||g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 8px'},h('button',{class:'btn sm',onclick:()=>stakeOut(g)},'📐 Stakeout file (GSI / SDR / CSV)')):null,
+      g.type==='area'||g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 8px'},h('button',{class:'btn sm',onclick:()=>stakeOut(g)},'📐 Stakeout file (GSI / SDR / CSV)'),h('button',{class:'btn sm',onclick:()=>cadSheet(g)},'📤 DXF / LandXML'),h('button',{class:'btn sm',onclick:()=>pondSheet(g)},'💧 Ponding check')):null,
       g.type==='area'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai)}},'+ Sub-area (draw on map)'),h('button',{class:'btn sm',onclick:()=>{close();v3Open(g.ai)}},'🧊 3D')):null,
       g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai,g.sub)}},'Edit corners / name'),canEdit()||!CLOUD.st?h('button',{class:'btn sm dng',onclick:()=>{if(!confirm('Delete sub-area '+g.sub.name+'?'))return;M.del[g.sub.id]=1;saveMeta();close();toast('Deleted')}},'Delete'):null):null,
       h('div',{class:'card'},h('h3',{},'Surveys here'),SV.length?h('div',{},...SV.slice(0,30).map(survItem)):h('div',{class:'mut'},'No survey yet.'),SV.length>30?h('div',{class:'mut'},'+ '+(SV.length-30)+' more in the Excel file'):null)))}
@@ -1766,7 +1775,7 @@ function photoStrip(s){const box=h('div',{class:'wph'},h('div',{class:'mut',styl
 const _survSheet=survSheet;
 survSheet=async function(s){await _survSheet(s);const m=[...document.querySelectorAll('.mbg .mdl')].pop();if(!m)return;const ft=m.querySelector('.mft');
   const info=h('div',{class:'kv',style:'margin-top:10px'},...[['WIR',wirTxt(s)+(s.cno&&s.cno!==wirTxt(s)?' (contractor '+s.cno+')':'')],['Location ref.',s.wref||s.ref||'–'],['Description',s.desc||'–'],['Submitted',s.sub?dmy(s.sub):'–'],['Status','Surveyed & submitted by Survey Eng. Muhammad Sheraz Abbasi']].flatMap(([k,v])=>[h('span',{},k),h('b',{},v)]));
-  m.insertBefore(h('div',{},info,qcCard(s),photoStrip(s)),ft)};
+  m.insertBefore(h('div',{},info,qcCard(s),h('div',{class:'row',style:'gap:8px;margin:6px 0;flex-wrap:wrap'},h('button',{class:'btn sm',onclick:()=>cadSurvey(s,'dxf')},'📤 DXF'),h('button',{class:'btn sm',onclick:()=>cadSurvey(s,'xml')},'📤 LandXML (TIN)')),photoStrip(s)),ft)};
 /* the register page (a view inside Surveys) */
 let wirF=lsGet('as2_wf','all'),wirQ='';
 function rWirReg(el){const all=surveys().filter(s=>s.wir||s.kind!=='other').sort((a,b)=>(+b.wir||0)-(+a.wir||0)||(b.date||'').localeCompare(a.date||''));
@@ -1885,7 +1894,7 @@ function autoSub(sv,quiet){const P=ptsEN(sv);if(P.length<3)return null;const H=o
   const used=new Set(subs().filter(x=>x.area===a.name).map(x=>x.name));let k=0,nm;do{nm=a.name.replace('AREA ','')+'-'+String.fromCharCode(65+k%26)+(k>=26?Math.floor(k/26):'');k++}while(used.has(nm));
   const o={id:'sa'+uid(),name:nm,area:a.name,c:H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]),col:SUBCOL[subs().length%SUBCOL.length],note:'from '+(sv.wir?wirTxt(sv):'survey '+dmy(sv.date))+' outer points',from:sv.id,u:Date.now()};
   M.subs=M.subs||[];M.subs.push(o);if(!quiet){saveMeta();toast('Sub-area '+nm+' made from the outer points')}return o}
-function autoSubOnce(){if(RO||!canEdit()||(M.asDone||0)>=2)return;let fixed=0;for(const sa of (M.subs||[]))if(sa.from&&!M.del[sa.id]){const sv=surveys().find(x=>x.id===sa.from);if(sv){const H=outline(ptsEN(sv));if(H.length>=3){sa.c=H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]);delete sa.bb;sa.u=Date.now();fixed++}}}const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);M.asDone=2;saveMeta();const n=subs().length-before+fixed;if(n){toast(n+' sub-area borders made from the survey outer points');if(cur==='map')draw();else render()}}
+function autoSubOnce(){if(RO||!canEdit()||(M.asDone||0)>=3)return;let fixed=0;for(const sa of (M.subs||[]))if(sa.from&&!M.del[sa.id]){const sv=surveys().find(x=>x.id===sa.from);if(sv){const H=outline(ptsEN(sv));if(H.length>=3){sa.c=H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]);delete sa.bb;sa.u=Date.now();fixed++}}}const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);M.asDone=3;saveMeta();const n=subs().length-before+fixed;if(n){toast(n+' sub-area borders made from the survey outer points');if(cur==='map')draw();else render()}}
 function autoSubAll(){if(!guard())return;const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);const n=subs().length-before;saveMeta();toast(n?n+' sub-area'+(n===1?'':'s')+' made from survey outer points':'Every survey already has its sub-area');render()}
 /* the record of the area / sub-area under a tap: number, size, points, cut and fill (total, done, left) */
 function subNear(e,n){const inside=subs().filter(sa=>{const bb=sa.bb||(sa.bb=bboxOf(sa.c));return e>=bb.e0&&e<=bb.e1&&n>=bb.n0&&n<=bb.n1&&inPoly(e,n,sa.c)});if(inside.length)return inside.sort((a,b)=>polyArea(a.c)-polyArea(b.c))[0];
@@ -1920,19 +1929,28 @@ function outline(P0){if(P0.length<3)return P0;let P=P0;
   const sp=nn.length?nn[nn.length>>1]:10,alpha=Math.max(2.6*sp,6);
   let T;try{T=delaunay(P)}catch(e){return hull(P)}
   const L=(a,b)=>Math.hypot(P[a][0]-P[b][0],P[a][1]-P[b][1]);T=T.filter(([a,b,c])=>L(a,b)<=alpha&&L(b,c)<=alpha&&L(c,a)<=alpha);if(!T.length)return hull(P);
-  const cnt=new Map();for(const [a,b,c] of T)for(const [u,v] of [[a,b],[b,c],[c,a]]){const k=u<v?u+'_'+v:v+'_'+u;cnt.set(k,(cnt.get(k)||0)+1)}
-  const adj=new Map();for(const [k,n_] of cnt)if(n_===1){const [u,v]=k.split('_').map(Number);(adj.get(u)||adj.set(u,[]).get(u)).push(v);(adj.get(v)||adj.set(v,[]).get(v)).push(u)}
-  // walk the border loops, keep the biggest
-  const used=new Set(),loops=[];for(const s0 of adj.keys()){if(used.has(s0))continue;const loop=[s0];used.add(s0);let prev=-1,cur_=s0;
-    for(let g=0;g<20000;g++){const nx=(adj.get(cur_)||[]).find(v=>v!==prev&&(!used.has(v)||(v===s0&&loop.length>2)));if(nx==null||nx===s0)break;loop.push(nx);used.add(nx);prev=cur_;cur_=nx}
+  // boundary edges, directed so the inside is on the left
+  const cr=(a,b,c)=>(P[b][0]-P[a][0])*(P[c][1]-P[a][1])-(P[b][1]-P[a][1])*(P[c][0]-P[a][0]);
+  const DE=new Set();for(let [a,b,c] of T){if(cr(a,b,c)<0){const t=b;b=c;c=t}DE.add(a+'_'+b);DE.add(b+'_'+c);DE.add(c+'_'+a)}
+  const out=new Map();for(const k of DE){const [u,v]=k.split('_').map(Number);if(DE.has(v+'_'+u))continue;(out.get(u)||out.set(u,[]).get(u)).push(v)}
+  // walk the loops; at a pinch point take the sharpest left turn so every loop stays simple
+  const usedE=new Set(),loops=[];for(const [s0,L0] of out)for(const v0 of L0){if(usedE.has(s0+'_'+v0))continue;usedE.add(s0+'_'+v0);const loop=[s0];let pr=s0,cu=v0;
+    for(let g=0;g<20000&&cu!==s0;g++){loop.push(cu);const cand=(out.get(cu)||[]).filter(v=>!usedE.has(cu+'_'+v));if(!cand.length)break;
+      const bx=P[pr][0]-P[cu][0],by=P[pr][1]-P[cu][1],ba=Math.atan2(by,bx);let best=null,bv=1e9;for(const v of cand){let d=ba-Math.atan2(P[v][1]-P[cu][1],P[v][0]-P[cu][0]);while(d<=1e-9)d+=2*Math.PI;if(d<bv){bv=d;best=v}}
+      usedE.add(cu+'_'+best);pr=cu;cu=best}
     if(loop.length>2)loops.push(loop.map(i=>P[i]))}
-  if(!loops.length)return hull(P);loops.sort((a,b)=>polyArea(b)-polyArea(a));const best=loops[0];
-  // a border that keeps less than half the area of the full shape is not trusted
-  return polyArea(best)>polyArea(hull(P))*0.35?best:hull(P)}
+  const sA=R=>{let a=0;for(let i=0;i<R.length;i++){const p=R[i],q=R[(i+1)%R.length];a+=p[0]*q[1]-q[0]*p[1]}return a/2};
+  if(loops.length){loops.sort((a,b)=>sA(b)-sA(a));const best=despike(loops[0]);return polyArea(best)>polyArea(hull(P))*0.35?best:hull(P)}
+  return hull(P)}
+/* drop needle-sharp corners (a border that runs in to a lone point and straight back out) */
+function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;const o=[];for(let i=0;i<C.length;i++){const a=C[(i-1+C.length)%C.length],b=C[i],c=C[(i+1)%C.length],ux=a[0]-b[0],uy=a[1]-b[1],vx=c[0]-b[0],vy=c[1]-b[1],L=Math.hypot(ux,uy)*Math.hypot(vx,vy);
+    if(C.length-(ch?1:0)>3&&L>0&&(ux*vx+uy*vy)/L>Math.cos(20*Math.PI/180)){ch=true;continue}o.push(b)}C=o;if(!ch)break}return C}
+
+
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='3.9',APPD='9 Nov 2026';
+const APPV='4.0',APPD='9 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -4439,10 +4457,294 @@ function rSCurve(el){const C=sCurve(),W=760,H=300,L=46,Rr=12,Tp=14,Bt=34,tEnd=Ma
     h('div',{html:svg}),h('div',{class:'mut',style:'font-size:12px'},h('b',{style:'color:#4dabf7'},'- - planned'),'  ',h('b',{style:'color:#ffb020'},'— actual'),'  · ',fmt(Math.round(C.run))+' of '+fmt(Math.round(C.tot))+' m³ cut + fill (design in use)')),
     h('div',{class:'card'},h('h3',{},'Plan'),h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},fld('Start',st),fld('Planned finish',en),fld('Curve',sh)),h('button',{class:'btn pri',onclick:()=>{if(!guard())return;M.plan={start:st.value,end:en.value,shape:sh.value};saveMeta();rQty()}},'Save plan')))}
 
+/* ============================== MACHINE PRODUCTIVITY – equipment hours × surveyed m³, per zone ============================== */
+const zoneNo=t=>{const m=String(t||'').match(/z(?:one)?\s*0*(\d+)/i);return m?+m[1]:null};
+async function eqData(){let loc=null,cl=null;
+  try{const r=localStorage.getItem('sheraz-equipment-v1');if(r){const o=JSON.parse(r);if(o&&Array.isArray(o.equip)&&o.equip.length)loc=o}}catch(e){}
+  if(!loc||!canEdit()){try{const v=localStorage.getItem('sheraz-eq-view');if(v){const o=JSON.parse(v);if(o&&Array.isArray(o.equip)&&o.equip.length)cl=o}}catch(e){}
+    if(navigator.onLine&&location.protocol!=='file:'){try{const r=await fetch(DBU.replace(/\/?$/,'/')+'eq_site.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&Array.isArray(j.equip)&&j.equip.length)cl=j}}catch(e){}}}
+  const o=(canEdit()&&loc)||cl||loc;if(!o)return null;o.logs=(o.logs||[]).filter(Boolean);o.equip=o.equip.filter(Boolean);return o}
+const SHARE={};
+async function zoneShare(s){if(SHARE[s.id])return SHARE[s.id];const P=await ptsOf(s.id),cnt={};let n=0;for(const [i] of cover(P)){const ai=B.A[i];const z=ai>=0?zoneNo(K.areas[ai].zone):null;const k=z==null?'–':z;cnt[k]=(cnt[k]||0)+1;n++}
+  for(const k in cnt)cnt[k]/=n||1;return SHARE[s.id]=cnt}
+async function prodData(mon){const E=await eqData();const d0=mon+'-01',d1=mon+'-31';const Z={},day={},types={};
+  const zr=k=>Z[k]||(Z[k]={k,w:0,i:0,d:0,trips:0,m3:0,fill:0,cut:0,mach:new Set()});
+  if(E){const EQ=new Map(E.equip.map(e=>[e.id,e]));for(const l of E.logs){if(!l.date||l.date<d0||l.date>d1)continue;const e=EQ.get(l.eq)||{};const z=zoneNo(l.zone||e.zone);const r=zr(z==null?'–':z);
+      r.w+=+l.work||0;r.i+=+l.idle||0;r.d+=+l.down||0;r.trips+=+l.trips||0;if(+l.work)r.mach.add(l.eq);
+      const t=e.type||'Other',T=types[t]||(types[t]={t,w:0,i:0,d:0,n:new Set()});T.w+=+l.work||0;T.i+=+l.idle||0;T.d+=+l.down||0;T.n.add(l.eq);
+      const D=day[l.date]||(day[l.date]={h:0,m3:0});D.h+=+l.work||0}}
+  for(const s of surveys()){if(!s.date||s.date<d0||s.date>d1)continue;const st=STAT[s.id];if(!st||s.kind==='other')continue;const sh=await zoneShare(s),v=st.vf+st.vc;
+    for(const [k,f] of Object.entries(sh)){const r=zr(k);r.m3+=v*f;if(s.kind==='fill'||s.kind==='final')r.fill+=st.vf*f;else r.cut+=st.vc*f}
+    const D=day[s.date]||(day[s.date]={h:0,m3:0});D.m3+=v}
+  const rows=Object.values(Z).filter(r=>r.w||r.m3).sort((a,b)=>(a.k==='–')-(b.k==='–')||a.k-b.k);
+  const T=rows.reduce((a,r)=>({w:a.w+r.w,i:a.i+r.i,d:a.d+r.d,trips:a.trips+r.trips,m3:a.m3+r.m3}),{w:0,i:0,d:0,trips:0,m3:0});
+  return {mon,E,rows,T,types:Object.values(types).sort((a,b)=>b.w-a.w),day,sample:!!(E&&E.sample)}}
+let prodMon=lsGet('as2_prodm',today().slice(0,7));
+function prodSheet(){if(!ready)return;const ov=sheetOpen('Machine productivity'),c=ov.body;
+  const draw_=async()=>{c.replaceChildren(h('div',{class:'mut'},'Reading the equipment hours…'));const X=await prodData(prodMon);c.replaceChildren();
+    const mi=h('input',{type:'month',value:prodMon,style:'width:auto',onchange:e=>{prodMon=e.target.value||today().slice(0,7);lsSet('as2_prodm',prodMon);draw_()}});
+    c.append(h('div',{class:'row',style:'gap:8px;flex-wrap:wrap;margin-bottom:10px'},mi,h('button',{class:'btn',onclick:()=>prodXlsx(X)},'⬇ Excel')));
+    if(!X.E)c.append(h('div',{class:'card mut',style:'margin-bottom:10px'},'No equipment hours found yet. Enter the daily hours in 🚜 Equipment (the zone of each machine is used to match it with the survey quantities).'));
+    if(X.sample)c.append(h('div',{class:'card',style:'margin-bottom:10px;border-color:#ffb020;color:#ffb020'},'The equipment app still has its sample machines – enter your real machines and hours there.'));
+    const ut=r=>{const t=r.w+r.i+r.d;return t?Math.round(r.w/t*100)+'%':'–'},rate=r=>r.w?(r.m3/r.w).toFixed(1):'–',k=(v,l,col)=>h('div',{class:'k'},h('b',{class:'mono',style:'font-size:20px;color:'+col},v),h('small',{},l));
+    c.append(h('div',{class:'kk k4',style:'margin-bottom:12px'},k(fmt(Math.round(X.T.w))+' h','machine working hours','var(--am)'),k(fmt(Math.round(X.T.m3))+' m³','surveyed cut + fill','#3ecf8e'),k(rate(X.T),'m³ per working hour','#74c0fc'),k(ut(X.T),'utilisation (work ÷ work+idle+down)',X.T.w/(X.T.w+X.T.i+X.T.d||1)>0.75?'#3ecf8e':'#ff922b')));
+    c.append(h('h3',{style:'margin:6px 0'},'By zone'),h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...['Zone','Machines','Work h','Idle h','Down h','Use','Trips','Fill m³','Cut m³','m³ / work h'].map((t,i)=>h('th',{class:i?'n':''},t))),
+      ...X.rows.map(r=>h('tr',{},h('td',{},r.k==='–'?'No zone':'Zone '+String(r.k).padStart(2,'0')),h('td',{class:'n'},r.mach.size||'–'),h('td',{class:'n mono'},fmt(Math.round(r.w))),h('td',{class:'n mono'},fmt(Math.round(r.i))),h('td',{class:'n mono'},fmt(Math.round(r.d))),h('td',{class:'n'},ut(r)),h('td',{class:'n mono'},r.trips?fmt(r.trips):'–'),
+        h('td',{class:'n mono',style:'color:#3ecf8e'},fmt(Math.round(r.fill))),h('td',{class:'n mono',style:'color:#ff5d5d'},fmt(Math.round(r.cut))),h('td',{class:'n mono',style:'font-weight:800;color:var(--am)'},rate(r)))))));
+    if(X.types.length)c.append(h('h3',{style:'margin:14px 0 6px'},'By machine type'),h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...['Type','No.','Work h','Idle h','Down h','Use','Share of hours'].map((t,i)=>h('th',{class:i?'n':''},t))),
+      ...X.types.map(t=>h('tr',{},h('td',{},t.t),h('td',{class:'n'},t.n.size),h('td',{class:'n mono'},fmt(Math.round(t.w))),h('td',{class:'n mono'},fmt(Math.round(t.i))),h('td',{class:'n mono'},fmt(Math.round(t.d))),h('td',{class:'n'},ut(t)),h('td',{class:'n'},X.T.w?Math.round(t.w/X.T.w*100)+'%':'–'))))));
+    // daily chart: bars = m³ surveyed, line = working hours
+    const days=Object.keys(X.day).sort();if(days.length){const W=640,H=200,pl=40,pr=40,pt=10,pb=24,mx=Math.max(1,...days.map(d=>X.day[d].m3)),mh=Math.max(1,...days.map(d=>X.day[d].h)),bw=(W-pl-pr)/days.length;
+      let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">';days.forEach((d,j)=>{const v=X.day[d].m3,bh=(H-pt-pb)*v/mx;s+='<rect x="'+(pl+j*bw+1)+'" y="'+(H-pb-bh)+'" width="'+Math.max(1,bw-2)+'" height="'+bh+'" fill="#3ecf8e" opacity=".75"/>';if(days.length<=16||j%3===0)s+='<text x="'+(pl+j*bw+bw/2)+'" y="'+(H-8)+'" fill="#8e99a3" font-size="9" text-anchor="middle">'+(+d.slice(8))+'</text>'});
+      s+='<polyline fill="none" stroke="#ffb020" stroke-width="2" points="'+days.map((d,j)=>(pl+j*bw+bw/2)+','+(H-pb-(H-pt-pb)*X.day[d].h/mh)).join(' ')+'"/>';
+      s+='<text x="'+(pl-4)+'" y="'+(pt+8)+'" fill="#3ecf8e" font-size="10" text-anchor="end">'+fmt(Math.round(mx))+'</text><text x="'+(W-pr+4)+'" y="'+(pt+8)+'" fill="#ffb020" font-size="10">'+Math.round(mh)+' h</text></svg>';
+      const box=h('div',{class:'card',style:'margin-top:12px'},h('b',{},'Each day: '),h('span',{style:'color:#3ecf8e'},'■ m³ surveyed '),h('span',{style:'color:#ffb020'},'— machine hours'));box.insertAdjacentHTML('beforeend',s);c.append(box)}
+    c.append(h('div',{class:'mut',style:'font-size:12px;margin-top:10px'},'Hours come from 🚜 Equipment (zone of the log, or the machine’s zone). The m³ are the surveyed changes (fill placed + cut taken) in the same zone and month, so a zone with hours but no survey yet shows a low rate until it is surveyed.'))};
+  draw_()}
+async function prodXlsx(X){try{await loadJs(XLSX_URL,()=>!!window.XLSX);const wb=XLSX.utils.book_new(),ut=r=>{const t=r.w+r.i+r.d;return t?Math.round(r.w/t*100)/100:''};
+  const a=[['Alomaier – Khuzam 4 · Machine productivity '+X.mon],[],['Zone','Machines','Work h','Idle h','Down h','Utilisation','Trips','Fill m3','Cut m3','m3 per work h']].concat(X.rows.map(r=>[r.k==='–'?'No zone':'Zone '+r.k,r.mach.size,+r.w.toFixed(1),+r.i.toFixed(1),+r.d.toFixed(1),ut(r),r.trips,Math.round(r.fill),Math.round(r.cut),r.w?+(r.m3/r.w).toFixed(2):'']),[['Total','',+X.T.w.toFixed(1),+X.T.i.toFixed(1),+X.T.d.toFixed(1),ut(X.T),X.T.trips,'','',X.T.w?+(X.T.m3/X.T.w).toFixed(2):'']],[[],['Machine type','No.','Work h','Idle h','Down h','Utilisation']],X.types.map(t=>[t.t,t.n.size,+t.w.toFixed(1),+t.i.toFixed(1),+t.d.toFixed(1),ut(t)]));
+  const ws=XLSX.utils.aoa_to_sheet(a);ws['!cols']=[16,10,10,10,10,11,8,11,11,13].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Productivity');saveBlob(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]),'Alomaier_K4_productivity_'+X.mon+'.xlsx')}catch(e){toast('Could not make it: '+(e.message||e))}}
+
+/* ============================== MASS BALANCE – cut / fill / borrow / crusher / disposal ============================== */
+const mbx=()=>(M.mbx||[]).filter(x=>!M.del[x.id]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+const MBK={borrow:['Borrow (imported fill)','#74c0fc'],crusher:['Crusher material','#e599f7'],disposal:['Disposal (taken off site)','#ff922b']};
+function mbSet(){return Object.assign({cf:1.15,use:80},M.mb||{})}
+function massData(){const Z=DZ[activeDesign().id],S=mbSet(),cf=S.cf,u=S.use/100;let waste=0,prepc=0;for(const s of surveys()){const st=STAT[s.id];if(!st)continue;if(s.kind==='waste')waste+=st.vc;else if(s.kind==='prep')prepc+=st.vc}
+  const part=test=>{const o=qtyOf(test,Z);const need=o.fR*cf,avail=o.cR*u;return {o,need,avail,borrow:Math.max(0,need-avail),surplus:Math.max(0,avail-need)}};
+  const all=part(()=>true),ph=[1,2,3,4].map(p=>Object.assign({p},part(i=>B.P[i]===p))).filter(r=>r.o.n);
+  const zones={};K.areas.forEach((a,ai)=>{if(a.w)return;const k=a.zone||'–';(zones[k]||(zones[k]=[])).push(ai)});
+  const zr=Object.entries(zones).map(([k,A])=>{const S_=new Set(A);return Object.assign({k},part(i=>S_.has(B.A[i])))}).filter(r=>r.o.n);
+  const imp={borrow:0,crusher:0,disposal:0};for(const x of mbx())imp[x.kind]=(imp[x.kind]||0)+(+x.qty||0);
+  const usedNow=all.o.fD*cf,fromCut=all.o.cD*u,bal=fromCut+imp.borrow+imp.crusher-usedNow-imp.disposal;
+  return {S,cf,u,all,ph,zr,waste,prepc,imp,usedNow,fromCut,bal}}
+function massSheet(){if(!ready)return;const ov=sheetOpen('Mass balance'),c=ov.body;
+  const draw_=()=>{c.replaceChildren();const X=massData(),A=X.all,k=(v,l,col)=>h('div',{class:'k'},h('b',{class:'mono',style:'font-size:20px;color:'+col},v),h('small',{},l)),f=v=>fmt(Math.round(v));
+    c.append(h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:8px'},'Design in use: '+activeDesign().name+'. Fill is compacted m³; it needs ×'+X.cf.toFixed(2)+' of material (compaction factor). '+X.S.use+'% of the cut is taken as good for fill.'));
+    c.append(h('div',{class:'kk k4',style:'margin-bottom:12px'},k(f(A.o.fR)+' m³','fill needed (compacted)','#3ecf8e'),k(f(A.o.cR)+' m³','cut to design','#ff5d5d'),k(f(A.borrow)+' m³',A.borrow>0?'BORROW needed from outside':'no borrow needed',A.borrow>0?'#74c0fc':'#3ecf8e'),k(f(A.surplus+A.o.cR*(1-X.u))+' m³','surplus / unsuitable to dispose','#ff922b')));
+    // whole-job bar
+    const tot=Math.max(A.need,A.avail+A.borrow,1),bar=(segs)=>h('div',{style:'display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--bg2,#1b2228);margin:4px 0'},...segs.map(([v,col,t])=>v>0?h('div',{title:t+': '+f(v)+' m³',style:'width:'+(v/tot*100)+'%;background:'+col+';color:#000;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap'},v/tot>0.12?t:''):null));
+    c.append(h('div',{class:'card',style:'margin-bottom:12px'},h('b',{},'Where the fill comes from (whole job)'),h('div',{class:'mut',style:'font-size:12px'},'Material needed: '+f(A.need)+' m³'),bar([[Math.min(A.avail,A.need),'#ff8787','from cut'],[A.borrow,'#74c0fc','borrow']]),
+      h('b',{style:'display:block;margin-top:10px'},'To date'),h('div',{class:'f2',style:'font-size:12.5px;margin-top:4px'},
+        ...[['Fill placed',f(A.o.fD)+' m³ → '+f(X.usedNow)+' m³ material'],['Good material from cut so far',f(X.fromCut)+' m³ (of '+f(A.o.cD)+' cut)'],['Borrow brought in',f(X.imp.borrow)+' m³'],['Crusher material',f(X.imp.crusher)+' m³'],['Disposed off site',f(X.imp.disposal)+' m³'],['Waste removed (surveyed)',f(X.waste)+' m³'],['Stripping (prep cut)',f(X.prepc)+' m³'],['Balance (should be ≈ stockpiles on site)',(X.bal>=0?'':'−')+f(Math.abs(X.bal))+' m³']].map(([a,b])=>h('div',{},h('span',{class:'mut'},a+': '),h('b',{class:'mono'},b))))));
+    const tbl=(title,rows,name)=>h('div',{},h('h3',{style:'margin:12px 0 6px'},title),h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...[name,'Fill needed','Cut','Material needed','Good cut','Borrow','Surplus','Fill done','Cut done'].map((t,i)=>h('th',{class:i?'n':''},t))),
+      ...rows.map(r=>h('tr',{},h('td',{},r.name),...[r.o.fR,r.o.cR,r.need,r.avail].map(v=>h('td',{class:'n mono'},f(v))),h('td',{class:'n mono',style:'color:#74c0fc;font-weight:700'},r.borrow?f(r.borrow):'–'),h('td',{class:'n mono',style:'color:#ff922b'},r.surplus?f(r.surplus):'–'),h('td',{class:'n mono'},f(r.o.fD)),h('td',{class:'n mono'},f(r.o.cD)))))));
+    c.append(tbl('By phase',X.ph.map(r=>Object.assign({name:'Phase '+r.p},r)),'Phase'),tbl('By zone',X.zr.map(r=>Object.assign({name:r.k==='–'?'No zone':r.k.replace(/^Z\s*/,'Zone ')},r)),'Zone'));
+    const giv=X.zr.filter(r=>r.surplus>500).sort((a,b)=>b.surplus-a.surplus),tak=X.zr.filter(r=>r.borrow>500).sort((a,b)=>b.borrow-a.borrow);
+    if(giv.length&&tak.length)c.append(h('div',{class:'card',style:'margin-top:12px'},h('b',{},'Haul plan idea'),h('div',{style:'font-size:12.5px;margin-top:4px'},'Zones with spare cut: ',giv.map(r=>r.k.replace(/^Z\s*/,'Zone ')+' ('+f(r.surplus)+' m³)').join(', '),h('br'),'Zones short of fill: ',tak.map(r=>r.k.replace(/^Z\s*/,'Zone ')+' ('+f(r.borrow)+' m³)').join(', '),h('br'),h('span',{class:'mut'},'Moving spare cut to the short zones first saves borrow.'))));
+    // deliveries
+    const L=mbx();c.append(h('div',{class:'row',style:'gap:8px;margin:14px 0 6px;flex-wrap:wrap'},h('h3',{style:'margin:0;flex:1'},'Material in / out'),...Object.keys(MBK).map(kk=>h('button',{class:'btn sm',onclick:()=>mbForm(null,kk,draw_)},'+ '+MBK[kk][0].split(' (')[0]))),
+      L.length?h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...['Date','Kind','m³','Source / place','Note',''].map(t=>h('th',{},t))),...L.map(x=>h('tr',{},h('td',{},dmy(x.date)),h('td',{style:'color:'+MBK[x.kind][1]},MBK[x.kind][0]),h('td',{class:'n mono'},f(+x.qty)),h('td',{},x.src||''),h('td',{},x.note||''),h('td',{},canEdit()?h('button',{class:'lnk',onclick:()=>mbForm(x,x.kind,draw_)},'Edit'):''))))):h('div',{class:'mut',style:'font-size:12.5px'},'Nothing entered yet – add borrow loads, crusher material and disposal here (from the truck tickets).'),
+      h('details',{class:'card',style:'margin-top:12px'},h('summary',{style:'cursor:pointer;font-weight:700'},'Factors'),h('div',{class:'f2',style:'margin-top:8px'},
+        h('label',{class:'f'},h('span',{},'Compaction factor (material m³ per compacted m³)'),h('input',{type:'number',step:'0.01',value:X.cf,onchange:e=>{if(!guard())return;M.mb=Object.assign(mbSet(),{cf:+e.target.value||1.15});saveMeta();draw_()}})),
+        h('label',{class:'f'},h('span',{},'Cut good for fill (%)'),h('input',{type:'number',step:'1',value:X.S.use,onchange:e=>{if(!guard())return;M.mb=Object.assign(mbSet(),{use:Math.max(0,Math.min(100,+e.target.value||0))});saveMeta();draw_()}})))))};draw_()}
+function mbForm(x0,kind,after){if(!guard())return;const x=x0||{date:today(),kind,qty:'',src:'',note:''};const f={date:h('input',{type:'date',value:x.date}),kind:h('select',{},...Object.entries(MBK).map(([k,v])=>h('option',{value:k,selected:k===x.kind},v[0]))),qty:h('input',{type:'number',step:'1',value:x.qty,placeholder:'m³ (loose, from tickets)'}),src:h('input',{value:x.src||'',placeholder:'pit / crusher / dump place'}),note:h('input',{value:x.note||''})};
+  modal(x0?'Edit entry':'Material in / out',h('div',{},h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Date'),f.date),h('label',{class:'f'},h('span',{},'Kind'),f.kind)),h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Quantity m³'),f.qty),h('label',{class:'f'},h('span',{},'Source / place'),f.src)),h('label',{class:'f'},h('span',{},'Note'),f.note)),
+    close=>[x0?h('button',{class:'btn',style:'color:#ff5d5d',onclick:()=>{M.del[x0.id]=Date.now();saveMeta();close();after&&after()}},'Delete'):null,h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const q=+f.qty.value;if(!(q>0)){toast('Enter the quantity');return}const o={date:f.date.value||today(),kind:f.kind.value,qty:q,src:f.src.value.trim(),note:f.note.value.trim(),u:Date.now()};M.mbx=M.mbx||[];if(x0)Object.assign(M.mbx.find(y=>y.id===x0.id),o);else M.mbx.push(Object.assign({id:'mb'+uid()},o));saveMeta();close();toast('Saved');after&&after()}},'Save')])}
+
+/* ============================== PONDING & SLOPE CHECK – low spots, flat ground, water running the wrong way ============================== */
+let POND=null;
+function pondSet(){return Object.assign({flat:0.2,pit:0.03},M.pond||{})}
+function gradAt(i,Z,R,nb){let sx=0,sy=0,sxx=0,syy=0,sxy=0,sz=0,sxz=0,syz=0,n=0;const e0=B.E[i],n0=B.N[i],z0=Z[i];
+  for(const j of nb){const z=Z[j];if(!(z===z))continue;const dx=B.E[j]-e0,dy=B.N[j]-n0,dz=z-z0;sx+=dx;sy+=dy;sxx+=dx*dx;syy+=dy*dy;sxy+=dx*dy;sz+=dz;sxz+=dx*dz;syz+=dy*dz;n++}
+  if(n<3)return null;const D=sxx*syy-sxy*sxy;if(Math.abs(D)<1e-9)return null;return [(sxz*syy-syz*sxy)/D,(syz*sxx-sxz*sxy)/D]}
+function nbrs(i,R){const o=[],e=B.E[i],n=B.N[i],r=Math.ceil(R/GS),ix=Math.floor(e/GS),iy=Math.floor(n/GS),R2=R*R;for(let a=-r;a<=r;a++)for(let b=-r;b<=r;b++){const L=B.grid.get((ix+a)*200000+iy+b);if(L)for(const j of L)if(j!==i){const dx=B.E[j]-e,dy=B.N[j]-n;if(dx*dx+dy*dy<=R2)o.push(j)}}return o}
+function pondCheck(test){const S=pondSet(),Zd=DZ[activeDesign().id],T=test||(()=>true),res={pit:[],flat:[],rev:[],per:{},m2:{pit:0,flat:0,rev:0},n:0};
+  const sp=[];for(let i=0;i<B.n;i+=Math.max(1,Math.floor(B.n/500)))sp.push(Math.sqrt(B.C[i]||100));sp.sort((a,b)=>a-b);const R=Math.max(4,1.6*(sp[sp.length>>1]||10));
+  const mark=new Uint8Array(B.n);
+  for(let i=0;i<B.n;i++){if(!T(i)||!LAST[i])continue;const z=CUR[i];if(!(z===z))continue;const nb=nbrs(i,R);if(nb.length<3)continue;res.n++;const ai=B.A[i];if(ai>=0&&K.areas[ai].w)continue;const r=res.per[ai]||(res.per[ai]={pit:0,flat:0,rev:0,n:0});r.n++;
+    // only judge where the neighbours were surveyed too (inside worked ground)
+    const wk=nb.filter(j=>LAST[j]);if(wk.length<3)continue;
+    let mn=1e9;for(const j of wk)if(CUR[j]<mn)mn=CUR[j];
+    if(wk.length>=4&&z<mn-S.pit){mark[i]=1;res.pit.push(i);r.pit++;res.m2.pit+=B.C[i];continue}
+    const g=gradAt(i,CUR,R,wk);if(!g)continue;const sl=Math.hypot(g[0],g[1])*100;
+    const gd=Zd&&Zd[i]===Zd[i]?gradAt(i,Zd,R,nb):null,sd=gd?Math.hypot(gd[0],gd[1])*100:0;
+    const fin=gd&&Math.abs(z-Zd[i])<=Math.max(0.15,(M.tol||0.1)*1.5);if(!fin)continue;
+    if(gd&&sd>=0.3&&(g[0]*gd[0]+g[1]*gd[1])<0&&sl>=0.1){mark[i]=3;res.rev.push(i);r.rev++;res.m2.rev+=B.C[i];continue}
+    if(gd&&sd>=S.flat&&sl<S.flat){mark[i]=2;res.flat.push(i);r.flat++;res.m2.flat+=B.C[i]}}
+  // join the low spots into ponds
+  const seen=new Set(),ponds=[];for(const i of res.pit){if(seen.has(i))continue;const st=[i],P=[];seen.add(i);while(st.length){const k=st.pop();P.push(k);for(const j of nbrs(k,R*1.2))if(mark[j]===1&&!seen.has(j)){seen.add(j);st.push(j)}}
+    let e=0,n=0,dp=0,m2=0;for(const k of P){e+=B.E[k];n+=B.N[k];m2+=B.C[k];let mn=1e9;for(const j of nbrs(k,R))if(LAST[j]&&mark[j]!==1&&CUR[j]<mn)mn=CUR[j];if(mn<1e8)dp=Math.max(dp,mn-CUR[k])}
+    ponds.push({e:e/P.length,n:n/P.length,cells:P.length,m2,depth:dp,ai:B.A[P[0]]})}
+  ponds.sort((a,b)=>b.depth*b.m2-a.depth*a.m2);res.ponds=ponds;res.mark=mark;res.R=R;return res}
+function pondDraw(x,P,s){if(!POND||!POND.on)return;const C={1:'#339af0',2:'#66d9e8',3:'#ff6b6b'},r=Math.max(1.5,Math.min(5,s*POND.R*0.35));x.save();
+  for(const [arr,k] of [[POND.flat,2],[POND.rev,3],[POND.pit,1]]){x.fillStyle=C[k];x.globalAlpha=k===2?0.55:0.9;for(const i of arr){const [u,v]=P(B.E[i],B.N[i]);if(u<-10||v<-10||u>5000||v>5000)continue;x.beginPath();x.arc(u,v,r,0,7);x.fill()}}
+  x.globalAlpha=1;if(s>0.04){x.font='700 11px IBM Plex Sans,system-ui';x.textAlign='center';for(const p of POND.ponds.slice(0,40)){const [u,v]=P(p.e,p.n);x.strokeStyle='#fff';x.lineWidth=1.5;x.beginPath();x.arc(u,v,Math.max(8,Math.sqrt(p.m2)*s*0.7),0,7);x.stroke();x.fillStyle='#fff';x.fillText('💧'+Math.round(p.depth*100)+' cm',u,v-Math.max(10,Math.sqrt(p.m2)*s*0.7)-3)}}x.restore()}
+function pondLegend(){return POND&&POND.on?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#74c0fc'},'Drainage: '),h('span',{style:'color:#339af0'},'● low spot '),h('span',{style:'color:#66d9e8'},'● flat '),h('span',{style:'color:#ff6b6b'},'● falls the wrong way '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{POND.on=false;legend();draw()}},'✕')):null}
+function pondSheet(g){if(!ready)return;const ov=sheetOpen('Ponding & slope check'+(g&&g.type!=='all'?' · '+g.name:'')),c=ov.body;
+  const run=()=>{c.replaceChildren(h('div',{class:'mut'},'Checking the ground…'));setTimeout(()=>{const R=pondCheck(g&&g.test);POND=Object.assign(R,{on:POND?POND.on:false});draw_(R)},30)};
+  const draw_=R=>{c.replaceChildren();const S=pondSet(),f=v=>fmt(Math.round(v)),k=(v,l,col)=>h('div',{class:'k'},h('b',{class:'mono',style:'font-size:20px;color:'+col},v),h('small',{},l));
+    c.append(h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:8px'},'The surveyed ground now is checked point by point against its neighbours: a low spot is lower than every neighbour by more than '+Math.round(S.pit*100)+' cm (water stays there), flat is less than '+S.flat+'% fall where the design has a fall, wrong way = the ground falls opposite to the design fall (these two only where the ground is at final level).'));
+    c.append(h('div',{class:'kk k4',style:'margin-bottom:12px'},k(R.ponds.length,'ponds (low spots joined)','#339af0'),k(f(R.m2.pit)+' m²','in low spots','#339af0'),k(f(R.m2.flat)+' m²','too flat','#66d9e8'),k(f(R.m2.rev)+' m²','falling the wrong way','#ff6b6b')));
+    c.append(h('div',{class:'row',style:'gap:8px;flex-wrap:wrap;margin-bottom:10px'},h('button',{class:'btn pri',onclick:()=>{POND.on=true;ov.close();show('map');setTimeout(()=>{if(R.ponds[0])mapGo(R.ponds[0].e,R.ponds[0].n,0.25);legend();draw()},80)}},'Show on the map'),h('button',{class:'btn',onclick:()=>pondXlsx(R)},'⬇ Excel')));
+    if(R.ponds.length)c.append(h('h3',{style:'margin:6px 0'},'Ponds – deepest first'),h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...['#','Area','Size m²','Depth cm','Water m³ (approx)','E','N',''].map((t,i)=>h('th',{class:i>1&&i<7?'n':''},t))),
+      ...R.ponds.slice(0,60).map((p,j)=>h('tr',{},h('td',{},j+1),h('td',{},p.ai>=0?K.areas[p.ai].name:'–'),h('td',{class:'n mono'},f(p.m2)),h('td',{class:'n mono',style:'color:#339af0;font-weight:700'},Math.round(p.depth*100)),h('td',{class:'n mono'},f(p.m2*p.depth/3)),h('td',{class:'n mono'},p.e.toFixed(1)),h('td',{class:'n mono'},p.n.toFixed(1)),h('td',{},h('button',{class:'lnk',onclick:()=>{POND.on=true;ov.close();show('map');setTimeout(()=>{mapGo(p.e,p.n,0.6);legend();draw()},80)}},'Map ›')))))));
+    const per=Object.entries(R.per).filter(([ai,r])=>+ai>=0&&(r.pit||r.flat||r.rev)).sort((a,b)=>(b[1].pit+b[1].rev)-(a[1].pit+a[1].rev));
+    if(per.length)c.append(h('h3',{style:'margin:14px 0 6px'},'By area'),h('div',{class:'tw'},h('table',{class:'t'},h('tr',{},...['Area','Points checked','Low spots','Flat','Wrong way'].map((t,i)=>h('th',{class:i?'n':''},t))),...per.map(([ai,r])=>h('tr',{},h('td',{},K.areas[ai].name),h('td',{class:'n'},r.n),h('td',{class:'n',style:'color:#339af0'},r.pit||'–'),h('td',{class:'n',style:'color:#66d9e8'},r.flat||'–'),h('td',{class:'n',style:'color:#ff6b6b'},r.rev||'–'))))));
+    if(!R.n)c.append(h('div',{class:'card mut'},'No surveyed ground here yet.'));
+    c.append(h('details',{class:'card',style:'margin-top:12px'},h('summary',{style:'cursor:pointer;font-weight:700'},'Limits'),h('div',{class:'f2',style:'margin-top:8px'},
+      h('label',{class:'f'},h('span',{},'Low spot deeper than (m)'),h('input',{type:'number',step:'0.01',value:S.pit,onchange:e=>{M.pond=Object.assign(pondSet(),{pit:Math.max(0.005,+e.target.value||0.03)});if(canEdit())saveMeta();run()}})),
+      h('label',{class:'f'},h('span',{},'Flat if fall is under (%)'),h('input',{type:'number',step:'0.05',value:S.flat,onchange:e=>{M.pond=Object.assign(pondSet(),{flat:Math.max(0,+e.target.value||0.2)});if(canEdit())saveMeta();run()}})))))};
+  run()}
+function mapGo(e,n,s){if(!view)return;view.e=e;view.n=n;if(s)view.s=Math.max(view.s,s);draw()}
+async function pondXlsx(R){try{await loadJs(XLSX_URL,()=>!!window.XLSX);const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['No.','Area','Size m2','Depth cm','Water m3 approx','E','N']].concat(R.ponds.map((p,j)=>[j+1,p.ai>=0?K.areas[p.ai].name:'',Math.round(p.m2),Math.round(p.depth*100),Math.round(p.m2*p.depth/3),+p.e.toFixed(3),+p.n.toFixed(3)]))),'Ponds');
+  const pts=[['Type','Area','E','N','Ground now']];for(const [arr,t] of [[R.pit,'low spot'],[R.flat,'flat'],[R.rev,'wrong way']])for(const i of arr)pts.push([t,B.A[i]>=0?K.areas[B.A[i]].name:'',+B.E[i].toFixed(3),+B.N[i].toFixed(3),+CUR[i].toFixed(3)]);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pts),'Points');
+  saveBlob(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})]),'Alomaier_K4_ponding_'+today()+'.xlsx')}catch(e){toast('Could not make it: '+(e.message||e))}}
+
+/* ============================== DRONE – GeoTIFF / world-file orthophoto on the map, DSM as a surface ============================== */
+/* a small TIFF reader: strips or tiles, no compression / LZW / Deflate / PackBits, predictor 2 and 3, 8–32 bit, float */
+function lzwDec(src,outLen){const out=new Uint8Array(outLen),pre=new Int32Array(4096),suf=new Uint8Array(4096),len=new Int32Array(4096),first=new Uint8Array(4096);for(let i=0;i<256;i++){pre[i]=-1;suf[i]=i;len[i]=1;first[i]=i}
+  let op=0,bp=0,bits=9,next=258,old=-1;const nb=src.length*8;
+  const rd=()=>{if(bp+bits>nb)return 257;const by=bp>>3,sh=bp&7;const v=((src[by]<<16)|((src[by+1]||0)<<8)|(src[by+2]||0))>>(24-sh-bits)&((1<<bits)-1);bp+=bits;return v};
+  const emit=c=>{const L=len[c];let p=op+L-1,k=c;while(k>=0){if(p<outLen)out[p]=suf[k];p--;k=pre[k]}op+=L};
+  const add=(o,ch)=>{if(next<4096){pre[next]=o;suf[next]=ch;len[next]=len[o]+1;first[next]=first[o];next++}};
+  for(;;){const c=rd();if(c===257)break;if(c===256){bits=9;next=258;old=-1;continue}
+    if(old<0){if(c>=next)break;emit(c)}else if(c<next){emit(c);add(old,first[c])}else{add(old,first[old]);emit(c)}
+    old=c;if(next+1>=(1<<bits)&&bits<12)bits++;if(op>=outLen)break}
+  return out}
+function packBits(src,outLen){const out=new Uint8Array(outLen);let i=0,o=0;while(i<src.length&&o<outLen){const n=(src[i]<<24)>>24;i++;if(n>=0){for(let k=0;k<=n;k++)out[o++]=src[i++]}else if(n!==-128){const v=src[i++];for(let k=0;k<1-n;k++)out[o++]=v}}return out}
+async function inflate(u8){const ds=new DecompressionStream('deflate');const w=ds.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer())}
+async function tiffRead(buf,maxPx){const dv=new DataView(buf),le=dv.getUint16(0)===0x4949,u16=o=>dv.getUint16(o,le),u32=o=>dv.getUint32(o,le);if(u16(2)!==42)throw new Error(u16(2)===43?'BigTIFF is not supported – export the file as normal GeoTIFF':'Not a TIFF file');
+  const ifd=u32(4),n=u16(ifd),T={},SZ={1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8,16:8};
+  for(let k=0;k<n;k++){const o=ifd+2+k*12,tag=u16(o),typ=u16(o+2),cnt=u32(o+4),sz=(SZ[typ]||1)*cnt,at=sz<=4?o+8:u32(o+8),v=[];
+    if(typ===2){let s='';for(let j=0;j<cnt;j++){const ch=dv.getUint8(at+j);if(ch)s+=String.fromCharCode(ch)}T[tag]=s;continue}
+    for(let j=0;j<cnt&&j<200000;j++){const p=at+j*(SZ[typ]||1);v.push(typ===3?u16(p):typ===4||typ===16?u32(p):typ===5?u32(p)/u32(p+4):typ===12?dv.getFloat64(p,le):typ===11?dv.getFloat32(p,le):typ===8?dv.getInt16(p,le):typ===9?dv.getInt32(p,le):dv.getUint8(p))}T[tag]=v}
+  const W=T[256][0],H=T[257][0],spp=(T[277]||[1])[0],bps=(T[258]||[8])[0],cmp=(T[259]||[1])[0],pred=(T[317]||[1])[0],sf=(T[339]||[1])[0],planar=(T[284]||[1])[0];
+  if(![1,5,8,32946,32773].includes(cmp))throw new Error(cmp===7?'This TIFF is JPEG-compressed – export it with LZW or Deflate (or as JPG + world file)':'TIFF compression '+cmp+' is not supported – export with LZW or Deflate');
+  if(planar!==1&&spp>1)throw new Error('Separate colour planes are not supported');
+  const tiled=!!T[322],tw=tiled?T[322][0]:W,th=tiled?T[323][0]:(T[278]||[H])[0],offs=tiled?T[324]:T[273],cnts=tiled?T[325]:T[279],B_=bps/8,across=Math.ceil(W/tw);
+  const step=Math.max(1,Math.ceil(Math.max(W,H)/(maxPx||4096))),ow=Math.ceil(W/step),oh=Math.ceil(H/step),bands=Math.min(spp,4),out=[];for(let b=0;b<bands;b++)out.push(new Float32Array(ow*oh).fill(NaN));
+  const rdS=(d,p)=>{const v=new DataView(d.buffer,d.byteOffset,d.byteLength);return sf===3?(bps===32?v.getFloat32(p,le):v.getFloat64(p,le)):bps===8?(sf===2?v.getInt8(p):v.getUint8(p)):bps===16?(sf===2?v.getInt16(p,le):v.getUint16(p,le)):(sf===2?v.getInt32(p,le):v.getUint32(p,le))};
+  for(let s=0;s<offs.length;s++){const tx=tiled?(s%across)*tw:0,ty=tiled?Math.floor(s/across)*th:s*th;if(ty>=H)continue;
+    // skip a strip/tile that has no output row in it
+    let any=false;for(let y=ty;y<Math.min(H,ty+th);y++)if(y%step===0){any=true;break}if(!any)continue;
+    const raw=new Uint8Array(buf,offs[s],cnts[s]),rows=tiled?th:Math.min(th,H-ty),full=tw*rows*spp*B_;let d=cmp===1?raw:cmp===5?lzwDec(raw,full):cmp===32773?packBits(raw,full):await inflate(raw);
+    if(pred===2&&bps===8){d=new Uint8Array(d);for(let y=0;y<rows;y++)for(let x=spp;x<tw*spp;x++){const p=(y*tw)*spp+x;d[p]=(d[p]+d[p-spp])&255}}
+    else if(pred===2&&bps===16){const v=new DataView(d.buffer,d.byteOffset,d.byteLength);for(let y=0;y<rows;y++)for(let x=spp;x<tw*spp;x++){const p=((y*tw)*spp+x)*2;v.setUint16(p,(v.getUint16(p,le)+v.getUint16(p-2*spp,le))&65535,le)}}
+    else if(pred===3){const bb=B_,rowB=tw*spp*bb,o2=new Uint8Array(d.length);for(let y=0;y<rows;y++){const r=d.subarray(y*rowB,(y+1)*rowB),cp=new Uint8Array(r);for(let i=spp;i<rowB;i++)cp[i]=(cp[i]+cp[i-spp])&255;const wN=tw*spp;for(let i=0;i<wN;i++)for(let b=0;b<bb;b++){const src=cp[b*wN+i];o2[y*rowB+i*bb+(le?bb-1-b:b)]=src}}d=o2}
+    for(let y=0;y<rows;y++){const gy=ty+y;if(gy>=H||gy%step)continue;for(let x=0;x<tw;x++){const gx=tx+x;if(gx>=W||gx%step)continue;const oi=(gy/step)*ow+gx/step;for(let b=0;b<bands;b++)out[b][oi]=rdS(d,((y*tw+x)*spp+b)*B_)}}}
+  // geo-referencing
+  let geo=null;const sc=T[33550],tp=T[33922],mt=T[34264];if(sc&&tp)geo={x0:tp[3]-tp[0]*sc[0],y0:tp[4]+tp[1]*sc[1],px:sc[0],py:-sc[1]};else if(mt)geo={x0:mt[3],y0:mt[7],px:mt[0],py:mt[5]};
+  let epsg=null;const gk=T[34735];if(gk)for(let j=4;j+3<gk.length;j+=4){if(gk[j]===3072||gk[j]===2048)epsg=epsg||gk[j+3];if(gk[j]===1024&&gk[j+3]===2&&!epsg)epsg=4326}
+  const nod=T[42113]!=null?parseFloat(T[42113]):null;
+  return {W,H,ow,oh,step,bands:out,bps,sf,spp,geo,epsg,nod}}
+/* world → this project's UTM 38N */
+function geoToUtm(geo,epsg,W,H){if(!geo)return null;if(epsg===4326||(Math.abs(geo.x0)<=180&&Math.abs(geo.y0)<=90)){const c=[[0,0],[W,0],[0,H]].map(([i,j])=>llToUtm38(geo.y0+j*geo.py,geo.x0+i*geo.px));return {x0:c[0][0],y0:c[0][1],px:(c[1][0]-c[0][0])/W,py:(c[2][1]-c[0][1])/H,ll:true}}return Object.assign({},geo)}
+function worldFile(t){const v=String(t).trim().split(/\s+/).map(Number);if(v.length<6||v.some(x=>!isFinite(x)))return null;return {px:v[0],py:v[3],x0:v[4]-v[0]/2,y0:v[5]-v[3]/2,rot:v[1]||v[2]}}
+let ORTHO=null,ORTHO_ON=lsGet('as2_orthoOn',true),ORTHO_OP=lsGet('as2_orthoOp',0.9);
+async function orthoLoad(){if(ORTHO!==null)return ORTHO;try{const o=await dbGet('ortho');if(o&&o.img){const im=new Image();await new Promise(r=>{im.onload=r;im.onerror=r;im.src=o.img});ORTHO=Object.assign(o,{im})}else ORTHO=false}catch(e){ORTHO=false}return ORTHO}
+function orthoDraw(x){if(!ORTHO||!ORTHO_ON||!ORTHO.im||!ORTHO.im.width)return;const [a,b]=W2S(ORTHO.x0,ORTHO.y0),[c2,d]=W2S(ORTHO.x0+ORTHO.w*ORTHO.px,ORTHO.y0+ORTHO.h*ORTHO.py);x.save();x.globalAlpha=ORTHO_OP;x.imageSmoothingEnabled=true;x.drawImage(ORTHO.im,a,b,c2-a,d-b);x.restore()}
+async function orthoSave(cv,g,name){let q=0.82,url=cv.toDataURL('image/jpeg',q);while(url.length>9e6&&q>0.4){q-=0.12;url=cv.toDataURL('image/jpeg',q)}
+  const o={img:url,x0:g.x0,y0:g.y0,px:g.px*(g.sw||1),py:g.py*(g.sh||1),w:cv.width,h:cv.height,name,date:today()};await dbPut('ortho',o);ORTHO=null;await orthoLoad();ORTHO_ON=true;lsSet('as2_orthoOn',true);return o}
+function bandsToCanvas(R){const cv=document.createElement('canvas');cv.width=R.ow;cv.height=R.oh;const x=cv.getContext('2d'),im=x.createImageData(R.ow,R.oh),b=R.bands,n=R.ow*R.oh,mx=R.bps===16?(()=>{let m=0;for(let i=0;i<n;i+=97)if(b[0][i]>m)m=b[0][i];return m>255?m:255})():255;
+  for(let i=0;i<n;i++){const r=b[0][i],g=b.length>2?b[1][i]:r,bl=b.length>2?b[2][i]:r,a=b.length===4||b.length===2?b[b.length-1][i]/mx*255:255;const nd=R.nod!=null&&r===R.nod&&g===R.nod&&bl===R.nod;
+    im.data[i*4]=r/mx*255;im.data[i*4+1]=g/mx*255;im.data[i*4+2]=bl/mx*255;im.data[i*4+3]=nd||!(r===r)?0:a}x.putImageData(im,0,0);return cv}
+async function orthoFiles(fl,say){const img=fl.find(f=>/\.(tiff?|jpe?g|png)$/i.test(f.name)),wf=fl.find(f=>/\.(jgw|jpgw|pgw|pngw|tfw|tifw|wld)$/i.test(f.name));if(!img)throw new Error('Pick the orthophoto image (GeoTIFF, or JPG/PNG with its world file)');
+  say('Reading '+img.name+' …');let cv,g;
+  if(/\.tiff?$/i.test(img.name)){const R=await tiffRead(await img.arrayBuffer(),4096);g=geoToUtm(R.geo,R.epsg,R.W,R.H);if(wf&&!g)g=worldFile(await wf.text());if(!g)throw new Error('This TIFF has no position – export it as GeoTIFF, or add the .tfw world file');cv=bandsToCanvas(R);g.sw=R.W/R.ow;g.sh=R.H/R.oh}
+  else{if(!wf)throw new Error('A JPG/PNG needs its world file (.jgw / .pgw) – pick both files together');g=worldFile(await wf.text());if(!g)throw new Error('The world file could not be read');if(g.ll){}
+    const bm=await createImageBitmap(img),sc=Math.min(1,4096/Math.max(bm.width,bm.height));cv=document.createElement('canvas');cv.width=Math.round(bm.width*sc);cv.height=Math.round(bm.height*sc);cv.getContext('2d').drawImage(bm,0,0,cv.width,cv.height);g.sw=bm.width/cv.width;g.sh=bm.height/cv.height;if(Math.abs(g.x0)<=180&&Math.abs(g.y0)<=90){const G2=geoToUtm(g,4326,bm.width,bm.height);Object.assign(g,G2)}}
+  if(g.x0<100000||g.x0>900000||g.y0<1e6||g.y0>4e6)throw new Error('The position is not in UTM 38N (E '+Math.round(g.x0)+', N '+Math.round(g.y0)+') – export in WGS 84 / UTM zone 38N (EPSG 32638)');
+  const o=await orthoSave(cv,g,img.name);return o}
+async function dsmRows(f,say){let P=[];const name=f.name;
+  if(/\.tiff?$/i.test(name)){say('Reading the DSM '+name+' …');const R=await tiffRead(await f.arrayBuffer(),400);const g=geoToUtm(R.geo,R.epsg,R.W,R.H);if(!g)throw new Error('This TIFF has no position – export it as GeoTIFF');const b=R.bands[0];
+    for(let y=0;y<R.oh;y++)for(let x=0;x<R.ow;x++){const z=b[y*R.ow+x];if(!(z===z)||(R.nod!=null&&Math.abs(z-R.nod)<1e-6)||z<-500||z>9000)continue;const px=(x+0.5)*R.step,py=(y+0.5)*R.step;P.push([g.x0+px*g.px,g.y0+py*g.py,z])}}
+  else{const t=await f.text();const hd={};const L=t.split(/\r?\n/);let k=0;for(;k<8&&k<L.length;k++){const m=L[k].trim().match(/^([a-z_]+)\s+(-?[\d.eE+-]+)$/i);if(!m)break;hd[m[1].toLowerCase()]=+m[2]}
+    if(hd.ncols&&hd.nrows&&hd.cellsize){const nc=hd.ncols,nr=hd.nrows,cs=hd.cellsize,xll=hd.xllcorner!=null?hd.xllcorner:hd.xllcenter-cs/2,yll=hd.yllcorner!=null?hd.yllcorner:hd.yllcenter-cs/2,nd=hd.nodata_value;const st=Math.max(1,Math.ceil(Math.max(nc,nr)/400));
+      const vals=L.slice(k).join(' ').trim().split(/\s+/).map(Number);for(let r=0;r<nr;r+=st)for(let c=0;c<nc;c+=st){const z=vals[r*nc+c];if(!(z===z)||z===nd)continue;P.push([xll+(c+0.5)*cs,yll+(nr-r-0.5)*cs,z])}}
+    else return null}
+  if(P.length>160000){const st=P.length/160000,Q=[];for(let i=0;i<P.length;i+=st)Q.push(P[Math.floor(i)]);P=Q}
+  if(P.length&&(P[0][0]<100000||P[0][1]<1e6))throw new Error('The DSM is not in UTM 38N – export in WGS 84 / UTM zone 38N');
+  say(fmt(P.length)+' DSM points read'+(P.length?' (every '+(P.length>1?'':'')+'point keeps its real level)':''));return P.map((p,i)=>'D'+(i+1)+','+p[1].toFixed(3)+','+p[0].toFixed(3)+','+p[2].toFixed(3)).join('\n')}
+function droneSheet(){const ov=sheetOpen('Drone – orthophoto & DSM'),c=ov.body;
+  const draw_=async()=>{await orthoLoad();c.replaceChildren();const msg=h('div',{class:'mut',style:'font-size:12.5px;min-height:18px'});const say=t=>msg.textContent=t;
+    const inp=h('input',{type:'file',multiple:true,accept:'.tif,.tiff,.jpg,.jpeg,.png,.jgw,.pgw,.tfw,.wld,.jpgw,.pngw',style:'display:none',onchange:async()=>{const fl=[...inp.files];inp.value='';if(!fl.length)return;if(!guardLocal())return;try{const o=await orthoFiles(fl,say);say('Orthophoto saved on this phone · '+o.w+'×'+o.h+' px · '+(o.px).toFixed(2)+' m per pixel');draw_()}catch(e){say(e.message||String(e))}}});
+    c.append(h('div',{class:'card',style:'margin-bottom:12px'},h('b',{},'🛩 Orthophoto on the map'),h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'},'GeoTIFF (LZW / Deflate) or JPG / PNG together with its world file (.jgw / .pgw), in UTM zone 38N. It is kept on this phone and drawn under the grade colours – it replaces the satellite picture with your own fresh one.'),
+      h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},h('button',{class:'btn pri',onclick:()=>inp.click()},ORTHO?'Replace orthophoto':'Load orthophoto'),inp,
+        ORTHO?h('label',{class:'row',style:'gap:6px'},h('input',{type:'checkbox',checked:ORTHO_ON,onchange:e=>{ORTHO_ON=e.target.checked;lsSet('as2_orthoOn',ORTHO_ON)}}),'Show on the map'):null,
+        ORTHO?h('label',{class:'row',style:'gap:6px'},'Opacity',h('input',{type:'range',min:'0.2',max:'1',step:'0.05',value:ORTHO_OP,style:'width:110px',oninput:e=>{ORTHO_OP=+e.target.value;lsSet('as2_orthoOp',ORTHO_OP)}})):null,
+        ORTHO?h('button',{class:'btn',onclick:()=>{ov.close();show('map');setTimeout(()=>mapGo(ORTHO.x0+ORTHO.w*ORTHO.px/2,ORTHO.y0+ORTHO.h*ORTHO.py/2,Math.min(1,600/(ORTHO.w*ORTHO.px))),80)}},'Go to it ›'):null,
+        ORTHO?h('button',{class:'btn',style:'color:#ff5d5d',onclick:async()=>{await dbPut('ortho',null);ORTHO=false;draw_()}},'Remove'):null),
+      ORTHO?h('div',{class:'mut',style:'font-size:12px;margin-top:6px'},ORTHO.name+' · loaded '+dmy(ORTHO.date)+' · '+(ORTHO.w*ORTHO.px).toFixed(0)+' × '+Math.abs(ORTHO.h*ORTHO.py).toFixed(0)+' m'):null,msg),
+      h('div',{class:'card'},h('b',{},'⛰ DSM (drone heights)'),h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'},'A DSM GeoTIFF or ASCII grid (.asc) becomes points – use it as a survey (to measure a stockpile or a whole area) or as another surface (before / after). It is thinned to about 1 point per grade cell.'),
+        h('div',{class:'row',style:'gap:8px;flex-wrap:wrap'},h('button',{class:'btn',onclick:()=>{ov.close();importSurface('surf')}},'Add DSM as a surface'),h('button',{class:'btn',onclick:()=>{ov.close();newSurvey()}},'Add DSM as a survey')),h('div',{class:'mut',style:'font-size:12px;margin-top:6px'},'In the form press “🛩 Drone DSM” and pick the file.')))};
+  draw_()}
+function guardLocal(){return true}
+
+/* ============================== CAD EXPORT – DXF (R12) and LandXML 1.2 ============================== */
+const dxfEsc=t=>String(t).replace(/[^\x20-\x7e]/g,'').slice(0,250);
+function dxfDoc(L){/* L: {layers:{name:color}, pts:[{l,e,n,z,t}], polys:[{l,c:[[e,n,z?]],closed,d3}], texts:[{l,e,n,z,h,t}], faces:[{l,a:[[e,n,z]x3]}]} */
+  const o=['0','SECTION','2','HEADER','9','$ACADVER','1','AC1009','9','$INSUNITS','70','6','0','ENDSEC','0','SECTION','2','TABLES','0','TABLE','2','LAYER','70',String(Object.keys(L.layers).length)];
+  for(const [n,c] of Object.entries(L.layers))o.push('0','LAYER','2',dxfEsc(n),'70','0','62',String(c),'6','CONTINUOUS');o.push('0','ENDTAB','0','ENDSEC','0','SECTION','2','ENTITIES');const f=v=>(+v).toFixed(3);
+  for(const p of L.pts||[]){o.push('0','POINT','8',p.l,'10',f(p.e),'20',f(p.n),'30',f(p.z||0));if(p.t!=null)o.push('0','TEXT','8',p.l+'_TXT','10',f(p.e+0.3),'20',f(p.n+0.3),'30',f(p.z||0),'40','0.6','1',dxfEsc(p.t))}
+  for(const t of L.texts||[])o.push('0','TEXT','8',t.l,'10',f(t.e),'20',f(t.n),'30',f(t.z||0),'40',String(t.h||2),'1',dxfEsc(t.t));
+  for(const q of L.polys||[]){o.push('0','POLYLINE','8',q.l,'66','1','70',String((q.closed?1:0)+(q.d3?8:0)),'10','0','20','0','30','0');for(const v of q.c)o.push('0','VERTEX','8',q.l,'10',f(v[0]),'20',f(v[1]),'30',f(q.d3?v[2]||0:0),'70',q.d3?'32':'0');o.push('0','SEQEND','8',q.l)}
+  for(const F of L.faces||[]){const a=F.a;o.push('0','3DFACE','8',F.l);[0,1,2,2].forEach((k,j)=>o.push(String(10+j),f(a[k][0]),String(20+j),f(a[k][1]),String(30+j),f(a[k][2])))}
+  o.push('0','ENDSEC','0','EOF');return o.join('\r\n')}
+const xmlEsc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function tin(P,maxP){let Q=P;if(Q.length>(maxP||6000)){const st=Q.length/(maxP||6000),R=[];for(let i=0;i<Q.length;i+=st)R.push(Q[Math.floor(i)]);Q=R}
+  const T=delaunay(Q.map(p=>[p.e,p.n]));const L=(a,b)=>Math.hypot(Q[a].e-Q[b].e,Q[a].n-Q[b].n);const nn=[];for(const t of T)nn.push(L(t[0],t[1]),L(t[1],t[2]),L(t[2],t[0]));nn.sort((a,b)=>a-b);const lim=Math.max(6,(nn[nn.length>>1]||10)*3);
+  return {P:Q,F:T.filter(([a,b,c])=>L(a,b)<=lim&&L(b,c)<=lim&&L(c,a)<=lim)}}
+function landXml(o){/* o: {name, pts:[{id,e,n,z,code}], surfaces:[{name,desc,P,F}], lines:[{name,c:[[e,n]]}]} */
+  const f=v=>(+v).toFixed(3),now=new Date(),d=now.toISOString().slice(0,10),t=now.toTimeString().slice(0,8);
+  let s='<?xml version="1.0" encoding="UTF-8"?>\n<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2" version="1.2" date="'+d+'" time="'+t+'">\n <Units><Metric areaUnit="squareMeter" linearUnit="meter" volumeUnit="cubicMeter" temperatureUnit="celsius" pressureUnit="milliBars" angularUnit="decimal degrees" directionUnit="decimal degrees"/></Units>\n <CoordinateSystem name="WGS 84 / UTM zone 38N" epsgCode="32638"/>\n <Project name="'+xmlEsc(o.name)+'" desc="Alomaier Trading &amp; Contracting – Khuzam 4"/>\n <Application name="Alomaier Survey" version="'+APPV+'" manufacturer="Eng. Muhammad Sheraz Abbasi"/>\n';
+  if(o.pts&&o.pts.length){s+=' <CgPoints name="'+xmlEsc(o.name)+' points">\n';const used=new Set();for(const p of o.pts){let id=String(p.id||'P');while(used.has(id))id+='_';used.add(id);s+='  <CgPoint name="'+xmlEsc(id)+'"'+(p.code?' code="'+xmlEsc(p.code)+'"':'')+'>'+f(p.n)+' '+f(p.e)+' '+f(p.z)+'</CgPoint>\n'}s+=' </CgPoints>\n'}
+  if(o.surfaces&&o.surfaces.length){s+=' <Surfaces>\n';for(const S of o.surfaces){s+='  <Surface name="'+xmlEsc(S.name)+'" desc="'+xmlEsc(S.desc||'')+'">\n   <Definition surfType="TIN">\n    <Pnts>\n';S.P.forEach((p,i)=>s+='     <P id="'+(i+1)+'">'+f(p.n)+' '+f(p.e)+' '+f(p.z)+'</P>\n');s+='    </Pnts>\n    <Faces>\n';for(const [a,b,c] of S.F)s+='     <F>'+(a+1)+' '+(b+1)+' '+(c+1)+'</F>\n';s+='    </Faces>\n   </Definition>\n  </Surface>\n'}s+=' </Surfaces>\n'}
+  if(o.lines&&o.lines.length){s+=' <PlanFeatures name="Borders">\n';for(const L of o.lines){s+='  <PlanFeature name="'+xmlEsc(L.name)+'">\n   <CoordGeom>\n';const c=L.c;for(let j=0;j<c.length;j++){const a=c[j],b=c[(j+1)%c.length];s+='    <Line><Start>'+f(a[1])+' '+f(a[0])+'</Start><End>'+f(b[1])+' '+f(b[0])+'</End></Line>\n'}s+='   </CoordGeom>\n  </PlanFeature>\n'}s+=' </PlanFeatures>\n'}
+  return s+'</LandXML>\n'}
+async function survObjs(s){const P=await ptsOf(s.id);return P.E?toObjs(P):P.map((p,i)=>({id:p.id||String(i+1),e:p.e,n:p.n,z:p.z}))}
+async function cadSurvey(s,fmt_){const P=await survObjs(s),name=(s.wir?wirNo(s):'Survey '+s.date)+' '+(survArea(s)||''),H=outline(P.map(p=>[p.e,p.n])),fn='Alomaier_K4_'+(s.wir?'WIR'+s.wir:'survey_'+s.date)+'_'+(s.kind||'');
+  if(fmt_==='dxf'){const lay='SURVEY_'+String(s.kind||'PTS').toUpperCase();saveBlob(new Blob([dxfDoc({layers:{[lay]:3,[lay+'_TXT']:7,OUTLINE:1},pts:P.map(p=>({l:lay,e:p.e,n:p.n,z:p.z,t:(+p.z).toFixed(3)})),polys:H.length>2?[{l:'OUTLINE',c:H,closed:true}]:[]})],{type:'application/dxf'}),fn+'.dxf');return}
+  const t=tin(P,8000);saveBlob(new Blob([landXml({name,pts:P.map(p=>({id:p.id,e:p.e,n:p.n,z:p.z,code:s.kind})),surfaces:[{name:name.trim(),desc:kindName(s.kind,s.layer)+' '+dmy(s.date),P:t.P,F:t.F}],lines:H.length>2?[{name:'Outline',c:H}]:[]})],{type:'application/xml'}),fn+'.xml')}
+function cadSheet(g0){if(!ready)return;const DL=designs();const st={g:g0||grp('all',''),fmt:lsGet('as2_cadf','dxf'),what:Object.assign({areas:true,subs:true,bms:true,now:false,des:false,ngl:false},lsGet('as2_cadw',{}))};
+  const ov=sheetOpen('CAD export – DXF / LandXML'),c=ov.body;
+  const draw_=()=>{c.replaceChildren();const ck=(k,t)=>h('label',{class:'row',style:'gap:8px;padding:5px 0'},h('input',{type:'checkbox',checked:st.what[k],onchange:e=>{st.what[k]=e.target.checked;lsSet('as2_cadw',st.what)}}),t);
+    const scope=h('select',{style:'width:auto',onchange:e=>{const [t,k]=e.target.value.split(':');st.g=grp(t,k);draw_()}},h('option',{value:'all:'},'Whole project'),...[1,2,3,4].filter(p=>(K.phases[p]||[]).length).map(p=>h('option',{value:'phase:'+p,selected:st.g.type==='phase'&&+st.g.key===p},'Phase '+p)),...K.areas.map((a,ai)=>a.w?null:h('option',{value:'area:'+ai,selected:st.g.type==='area'&&+st.g.key===ai},a.name)),...subs().map(s=>h('option',{value:'sub:'+s.id,selected:st.g.type==='sub'&&st.g.key===s.id},'Sub-area '+s.name)));
+    c.append(h('div',{class:'row',style:'gap:8px;flex-wrap:wrap;margin-bottom:10px'},h('span',{},'Where'),scope,h('span',{},'Format'),h('select',{style:'width:auto',onchange:e=>{st.fmt=e.target.value;lsSet('as2_cadf',st.fmt)}},h('option',{value:'dxf',selected:st.fmt==='dxf'},'DXF (AutoCAD / Civil 3D)'),h('option',{value:'xml',selected:st.fmt==='xml'},'LandXML 1.2 (surfaces, Trimble / Leica / Carlson)'))),
+      h('div',{class:'card'},ck('areas','Consultant area borders (with names)'),ck('subs','Sub-area borders'),ck('bms','Bench marks (BM)'),ck('now','Ground now – grade points / surface'),ck('des','Design in use ('+activeDesign().name.split(' – ')[0]+') – grade points / surface'),ck('ngl','Natural ground (NGL) – grade points / surface')),
+      h('div',{class:'mut',style:'font-size:12px;margin:8px 0'},'Coordinates are UTM 38N (E, N) and levels in metres. In LandXML the ground / design become TIN surfaces; in DXF they are 3D points with the level as text and 3D faces.'),
+      h('button',{class:'btn pri',style:'width:100%',onclick:()=>cadMake(st)},'⬇ Make the file'),h('div',{class:'mut',style:'font-size:12px;margin-top:12px'},'A single survey: open it in Surveys and press “📤 DXF / LandXML”.'))};draw_()}
+function cadMake(st){const g=st.g,W=st.what,Zd=DZ[activeDesign().id],nm=g.type==='all'?'Khuzam 4':g.name.split(' · ')[0],fn='Alomaier_K4_'+nm.replace(/[^A-Za-z0-9-]+/g,'_')+'_'+today();
+  const inG=new Set();if(g.type==='area'||g.type==='sub')inG.add(g.ai);else for(let i=0;i<B.n;i++)if(B.A[i]>=0&&g.test(i))inG.add(B.A[i]);
+  const areas=K.areas.map((a,ai)=>({a,ai})).filter(({a,ai})=>!a.w&&(g.type==='all'||inG.has(ai)));
+  const SB=subs().filter(s=>g.type==='sub'?s.id===g.key:areas.some(x=>x.a.name===s.area));
+  const bb=(()=>{let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const {a} of areas)for(const [e,n] of a.c){if(e<e0)e0=e;if(e>e1)e1=e;if(n<n0)n0=n;if(n>n1)n1=n}return {e0:e0-50,e1:e1+50,n0:n0-50,n1:n1+50}})();
+  const BMS_=W.bms?Object.values(bmAll()).filter(b=>b.E>=bb.e0&&b.E<=bb.e1&&b.N>=bb.n0&&b.N<=bb.n1):[];
+  const grid=(Z,code)=>{const o=[];for(let i=0;i<B.n;i++)if(g.test(i)&&Z[i]===Z[i])o.push({id:code+(i+1),e:B.E[i],n:B.N[i],z:Z[i]});return o};
+  const sets=[];if(W.now)sets.push(['GROUND_NOW','Ground now '+today(),grid(CUR,'G'),4]);if(W.des&&Zd)sets.push(['DESIGN','Design '+activeDesign().name.split(' – ')[0],grid(Zd,'D'),2]);if(W.ngl)sets.push(['NGL','Natural ground',grid(G,'N'),8]);
+  if(st.fmt==='dxf'){const L={layers:{AREA_BORDER:30,AREA_NAME:30,SUB_AREA:5,BM:1,BM_TXT:1},pts:[],polys:[],texts:[],faces:[]};
+    if(W.areas)for(const {a} of areas){L.polys.push({l:'AREA_BORDER',c:a.c,closed:true});L.texts.push({l:'AREA_NAME',e:a.lx,n:a.ly,h:8,t:a.name})}
+    if(W.subs)for(const s of SB){L.polys.push({l:'SUB_AREA',c:s.c,closed:true});const cc=s.c.reduce((p,q)=>[p[0]+q[0]/s.c.length,p[1]+q[1]/s.c.length],[0,0]);L.texts.push({l:'SUB_AREA',e:cc[0],n:cc[1],h:4,t:s.name})}
+    for(const b of BMS_)L.pts.push({l:'BM',e:b.E,n:b.N,z:b.z,t:b.n+' '+(+b.z).toFixed(3)});
+    for(const [ly,,P,col] of sets){L.layers[ly]=col;L.layers[ly+'_TXT']=col;L.layers[ly+'_TIN']=col;for(const p of P)L.pts.push({l:ly,e:p.e,n:p.n,z:p.z,t:p.z.toFixed(2)});if(P.length<=20000){const T=tin(P,20000);for(const [a,b,c2] of T.F)L.faces.push({l:ly+'_TIN',a:[a,b,c2].map(k=>[T.P[k].e,T.P[k].n,T.P[k].z])})}}
+    saveBlob(new Blob([dxfDoc(L)],{type:'application/dxf'}),fn+'.dxf');toast('DXF made');return}
+  const o={name:nm,pts:BMS_.map(b=>({id:b.n,e:b.E,n:b.N,z:b.z,code:'BM'})),surfaces:sets.filter(s=>s[2].length>=3).map(([ly,name,P])=>{const T=tin(P,15000);return {name,desc:nm,P:T.P,F:T.F}}),lines:[].concat(W.areas?areas.map(({a})=>({name:a.name,c:a.c})):[],W.subs?SB.map(s=>({name:'Sub-area '+s.name,c:s.c})):[])};
+  saveBlob(new Blob([landXml(o)],{type:'application/xml'}),fn+'.xml');toast('LandXML made')}
+
+
+/* ============================== TAP A POINT – show its number, never move the border ============================== */
+let PTSEL=null;
+function srcPts(id){const P=PTS[id];if(!P)return [];return P.E?toObjs(P,20000):P}
+function ptHit(e,n){if(!view)return null;const tol=14/Math.max(0.02,view.s);let c=null,cd=tol,q=null,qd=tol;
+  if(DRAW)DRAW.pts.forEach((v,k)=>{const d=Math.hypot(v[0]-e,v[1]-n);if(d<cd){cd=d;c={k,e:v[0],n:v[1]}}});
+  const L=[];if(mapFocus&&mapFocus.pts)for(const p of mapFocus.pts)if(p.id!=null||p.z!=null)L.push(p);if(DRAW&&DRAW.src)L.push(...srcPts(DRAW.src));
+  for(const p of L){const d=Math.hypot(p.e-e,p.n-n);if(d<qd){qd=d;q=p}}
+  if(c){let m=q&&Math.hypot(q.e-c.e,q.n-c.n)<0.05?q:null;if(!m&&DRAW&&DRAW.src)for(const p of srcPts(DRAW.src))if(Math.hypot(p.e-c.e,p.n-c.n)<0.05){m=p;break}
+    if(!q||cd<=qd+tol*0.2)return {t:'corner',k:c.k,e:c.e,n:c.n,p:m}}
+  return q?{t:'pt',p:q,e:q.e,n:q.n,k:null}:null}
+function ptCard(hit){const box=$('#mapInfo');PTSEL={e:hit.e,n:hit.n};const p=hit.p,i=nearestBase(hit.e,hit.n,60),D=DZ[activeDesign().id];
+  const rows=[];const r=(k,v,c)=>rows.push(h('span',{},k),h('b',{class:'mono',style:c?'color:'+c:''},v));
+  if(p&&p.id!=null)r('Point No.',String(p.id));if(hit.k!=null)r('Border corner',(hit.k+1)+' of '+DRAW.pts.length);
+  r('E',hit.e.toFixed(3));r('N',hit.n.toFixed(3));if(p&&p.z!=null)r('Level (Z)',(+p.z).toFixed(3));
+  if(i>=0){if(D&&D[i]===D[i]){r('Design',D[i].toFixed(3));if(p&&p.z!=null){const dd=D[i]-p.z;r(dd>0?'Fill to design':'Cut to design',(dd<0?'−':'')+Math.abs(dd).toFixed(3),dd>0?'#3ecf8e':'#ff5d5d')}}r('NGL',G[i].toFixed(3));if(B.A[i]>=0)r('Area',K.areas[B.A[i]].name)}
+  box.replaceChildren(...[h('button',{class:'x',onclick:()=>{box.style.display='none';PTSEL=null;draw()}},'×'),h('b',{style:'font-size:14px'},p&&p.id!=null?'Point '+p.id:'Corner '+(hit.k+1)),h('div',{class:'kv',style:'font-size:12.5px;margin-top:6px'},...rows),
+    DRAW&&!DRAW.lock&&hit.k!=null?h('button',{class:'btn sm',style:'margin-top:8px;color:#ff5d5d',onclick:()=>{DRAW.pts.splice(hit.k,1);box.style.display='none';PTSEL=null;drawBar();draw()}},'Remove this corner'):null].filter(Boolean));
+  {const db=$('#drawBar');box.style.marginTop=DRAW&&db?(db.offsetHeight+8)+'px':''}box.style.display='block';draw()}
+
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
   if(RO)for(const x of M.designs.concat(M.ngl,M.surf||[])){if(!nPts(await ptsOf(x.id))){const c=await dbGet('cpts:'+x.id);if(c)PTS[x.id]=c}}
-  await rebuild();render();setTimeout(handleHash,300);setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
+  await rebuild();render();setTimeout(handleHash,300);orthoLoad().then(o=>{if(o&&cur==='map')draw()});setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
 boot();
 </script>
 </body>
