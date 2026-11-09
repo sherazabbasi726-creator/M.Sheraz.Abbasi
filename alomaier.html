@@ -307,7 +307,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
     h('div',{class:'row mut',style:'font-size:12px'},h('span',{},pc(Q.fD,Q.fR).toFixed(1)+'% done'),h('span',{class:'sp'}),h('span',{},fmt(Q.fR-Q.fD)+' m³ still to place')),
     h('div',{class:'kk',style:'margin-top:12px'},h('div',{class:'k'},h('b',{},fmt(Q.cD)),h('small',{},'m³ cut done of '+fmt(Q.cR))),h('div',{class:'k'},h('b',{},fmt(Q.on)),h('small',{},'m² on final design (±'+(M.tol*100).toFixed(0)+' cm)')))));
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
-    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.3 · 9 Nov 2026')),h('div',{class:'qg'},
+    L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v3.4 · 9 Nov 2026')),h('div',{class:'qg'},
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -1871,6 +1871,7 @@ function autoSub(sv,quiet){const P=ptsEN(sv);if(P.length<3)return null;const H=h
   const used=new Set(subs().filter(x=>x.area===a.name).map(x=>x.name));let k=0,nm;do{nm=a.name.replace('AREA ','')+'-'+String.fromCharCode(65+k%26)+(k>=26?Math.floor(k/26):'');k++}while(used.has(nm));
   const o={id:'sa'+uid(),name:nm,area:a.name,c:H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]),col:SUBCOL[subs().length%SUBCOL.length],note:'from '+(sv.wir?wirTxt(sv):'survey '+dmy(sv.date))+' outer points',from:sv.id,u:Date.now()};
   M.subs=M.subs||[];M.subs.push(o);if(!quiet){saveMeta();toast('Sub-area '+nm+' made from the outer points')}return o}
+function autoSubOnce(){if(RO||M.asDone||!canEdit())return;const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);M.asDone=1;saveMeta();const n=subs().length-before;if(n){toast(n+' sub-area borders made from the survey outer points');if(cur==='map')draw();else render()}}
 function autoSubAll(){if(!guard())return;const before=subs().length;for(const sv of surveys())if(sv.kind!=='other'&&sv.kind!=='waste')autoSub(sv,true);const n=subs().length-before;saveMeta();toast(n?n+' sub-area'+(n===1?'':'s')+' made from survey outer points':'Every survey already has its sub-area');render()}
 /* the record of the area / sub-area under a tap: number, size, points, cut and fill (total, done, left) */
 function subNear(e,n){const inside=subs().filter(sa=>{const bb=sa.bb||(sa.bb=bboxOf(sa.c));return e>=bb.e0&&e<=bb.e1&&n>=bb.n0&&n<=bb.n1&&inPoly(e,n,sa.c)});if(inside.length)return inside.sort((a,b)=>polyArea(a.c)-polyArea(b.c))[0];
@@ -1887,7 +1888,7 @@ function recordCard(g,col,size){const Z=DZ[activeDesign().id],o=qtyOf(g.test,Z),
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
   if(RO)for(const x of M.designs.concat(M.ngl,M.surf||[])){if(!nPts(await ptsOf(x.id))){const c=await dbGet('cpts:'+x.id);if(c)PTS[x.id]=c}}
-  await rebuild();render();setTimeout(()=>cloudSync(),800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
+  await rebuild();render();setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
 boot();
 </script>
 </body>
