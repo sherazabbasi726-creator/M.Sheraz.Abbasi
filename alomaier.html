@@ -148,7 +148,7 @@ html.vg-on header,html.vg-on main,html.vg-on nav{filter:blur(6px);pointer-events
 </header>
 <main id="main">
   <section class="page on" id="p-today"></section>
-  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
+  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
   <section class="page" id="p-surv"></section>
   <section class="page" id="p-design"></section>
   <section class="page" id="p-qty"></section>
@@ -599,7 +599,7 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
   x.lineWidth=1.6;K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);meDraw(x,W2S,view.s);
   if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
     if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
@@ -626,7 +626,7 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(hit)ptCard(hit);else info(we,wn)}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
-  $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
+  $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
   addEventListener('resize',()=>{if(cur==='map'){sizeMap();draw()}})}
 /* ============================== GRADE STATUS (final / touch / near) ============================== */
 const GTH=()=>({f:+M.gF||0.05,t:+M.gT||0.15,n:+M.gN||0.30});
@@ -1979,7 +1979,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='5.5',APPD='9 Nov 2026';
+const APPV='5.6',APPD='9 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -4955,6 +4955,30 @@ function visitsCard(){const box=h('div',{},h('div',{class:'mut',style:'font-size
   const seg=h('div',{class:'seg',style:'margin:6px 0'},...[['list','Every visit'],['people','By person']].map(([k,t])=>h('button',{class:k===mode?'on':'',onclick:e=>{mode=k;[...seg.children].forEach(b=>b.classList.toggle('on',b===e.target));fill()}},t)));
   return h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Who opened your link'),cnt),h('div',{class:'mut',style:'font-size:12.5px'},'Everyone who opens the app without signing in gives name, phone, designation and company first – one line per person per day. Only you see this list.'),
     seg,h('input',{placeholder:'Search name, phone, company…',oninput:e=>{q=e.target.value.toLowerCase();fill()},style:'margin-bottom:6px'}),h('div',{style:'max-height:380px;overflow:auto'},box))}
+
+/* ============================== MY LOCATION on the map (phone GPS → UTM 38N) ============================== */
+let ME=null,MEW=null,MEFOL=false;
+function meBtn(on){const b=$('#zMe');if(b)b.classList.toggle('on',!!on)}
+function meStart(){if(!('geolocation' in navigator)){toast('Location is not available on this phone / browser');return}
+  if(MEW!=null){if(ME){MEFOL=true;mapGo(ME.e,ME.n,0.6);meCard()}else toast('Still looking for the GPS…');return}
+  toast('Finding your location…');MEFOL=true;meBtn(true);
+  MEW=navigator.geolocation.watchPosition(p=>{const [e,n]=llToUtm38(p.coords.latitude,p.coords.longitude),first=!ME;ME={e,n,acc:p.coords.accuracy||0,hd:p.coords.heading,sp:p.coords.speed,t:Date.now()};
+      if(first||MEFOL){view.e=e;view.n=n;if(first)view.s=Math.max(view.s,0.6)}if(cur==='map'){draw();if(first)meCard()}},
+    err=>{toast(err.code===1?'Location is blocked – allow Location for this site in the browser / phone settings':'Could not get your location – go outside / turn on GPS');meStop()},
+    {enableHighAccuracy:true,maximumAge:2000,timeout:30000})}
+function meStop(){if(MEW!=null)try{navigator.geolocation.clearWatch(MEW)}catch(e){}MEW=null;ME=null;MEFOL=false;meBtn(false);if(cur==='map')draw()}
+function meDraw(x,P,s){if(!ME)return;const [u,v]=P(ME.e,ME.n);x.save();const r=Math.max(8,ME.acc*s);x.fillStyle='rgba(51,154,240,.14)';x.strokeStyle='rgba(51,154,240,.55)';x.lineWidth=1;x.beginPath();x.arc(u,v,r,0,7);x.fill();x.stroke();
+  if(ME.hd!=null&&!isNaN(ME.hd)&&(ME.sp||0)>0.5){const a=(ME.hd-90)*Math.PI/180;x.fillStyle='rgba(28,126,214,.85)';x.beginPath();x.moveTo(u+Math.cos(a)*22,v+Math.sin(a)*22);x.lineTo(u+Math.cos(a+2.6)*10,v+Math.sin(a+2.6)*10);x.lineTo(u+Math.cos(a-2.6)*10,v+Math.sin(a-2.6)*10);x.closePath();x.fill()}
+  x.fillStyle='#fff';x.beginPath();x.arc(u,v,9,0,7);x.fill();x.fillStyle='#1c7ed6';x.beginPath();x.arc(u,v,6.5,0,7);x.fill();x.restore()}
+function meCard(){if(!ME)return;info(ME.e,ME.n);const box=$('#mapInfo');const D=DZ[activeDesign().id],i=nearestBase(ME.e,ME.n,60);
+  const head=h('div',{style:'border:1px solid #339af0;border-left:5px solid #339af0;border-radius:12px;padding:8px 10px;margin-bottom:8px;background:color-mix(in srgb,#339af0 8%,transparent)'},
+    h('div',{class:'row',style:'gap:6px;flex-wrap:wrap'},h('b',{style:'font-size:14px;flex:1'},'📍 You are here'),h('span',{class:'mut',style:'font-size:11.5px'},'GPS ±'+Math.round(ME.acc)+' m')),
+    h('div',{class:'mono',style:'font-size:12px;margin:3px 0'},'E '+ME.e.toFixed(1)+' · N '+ME.n.toFixed(1)),
+    i>=0&&D&&D[i]===D[i]?h('div',{style:'font-size:12px'},'Design '+D[i].toFixed(2)+' · NGL '+G[i].toFixed(2)+(LAST[i]?' · ground now '+CUR[i].toFixed(2)+' ('+(D[i]-CUR[i]>0?'fill ':'cut ')+Math.abs(D[i]-CUR[i]).toFixed(2)+' m to design)':' · not surveyed yet')):h('div',{class:'mut',style:'font-size:12px'},'Outside the design area'),
+    ME.acc>15?h('div',{style:'font-size:11.5px;color:#ffb020;margin-top:3px'},'GPS is not exact yet – wait a little in the open. Phone GPS is ±3–10 m, not survey accuracy.'):null,
+    h('div',{class:'row',style:'gap:6px;margin-top:6px'},h('button',{class:'btn sm'+(MEFOL?' pri':''),onclick:()=>{MEFOL=!MEFOL;if(MEFOL)mapGo(ME.e,ME.n);meCard()}},MEFOL?'Following me':'Follow me'),h('button',{class:'btn sm',onclick:()=>{meStop();box.style.display='none'}},'Stop GPS')));
+  if(box.style.display==='none'||!box.firstChild){box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';draw()}},'×'),head);box.style.display='block'}else box.insertBefore(head,box.children[1]||null)}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&MEW!=null)meStop()});
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
