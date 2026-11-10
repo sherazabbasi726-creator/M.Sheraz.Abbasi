@@ -1,6 +1,6 @@
 // Alomaier Survey 2.0 offline helper: keeps the app, its icons and the 3D / photo-reader libraries on the phone.
 // Live data (Firebase) and satellite tiles are never cached here.
-const CACHE = 'as2-v39';
+const CACHE = 'as2-v41';
 const CORE = ['./alomaier.html', './alomaier.webmanifest', './alomaier-192.png', './alomaier-512.png', './alomaier-180.png', './three.min.js', './jspdf.umd.min.js', './jspdf.plugin.autotable.min.js', './xlsx.full.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
