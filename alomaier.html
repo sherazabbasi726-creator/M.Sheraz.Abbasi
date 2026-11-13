@@ -339,6 +339,11 @@ async function rebuild(){
   ready=true}
 const STAT={};
 /* quantities for one design: required (design vs natural ground), done (ground now vs natural ground), remaining */
+/* cut / fill at one grade point: what is needed (design vs NGL), what is done, what is left, and the m³ of its grid cell */
+function cfRows(i,z,g,c,tol){if(!(z===z)||!(g===g))return [];const m=v=>v.toFixed(2)+' m',cell=B.C[i]||0,v3=v=>' · ≈ '+fmt(Math.round(v*cell))+' m³';const need=z-g;
+  if(Math.abs(need)<=0.005)return [['Cut / fill here','none – design = NGL']];
+  if(need>0){const base=prepLevel(i),tot=z-base,dn=prepared(i)?Math.max(0,Math.min(tot,c-base)):0,lf=Math.max(0,z-c);return [['FILL here – needed',m(need)+' above NGL ('+m(tot)+' from the preparation)'+v3(tot)],['Fill done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c>z?'0 – '+m(c-z)+' above design':m(lf)+v3(lf))]]}
+  const cut=-need,dn=Math.max(0,Math.min(cut,g-c)),lf=Math.max(0,c-z);return [['CUT here – needed',m(cut)+' below NGL'+v3(cut)],['Cut done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c<z?'0 – '+m(z-c)+' below design':m(lf)+v3(lf))]]}
 function prepLevel(i){return PZ[i]===PZ[i]?PZ[i]:G[i]-PD()}
 function prepared(i){return PZ[i]===PZ[i]||LL[i]>0||CUR[i]<G[i]-PD()/2}
 function layersNeeded(i,Z){const z=Z[i];if(!(z===z)||!(G[i]===G[i])||z<=G[i])return 0;return Math.max(1,Math.ceil((z-prepLevel(i))/LT()-0.02))}
@@ -351,7 +356,7 @@ function qtyRows(Z){const tol=M.tol||0.1,R={};const add=(k,o)=>{const r=R[k]||(R
     const a=B.A[i],ar=a>=0?K.areas[a]:null;add('T',o);add('P'+B.P[i],o);if(ar){add('Z'+B.P[i]+'|'+ar.zone,o);add('A'+a,o)}}
   return R}
 /* layer reached / layers needed in a group: the layer most of its fill points have reached, and the most layers any part needs */
-function layTxt(r){if(!r||!Object.keys(r.lN).length)return '–';const need=Math.max(...Object.keys(r.lN).map(Number));const ent=Object.entries(r.lD).sort((a,b)=>b[1]-a[1])[0];const d=+ent[0];return (d?'L'+d:'Prep')+' / '+need}
+function layTxt(r){const s=r&&layStats(r.lN);if(!s)return '–';const ent=Object.entries(r.lD).sort((a,b)=>b[1]-a[1])[0];const d=+ent[0];return (d?'L'+d:'Prep')+' / '+s.most+(s.max>s.most?' (max '+s.max+')':'')}
 /* ============================== navigation ============================== */
 const IC={today:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',surv:'M12 2v4M12 18v4M2 12h4M18 12h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',design:'M4 20l6-14 4 8 2-3 4 9zM4 20h16',qty:'M4 19V9M10 19V5M16 19v-7M21 19H3',rep:'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6',eq:'M3 16V9h10v7M13 11h4l3 3v2h-7M6.5 18.5a1.5 1.5 0 1 0 0-.01M16.5 18.5a1.5 1.5 0 1 0 0-.01M5 9V6h5v3'};
 const TABS=[['today','Today'],['map','Map'],['surv','Surveys'],['design','Design'],['qty','Quantities'],['rep','Reports'],['eq','Equipment']];
@@ -388,10 +393,10 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
   T.forEach(s=>tc.append(survItem(s)));Rr.append(tc);
   // next layer to survey in the areas worked on lately
   {const QA=qtyRows(DZ[D.id]),seen=new Set(),nx=[];for(const s of SV){if(s.kind!=='fill'&&s.kind!=='prep')continue;const pl=survArea(s).split(' · ')[0];const ai=K.areas.findIndex(a=>a.name===pl);if(ai<0||seen.has(ai))continue;seen.add(ai);const r=QA['A'+ai];if(!r||!Object.keys(r.lN).length)continue;
-      const need=Math.max(...Object.keys(r.lN).map(Number)),cur_=+Object.entries(r.lD).sort((a,b)=>b[1]-a[1])[0][0];if(cur_>=need)continue;nx.push({a:K.areas[ai],cur:cur_,need});if(nx.length>=3)break}
+      const need=Math.max(...Object.keys(r.lN).map(Number)),cur_=+Object.entries(r.lD).sort((a,b)=>b[1]-a[1])[0][0];if(cur_>=need)continue;nx.push({a:K.areas[ai],cur:cur_,need,most:(layStats(r.lN)||{}).most});if(nx.length>=3)break}
     if(nx.length)Rr.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Next layer to survey'),h('button',{class:'lnk',onclick:()=>{mapMode='lay';show('map')}},'Layers map →')),
       ...nx.map(x=>h('div',{class:'it',onclick:()=>{mapMode='lay';mapFocus={pts:[{e:x.a.lx,n:x.a.ly}],title:x.a.name};show('map')}},h('span',{class:'ic',style:'background:rgba(255,176,32,.14);color:var(--am)'},'L'+(x.cur+1)),
-        h('span',{},h('b',{},x.a.name+' · '+(x.cur+1===x.need?'Final layer ':'Layer ')+(x.cur+1)),h('span',{class:'s'},x.a.zone+' · now '+(x.cur?'layer '+x.cur:'preparation')+' · '+x.need+' layers needed')),h('span',{class:'go'},'›')))))}
+        h('span',{},h('b',{},x.a.name+' · '+(x.cur+1===x.need?'Final layer ':'Layer ')+(x.cur+1)),h('span',{class:'s'},x.a.zone+' · now '+(x.cur?'layer '+x.cur:'preparation')+' · '+(x.most&&x.most<x.need?'most '+x.most+' · max '+x.need+' layers':x.need+' layers needed'))),h('span',{class:'go'},'›')))))}
   // latest surveys
   Rr.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Latest surveys'),h('button',{class:'lnk',onclick:()=>show('surv')},'All →')),...SV.slice(0,4).map(survItem)));
   // design in use
@@ -657,8 +662,8 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
 let pick=null;
 function info(e,n){$('#mapInfo').style.marginTop='';const cth=ctAt(e,n);if(cth){const box=$('#mapInfo');box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none'}},'×'),ctCard(cth));box.style.display='block';return}const bmh=bmAt(e,n);if(bmh){const box=$('#mapInfo');SEL=null;box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';draw()}},'×'),bmCard(bmh));box.style.display='block';draw();return}const sn=subNear(e,n);const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0&&!sn){box.style.display='none';pick=null;SEL=null;draw();return}if(i<0){SEL={t:'sub',id:sn.id};box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';SEL=null;draw()}},'×'),recordCard(grp('sub',sn.id),subCol(sn),polyArea(sn.c)));box.style.display='block';draw();return}pick={e:B.E[i],n:B.N[i]};
   const D=activeDesign(),z=DZ[D.id][i],g=G[i],c=CUR[i],a=B.A[i]>=0?K.areas[B.A[i]]:null,tol=M.tol||0.1,f3=v=>v===v?v.toFixed(3):'–';
-  const rows=[['N',B.N[i].toFixed(3)],['E',B.E[i].toFixed(3)],['Area',a?a.name:'–'],['Zone · phase',(a?a.zone+' · ':'')+'Phase '+B.P[i]],['Design ('+D.name.split(' – ')[0]+')',f3(z)],['NGL'+(NGLSRC[i]>=0?' (later survey)':''),f3(g)],['Ground now',f3(c)],['Last survey',LAST[i]?dmy(LAST[i])+' · '+(Object.values(KIND)[LKIND[i]-1]||['–'])[0]:'not surveyed']];
-  if(z===z&&g===g&&z>g){const ln=layersNeeded(i,DZ[D.id]),ld=layersDone(i,DZ[D.id]),base=prepLevel(i);rows.push(['Preparation'+(PZ[i]===PZ[i]?' (surveyed)':' (NGL − '+PD().toFixed(2)+')'),f3(base)]);
+  const rows=[['N',B.N[i].toFixed(3)],['E',B.E[i].toFixed(3)],['Area',a?a.name:'–'],['Zone · phase',(a?a.zone+' · ':'')+'Phase '+B.P[i]],...cfRows(i,z,g,c,tol),['Design ('+D.name.split(' – ')[0]+')',f3(z)],['NGL'+(NGLSRC[i]>=0?' (later survey)':''),f3(g)],['Ground now',f3(c)],['Last survey',LAST[i]?dmy(LAST[i])+' · '+(Object.values(KIND)[LKIND[i]-1]||['–'])[0]:'not surveyed']];
+  if(z===z&&g===g&&z>g){const ln=layersNeeded(i,DZ[D.id]),ld=layersDone(i,DZ[D.id]),base=prepLevel(i);rows.push(['Layers here – total · done · left',ln+' · '+ld+' · '+Math.max(0,ln-ld)]);rows.push(['Fill here – total · left',(z-base).toFixed(2)+' m · '+Math.max(0,z-c).toFixed(2)+' m']);rows.push(['Preparation'+(PZ[i]===PZ[i]?' (surveyed)':' (NGL − '+PD().toFixed(2)+')'),f3(base)]);
     for(let L=1;L<=ln;L++)rows.push([(L===ln?'Final layer ':'Layer ')+L+(L<=ld?' ✓':''),f3(Math.min(base+LT()*L,z))]);rows.push(['Layers done',ld+' of '+ln])}
   for(const d of designs())if(d.id!==D.id){const v=DZ[d.id][i];if(v===v)rows.push([d.name.split(' – ')[0],f3(v)])}
   const dz=z-c,gk=gradeOf(i,DZ[D.id]);QTMP=QTMP&&Object.keys(QTMP).length?QTMP:qtyRows(DZ[D.id]);SEL=sn?{t:'sub',id:sn.id}:B.A[i]>=0?{t:'area',id:B.A[i]}:null;
@@ -1676,12 +1681,22 @@ function repMailText(X){const nm=repTo||'Sir',t=X.R.title.toLowerCase();
     X.inP.length+' survey'+(X.inP.length===1?'':'s')+' · fill '+fmt(X.vf)+' m³ · cut '+fmt(X.vc)+' m³'+(X.AR.length?' · areas: '+X.AR.map(r=>r.a.name.replace('AREA ','')).join(', '):'')+'.\n'+
     'Project to date: fill '+fmt(X.tot.fD)+' of '+fmt(X.tot.fR)+' m³, cut '+fmt(X.tot.cD)+' of '+fmt(X.tot.cR)+' m³.\n'+(lsGet(remKey(),'')?'\nRemarks: '+lsGet(remKey(),'')+'\n':'')+'\nBest regards,\n'+repBy.split(',')[0]+'\nSurvey Engineer – Alomaier Trading & Contracting'}
 /* status of a group: is it a fill or a cut area, how many layers, how much done and left */
-function statusOf(o){const lk=Object.keys(o.lN||{}).map(Number),need=lk.length?Math.max(...lk):0,dn=Object.keys(o.lD||{}).length?+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0]:0;
-  const kind=o.fR<1&&o.cR<1?'ON DESIGN':o.fR>o.cR*3?'FILL':o.cR>o.fR*3?'CUT':'CUT & FILL';return {kind,need,dn,left:Math.max(0,need-dn),col:kind==='FILL'?'#148c50':kind==='CUT'?'#c8281e':kind==='ON DESIGN'?'#3ecf8e':'#b45309'}}
-function statusRows(o){const t=statusOf(o),pc=(a,b)=>b>0?Math.round(a/b*100)+'%':'–';return [['Status',t.kind+' area',1],t.need?['Fill layers – needed · done · still to place',t.need+' · '+(t.dn?'layer '+t.dn:'preparation')+' · '+t.left+' to go']:null,
+/* layers in a group of grade points: fewest, the number most of the fill area needs, the most any point needs, and how much of the area needs that many */
+function layStats(lN){const E=Object.entries(lN||{}).map(([k,v])=>[+k,v]).filter(x=>x[0]>0&&x[1]>0).sort((a,b)=>a[0]-b[0]);if(!E.length)return null;const tot=E.reduce((s,x)=>s+x[1],0);
+  const most=E.slice().sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0][0];let c=0,l95=E[E.length-1][0];for(const [k,v] of E){c+=v;if(c>=tot*0.95){l95=k;break}}
+  return {min:E[0][0],max:E[E.length-1][0],most,l95,tot,maxPct:E[E.length-1][1]/tot*100,dist:E.map(([k,v])=>[k,v/tot*100,v])}}
+const pctTxt=p=>p<1?p.toFixed(1)+'%':Math.round(p)+'%';
+function layLine(t){if(!t.ls)return '';const s=t.ls;return (s.min===s.max?s.max+' layers':'min '+s.min+' · most '+s.most+' · max '+s.max)+' · now '+(t.dn?'layer '+t.dn:'preparation')+' · '+Math.max(0,s.most-t.dn)+(s.max>s.most?'–'+t.left:'')+' to go'}
+function statusOf(o){const lk=Object.keys(o.lN||{}).map(Number),need=lk.length?Math.max(...lk):0,dn=Object.keys(o.lD||{}).length?+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0]:0,ls=layStats(o.lN);
+  const kind=o.fR<1&&o.cR<1?'ON DESIGN':o.fR>o.cR*3?'FILL':o.cR>o.fR*3?'CUT':'CUT & FILL';return {kind,need,dn,ls,left:Math.max(0,need-dn),col:kind==='FILL'?'#148c50':kind==='CUT'?'#c8281e':kind==='ON DESIGN'?'#3ecf8e':'#b45309'}}
+function statusRows(o){const t=statusOf(o),pc=(a,b)=>b>0?Math.round(a/b*100)+'%':'–';return [['Status',t.kind+' area',1],t.need&&t.ls?['Fill layers – min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+' of the fill area)':'')]:null,t.need?['Layers done · still to place',(t.dn?'layer '+t.dn:'preparation')+' · '+Math.max(0,t.ls.most-t.dn)+' to go for most of the area'+(t.ls.max>t.ls.most?', '+t.left+' at the deepest part':'')]:null,
   o.fR>1?['Fill m³ – total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)]:null,o.cR>1?['Cut m³ – total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)]:null].filter(Boolean)}
+function layDist(t){const s=t.ls,mx=Math.max(...s.dist.map(x=>x[1]));return h('div',{style:'margin:2px 0 10px'},h('div',{class:'mut',style:'font-size:11.5px;margin-bottom:4px'},'How many layers each part of the fill needs (share of the fill area):'),
+  ...s.dist.map(([k,p,n])=>h('div',{class:'row',style:'gap:8px;font-size:12px;margin:2px 0'},h('span',{style:'width:64px;flex:none'},k+' layer'+(k>1?'s':'')+(k===s.most?' ★':'')),h('span',{style:'flex:1;height:9px;border-radius:5px;background:rgba(127,127,127,.18);overflow:hidden'},h('i',{style:'display:block;height:100%;width:'+(p/mx*100).toFixed(1)+'%;background:'+(k<=t.dn?'#3ecf8e':k===s.most?'#ffb020':'#5cb8ff')})),h('span',{class:'mono',style:'width:52px;text-align:right;flex:none'},pctTxt(p)),h('span',{class:'mut mono',style:'width:52px;text-align:right;flex:none'},fmt(n)+' pt'))),
+  h('div',{class:'mut',style:'font-size:11px;margin-top:3px'},'★ most of the area · green = done · '+(s.l95<s.max?'95% of the fill area needs '+s.l95+' layers or fewer':'')))}
 function statusCard(o){const t=statusOf(o),pc=(a,b)=>b>0?Math.round(a/b*100):0,bar=(d,r,c)=>h('div',{style:'height:8px;border-radius:5px;background:rgba(127,127,127,.25);overflow:hidden;margin:4px 0 8px'},h('i',{style:'display:block;height:100%;width:'+Math.min(100,pc(d,r))+'%;background:'+c}));
-  return h('div',{class:'card',style:'border-left:6px solid '+t.col},h('div',{class:'row',style:'gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap'},h('span',{style:'background:'+t.col+';color:#fff;font-weight:800;padding:4px 12px;border-radius:999px;letter-spacing:.06em'},t.kind),t.need?h('b',{},'Layers: '+t.need+' needed · '+(t.dn?t.dn+' done':'preparation')+' · '+t.left+' to go'):null),
+  return h('div',{class:'card',style:'border-left:6px solid '+t.col},h('div',{class:'row',style:'gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap'},h('span',{style:'background:'+t.col+';color:#fff;font-weight:800;padding:4px 12px;border-radius:999px;letter-spacing:.06em'},t.kind),t.need?h('b',{},'Layers: '+layLine(t)):null),
+    t.need&&t.ls&&t.ls.max>t.ls.min?layDist(t):null,
     o.fR>1?h('div',{},h('div',{class:'row'},h('b',{style:'color:#3ecf8e'},'Fill'),h('span',{class:'sp'}),h('span',{class:'mono',style:'font-size:12.5px'},fmt(o.fD)+' done of '+fmt(o.fR)+' m³ · '+fmt(o.fR-o.fD)+' left')),bar(o.fD,o.fR,'#3ecf8e')):null,
     o.cR>1?h('div',{},h('div',{class:'row'},h('b',{style:'color:#ff5d5d'},'Cut'),h('span',{class:'sp'}),h('span',{class:'mono',style:'font-size:12.5px'},fmt(o.cD)+' done of '+fmt(o.cR)+' m³ · '+fmt(o.cR-o.cD)+' left')),bar(o.cD,o.cR,'#ff5d5d')):null)}
 let repScope=lsGet('as2_rs','');
@@ -1992,7 +2007,7 @@ function recordCard(g,col,size){const Z=DZ[activeDesign().id],o=qtyOf(g.test,Z),
     h('div',{class:'row',style:'gap:6px;margin-bottom:4px;flex-wrap:wrap'},h('b',{style:'font-size:14px'},g.name.split(' · ')[0]),h('span',{style:'background:'+t.col+';color:#fff;font-weight:800;font-size:10.5px;padding:1px 8px;border-radius:999px'},t.kind)),
     h('div',{class:'kv',style:'font-size:12px'},...r('Area number',g.type==='sub'?g.sub.name+' (in '+g.sub.area+')':K.areas[g.ai].name.replace('AREA ','Area ')+' · '+(K.areas[g.ai].zone||'')),...r('Area',fmt(Math.round(size||o.m2))+' m²'),...r('Grade points',fmt(o.n)),
       ...(o.fR>1?r('Fill total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)+' m³','#3ecf8e'):[]),...(o.cR>1?r('Cut total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)+' m³','#ff5d5d'):[]),
-      ...(t.need?r('Layers',t.need+' needed · '+(t.dn?t.dn+' done':'prep')+' · '+t.left+' to go'):[]),...(()=>{const gs=gradeSplit(g.test,Z);return gs.more+gs.fin+gs.done>0?[...r('More fill first (> 0.30)',fmt(Math.round(gs.more))+' m²','#e8590c'),...r('Final layer only (0.10–0.30)',fmt(Math.round(gs.fin))+' m²','#4dabf7'),...r('At grade',fmt(Math.round(gs.done))+' m²','#3ecf8e')]:[]})()),
+      ...(t.need&&t.ls?r('Layers min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+')':'')):[]),...(t.need?r('Layers now · to go',(t.dn?'L'+t.dn:'prep')+' · '+Math.max(0,t.ls.most-t.dn)+(t.ls.max>t.ls.most?'–'+t.left:'')):[]),...(()=>{const gs=gradeSplit(g.test,Z);return gs.more+gs.fin+gs.done>0?[...r('More fill first (> 0.30)',fmt(Math.round(gs.more))+' m²','#e8590c'),...r('Final layer only (0.10–0.30)',fmt(Math.round(gs.fin))+' m²','#4dabf7'),...r('At grade',fmt(Math.round(gs.done))+' m²','#3ecf8e')]:[]})()),
     h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet(g.type,g.key)},'Full record & report ›'))}
 
 /* ============================== OUTLINE THROUGH THE OUTER POINTS (concave hull) ============================== */
@@ -2037,7 +2052,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='6.1',APPD='10 Nov 2026';
+const APPV='6.3',APPD='10 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
