@@ -188,6 +188,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 :root[data-theme=light] .qt{background:linear-gradient(160deg,#ffffff,#f1f3f5)!important;border-color:#d9dee3!important;box-shadow:0 4px 0 #cfd5db,0 8px 16px rgba(20,24,28,.08)}:root[data-theme=light] .qt:active{box-shadow:0 1px 0 #cfd5db}
 :root[data-theme=light] .attn{background:linear-gradient(160deg,#fff8ea,#fff 60%);border-color:#ecd9b0}:root[data-theme=light] nav{background:rgba(255,255,255,.94)!important;box-shadow:0 -4px 18px rgba(20,24,28,.08)}
 :root[data-theme=light] .card{box-shadow:0 6px 16px rgba(20,24,28,.05)}
+#stakeBox{position:absolute;left:10px;right:60px;bottom:12px;z-index:6;max-width:440px;background:rgba(14,17,19,.94);border:1px solid #339af0;border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(8px)}.stk-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}.stk-big{font:800 30px/1.1 var(--mono,monospace);margin:4px 0}.stk-tg{display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px;border-radius:12px;background:rgba(255,79,216,.1);border:1px solid rgba(255,79,216,.35)}.stk-ar{font-size:30px;color:#ff4fd8;transition:transform .3s;flex:none}:root[data-theme=light] #stakeBox{background:rgba(255,255,255,.96)}
 </style>
 </head>
 <body>
@@ -200,7 +201,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 </header>
 <main id="main">
   <section class="page on" id="p-today"></section>
-  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
+  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="zPh" aria-label="Site photos" title="Site photos on the map">📷</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
   <section class="page" id="p-surv"></section>
   <section class="page" id="p-design"></section>
   <section class="page" id="p-qty"></section>
@@ -375,7 +376,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
   const L=h('div',{}),Rr=h('div',{});el.append(h('div',{class:'grid2'},L,Rr));Rr.append(attnCard());
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
     L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v'+APPV+' · '+APPD)),h('div',{class:'qg'},
-      qb('📰','Daily report','site · equipment · PDF',()=>dsSheet()),qb('✂️','Section','cut a line on the map',()=>sectStart()),qb('🏁','Finish forecast','when each area ends',()=>fcSheet()),qb('🧱','Next layer','m³ · loads · days',()=>nlSheet()),qb('⛰','Stockpile register','left · trucks · surveys',()=>pileSheet()),
+      qb('📰','Daily report','site · equipment · PDF',()=>dsSheet()),qb('✂️','Section','cut a line on the map',()=>sectStart()),qb('🏁','Finish forecast','when each area ends',()=>fcSheet()),qb('🧱','Next layer','m³ · loads · days',()=>nlSheet()),qb('⛰','Stockpile register','left · trucks · surveys',()=>pileSheet()),qb('🎯','Stake-out','GPS · cut / fill here',()=>stakeStart()),
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -653,7 +654,7 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
   x.lineWidth=1.6;K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
   if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
     if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
@@ -677,10 +678,10 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);view.s=Math.max(0.01,Math.min(20,pinch.s*d/pinch.d));moved=9;draw();return}
     const dx=e.offsetX-last[0],dy=e.offsetY-last[1];if(Math.abs(dx)+Math.abs(dy)>0){moved+=Math.abs(dx)+Math.abs(dy);view.e-=dx/view.s;view.n+=dy/view.s;last=[e.offsetX,e.offsetY];draw()}});
-  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(SECT){SECT.pts.push([we,wn]);sectBar();draw()}else if(PDRAW){PDRAW.pts.push([we,wn]);pileBar();draw()}else if(hit)ptCard(hit);else{if(SECTV){SECTV=null;draw()}info(we,wn)}}if(P.size===1)last=[...P.values()][0]}};
+  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(SECT){SECT.pts.push([we,wn]);sectBar();draw()}else if(PDRAW){PDRAW.pts.push([we,wn]);pileBar();draw()}else if(STK&&STK.pick){STK.tgt={e:we,n:wn,name:'tapped spot'};STK.pick=false;stakeUpd();draw()}else if(phHit(e.offsetX,e.offsetY)){survSheet(phHit(e.offsetX,e.offsetY).s)}else if(hit)ptCard(hit);else{if(SECTV){SECTV=null;draw()}info(we,wn)}}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
-  $('#zSat').onclick=satToggle;$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
+  $('#zSat').onclick=satToggle;$('#zPh').onclick=phToggle;$('#zPh').classList.toggle('on',PHMAP);$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
   addEventListener('resize',()=>{if(cur==='map'){sizeMap();draw()}})}
 /* ============================== GRADE STATUS (final / touch / near) ============================== */
 const GTH=()=>({f:+M.gF||0.05,t:+M.gT||0.15,n:+M.gN||0.30});
@@ -1891,7 +1892,7 @@ function fillWir(t,all){const q=wirQ.trim().toLowerCase(),phc=M.phc||{};
   const L=all.filter(s=>(wirF==='all'||(wirF==='ph'?(phc[s.id]||PHC[s.id]||WIR_SEED[s.wir]):wirF==='nowir'?!s.wir:s.kind===wirF))&&(!q||[wirTxt(s),s.cno,s.wref,s.desc,survArea(s),kindName(s.kind,s.layer),s.surveyor].join(' ').toLowerCase().includes(q)));
   t.replaceChildren(...(L.length?L.map(s=>{const [kn,kc]=KIND[s.kind]||KIND.other,np=(phc[s.id]||0)+(PHC[s.id]||0?0:0)+((WIR_SEED[s.wir]||[]).length);
     return h('button',{class:'it',onclick:()=>survSheet(s)},h('span',{class:'ic',style:'background:color-mix(in srgb,'+kc+' 18%,transparent);color:'+kc+';font-size:11px;width:auto;min-width:44px;padding:0 6px'},s.wir?String(s.wir).padStart(4,'0'):'—'),
-      h('span',{style:'min-width:0'},h('b',{},kindName(s.kind,s.layer)+' · '+survArea(s),qcBadge(s)),h('span',{class:'s',style:'display:block'},'Surveyed '+dmy(s.date)+(s.sub?' · submitted '+dmy(s.sub):'')+' · '+fmt(s.n)+' pts'+(np?' · 📷 '+np:'')+(s.wref?' · '+s.wref:'')),
+      h('span',{style:'min-width:0'},h('b',{},kindName(s.kind,s.layer)+' · '+survArea(s),qcBadge(s),consBadge(s)),h('span',{class:'s',style:'display:block'},'Surveyed '+dmy(s.date)+(s.sub?' · submitted '+dmy(s.sub):'')+' · '+fmt(s.n)+' pts'+(np?' · 📷 '+np:'')+(s.wref?' · '+s.wref:'')),
         h('span',{class:'s',style:'color:var(--ok);display:block;margin-top:2px'},'✓ Surveyed & submitted by Survey Eng. Muhammad Sheraz Abbasi')),h('span',{class:'go'},'›'))}):[h('div',{class:'mut'},'Nothing here.')]))}
 async function wirRegExport(how){const L=surveys().filter(s=>s.wir||s.kind!=='other').sort((a,b)=>(+a.wir||1e9)-(+b.wir||1e9)||(a.date||'').localeCompare(b.date||''));
   const rows=L.map(s=>[wirTxt(s),s.cno||'',s.wref||'',s.desc||'',kindName(s.kind,s.layer),survArea(s),s.date||'',s.sub||'',s.n||0,Math.round(STAT[s.id]?STAT[s.id].vf:0),Math.round(STAT[s.id]?STAT[s.id].vc:0),(M.phc||{})[s.id]||(WIR_SEED[s.wir]||[]).length||0,'Surveyed & submitted']);
@@ -2053,7 +2054,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='6.5',APPD='10 Nov 2026';
+const APPV='6.6',APPD='10 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -5038,7 +5039,7 @@ function meStart(){if(!('geolocation' in navigator)){toast('Location is not avai
   if(MEW!=null){if(ME){MEFOL=true;mapGo(ME.e,ME.n,0.6);meCard()}else toast('Still looking for the GPS…');return}
   toast('Finding your location…');MEFOL=true;meBtn(true);
   MEW=navigator.geolocation.watchPosition(p=>{const [e,n]=llToUtm38(p.coords.latitude,p.coords.longitude),first=!ME;ME={e,n,acc:p.coords.accuracy||0,hd:p.coords.heading,sp:p.coords.speed,t:Date.now()};
-      if(first||MEFOL){view.e=e;view.n=n;if(first)view.s=Math.max(view.s,0.6)}if(cur==='map'){draw();if(first)meCard()}},
+      if(first||MEFOL){view.e=e;view.n=n;if(first)view.s=Math.max(view.s,0.6)}if(cur==='map'){draw();if(first&&!STK)meCard()}if(STK)stakeUpd()},
     err=>{toast(err.code===1?'Location is blocked – allow Location for this site in the browser / phone settings':'Could not get your location – go outside / turn on GPS');meStop()},
     {enableHighAccuracy:true,maximumAge:2000,timeout:30000})}
 function meStop(){if(MEW!=null)try{navigator.geolocation.clearWatch(MEW)}catch(e){}MEW=null;ME=null;MEFOL=false;meBtn(false);if(cur==='map')draw()}
@@ -5165,6 +5166,8 @@ function attnCard(){if(!ATTN.box)ATTN.box=h('div',{class:'card attn'});attnFill(
 function attnFill(){const c=ATTN.box;if(!c)return;const rows=[];const row=(ic,col,t,s2,fn)=>rows.push(h('button',{class:'it atr',onclick:fn},h('span',{class:'ic',style:'background:'+col+'26;color:'+col},ic),h('span',{style:'min-width:0'},h('b',{},t),s2?h('span',{class:'s'},s2):null),h('span',{class:'go'},'›')));
   if(canEdit()&&pendingSubs().length)row('📥','#ffb020',pendingSubs().length+' team survey'+(pendingSubs().length>1?'s':'')+' waiting for approval',pendingSubs().slice(0,2).map(x=>x.by).join(', '),subsSheet);
   if(ready){const two=new Date(Date.now()-14*864e5).toISOString().slice(0,10);for(const s of surveys().filter(s=>s.date>=two).slice(0,15)){let q=null;try{q=qcOf(s)}catch(e){}if(q&&!q.ok)row('⚠','#ff5d5d','Check · '+kindName(s.kind,s.layer)+' · '+survArea(s),dmy(s.date)+(s.wir?' · WIR-'+String(s.wir).padStart(4,'0'):'')+' · thickness out of range',()=>survSheet(s));if(rows.length>=6)break}}
+  if(typeof bkDue==='function'&&bkDue())row('💾','#5cb8ff','Weekly backup is due','tap to save or share the backup file (site records + equipment)',()=>shareBackup());
+  if(CONSR){const L=surveys().filter(s=>{const x=consLast(s);return x&&x.st!=='ok'&&Date.now()-x.t<14*864e5});if(L.length)row('💬','#ffb020',L.length+' WIR'+(L.length>1?'s':'')+' with a consultant comment',L.slice(0,3).map(s=>wirTxt(s)).join(', '),()=>survSheet(L[0]))}
   if(canEdit()&&LIVEL&&LIVEL.length)row('●','#22c55e',LIVEL.length+' using the app now',LIVEL.slice(0,3).map(v=>(v.n||'Visitor')+' · '+(v.w||'')).join('  ·  '),onlineSheet);
   if(canEdit()&&VISL){const td=today(),n=VISL.filter(v=>v.t.slice(0,10)===td);if(n.length)row('👤','#5cb8ff',n.length+' visitor'+(n.length>1?'s':'')+' opened your link today',[...new Set(n.map(v=>v.n||'–'))].slice(0,3).join(', '),()=>show('data'))}
   if(ready&&canEdit()&&!surveys().some(s=>s.date===today())&&new Date().getHours()>=12)row('📝','#8e99a3','No survey entered for today yet','tap to add one',()=>newSurvey());
@@ -5443,10 +5446,66 @@ async function pilePdf(R){toast('Making the PDF…');try{await pdfLibs();const d
     styles:{fontSize:7.8,cellPadding:1.3,textColor:INKC,lineColor:[221,225,228]},headStyles:{fillColor:NAVY,textColor:255},alternateRowStyles:{fillColor:[248,249,251]},margin:{left:12,right:12,bottom:14}});
   pdfFoot(doc,W,H);await shareOrSave(doc.output('blob'),'Stockpile_register_'+today()+'.pdf','Stockpile register','Khuzam 4 stockpile register')}catch(e){toast('Could not make the PDF: '+e.message)}}
 
+/* ============================== INSTALMENT 6 – live stake-out, consultant approval, photos on the map, weekly backup ============================== */
+/* ---------- 1. LIVE STAKE-OUT ---------- */
+let STK=null;
+function stakeStart(){show('map');STK={tgt:null,pick:false};meStart();setTimeout(()=>{stakeBox();stakeUpd()},80)}
+function stakeStop(){STK=null;const b=$('#stakeBox');if(b)b.remove();draw()}
+function stakeBox(){let b=$('#stakeBox');if(!b){b=h('div',{id:'stakeBox'});$('#mapBox').append(b)}return b}
+function stakeUpd(){if(!STK||cur!=='map')return;const b=stakeBox();if(!ME){b.replaceChildren(h('div',{class:'stk-h'},h('b',{},'🎯 Stake-out'),h('button',{class:'btn sm',onclick:stakeStop},'✕')),h('div',{class:'mut'},'Waiting for the GPS… go outside, turn on Location.'));return}
+  const Z=DZ[activeDesign().id],i=nearestBase(ME.e,ME.n,100),tol=M.tol||0.1;let main=null,rows=[];
+  if(i>=0&&Z[i]===Z[i]){const z=Z[i],g=G[i],c=CUR[i],a=B.A[i]>=0?K.areas[B.A[i]]:null,d=z-c;const col=Math.abs(d)<=tol?'#3ecf8e':d>0?'#5cb8ff':'#ff5d5d';
+    main=h('div',{class:'stk-big',style:'color:'+col},Math.abs(d)<=tol?'ON DESIGN ✓':(d>0?'FILL ':'CUT ')+Math.abs(d).toFixed(2)+' m');
+    rows=[['Where',(a?a.name+' · '+a.zone:'–')],['Design · NGL · now',z.toFixed(2)+' · '+g.toFixed(2)+' · '+c.toFixed(2)]];
+    if(z>g){const ln=layersNeeded(i,Z),ld=layersDone(i,Z),base=prepLevel(i);rows.push(['Layers here',ld+' done of '+ln+(ld<ln?' · next L'+(ld+1)+' top '+Math.min(base+LT()*(ld+1),z).toFixed(2):' · complete')]);if(!prepared(i))rows.push(['Preparation','to '+base.toFixed(2)+' (cut '+Math.max(0,c-base).toFixed(2)+' m)'])}
+    rows.push(['Last survey here',LAST[i]?dmy(LAST[i]):'not surveyed'])}else main=h('div',{class:'stk-big',style:'color:#8e99a3'},'Outside the design area');
+  let tg=null;if(STK.tgt){const dx=STK.tgt.e-ME.e,dy=STK.tgt.n-ME.n,dist=Math.hypot(dx,dy),brg=(Math.atan2(dx,dy)*180/Math.PI+360)%360,rel=ME.hd!=null&&!isNaN(ME.hd)&&(ME.sp||0)>0.5?brg-ME.hd:brg;
+    tg=h('div',{class:'stk-tg'},h('div',{class:'stk-ar',style:'transform:rotate('+rel+'deg)'},'⬆'),h('div',{},h('b',{style:'font-size:20px'},dist<1000?dist.toFixed(1)+' m':(dist/1000).toFixed(2)+' km'),h('div',{class:'mut',style:'font-size:12px'},'to '+(STK.tgt.name||'target')+' · bearing '+Math.round(brg)+'°'+(rel===brg?' (from north)':' (from your heading)')+(dist<Math.max(2,ME.acc)?' · you are there':''))),h('button',{class:'btn sm',onclick:()=>{STK.tgt=null;stakeUpd();draw()}},'✕'))}
+  b.replaceChildren(...nn(h('div',{class:'stk-h'},h('b',{},'🎯 Stake-out'),h('span',{class:'mut',style:'font-size:11.5px;flex:1'},'GPS ±'+Math.round(ME.acc)+' m · E '+ME.e.toFixed(1)+' N '+ME.n.toFixed(1)),h('button',{class:'btn sm',onclick:stakeStop},'✕')),
+    main,h('div',{class:'kv',style:'font-size:12.5px;margin-top:4px'},...rows.flatMap(([k,v])=>[h('span',{},k),h('b',{},v)])),tg,
+    h('div',{class:'row',style:'gap:6px;margin-top:6px;flex-wrap:wrap'},h('button',{class:'btn sm'+(STK.pick?' pri':''),onclick:()=>{STK.pick=!STK.pick;stakeUpd();if(STK.pick)toast('Tap the map where you want to go')}},STK.pick?'Tap the map…':'🧭 Go to a spot'),h('button',{class:'btn sm',onclick:stakeType},'Type N, E'),h('button',{class:'btn sm',onclick:()=>{MEFOL=true;mapGo(ME.e,ME.n,Math.max(view.s,1));draw()}},'📍 Centre')),
+    ME.acc>10?h('div',{style:'font-size:11.5px;color:#ffb020;margin-top:4px'},'Phone GPS ±'+Math.round(ME.acc)+' m – use it to find the place and for a rough check, not for setting out levels.'):null))}
+function stakeType(){const ta=h('input',{placeholder:'N, E   e.g. 2762640.05, 666145.40'}),nm=h('input',{placeholder:'Name (optional) e.g. BM-12'});
+  modal('Go to a point',h('div',{},ta,h('div',{style:'height:6px'}),nm),close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:()=>{const v=(ta.value.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);const N=v.find(x=>x>B.n0-20000&&x<B.n1+20000),E=v.find(x=>x>B.e0-20000&&x<B.e1+20000);if(!N||!E){toast('Type the Northing and Easting');return}STK.tgt={e:E,n:N,name:nm.value.trim()};close();stakeUpd();draw()}},'Go')])}
+function stakeDraw(x,P){if(!STK||!STK.tgt)return;const [u,v]=P(STK.tgt.e,STK.tgt.n);x.save();x.strokeStyle='#ff4fd8';x.lineWidth=2.5;x.beginPath();x.arc(u,v,11,0,7);x.stroke();x.beginPath();x.moveTo(u-16,v);x.lineTo(u+16,v);x.moveTo(u,v-16);x.lineTo(u,v+16);x.stroke();
+  if(ME){const [a,b]=P(ME.e,ME.n);x.setLineDash([6,5]);x.beginPath();x.moveTo(a,b);x.lineTo(u,v);x.stroke()}x.restore()}
+
+/* ---------- 2. CONSULTANT APPROVAL ---------- */
+const CSN='as2cons';let CONSR=null;
+async function consLoad(){try{const r=await fetch(DBU+CSN+'.json',{cache:'no-store'});const o=r.ok?await r.json():null;CONSR={};for(const [sid,m] of Object.entries(o||{}))CONSR[sid]=Object.entries(m||{}).map(([id,v])=>Object.assign({id},v)).filter(x=>x&&x.st).sort((a,b)=>a.t-b.t)}catch(e){CONSR=CONSR||{}}return CONSR}
+const consLast=s=>{const L=CONSR&&CONSR[s.id];return L&&L.length?L[L.length-1]:null};
+const CST={ok:['Approved','#3ecf8e','✓'],cmt:['Comment','#ffb020','💬'],rej:['Rejected','#ff5d5d','✗']};
+function consBadge(s){const x=consLast(s);if(!x)return null;const c=CST[x.st]||CST.cmt;return h('span',{style:'margin-left:6px;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:9px;background:'+c[1]+'26;color:'+c[1]},c[2]+' '+c[0])}
+function wirConsCard(s){const box=h('div',{class:'card',style:'margin-top:10px;border-left:4px solid #339af0'});const vi=lsGet('es_vinfo',null)||{};
+  const fill=()=>{const L=(CONSR&&CONSR[s.id])||[];const nm=h('input',{value:vi.n||'',placeholder:'Your name'}),co=h('input',{value:vi.c||'',placeholder:'Company / consultant'}),nt=h('textarea',{placeholder:'Comment (optional)',style:'min-height:56px'}),msg=h('div',{class:'mut',style:'font-size:12px;min-height:16px'});
+    const send=async st=>{if(!nm.value.trim()){msg.textContent='Type your name';return}if(st!=='ok'&&!nt.value.trim()){msg.textContent='Write the comment';return}const id='c'+uid(),rec={st,by:nm.value.trim().slice(0,60),co:co.value.trim().slice(0,80),note:nt.value.trim().slice(0,500),t:Date.now(),wir:s.wir||'',dev:visDev().slice(0,60),own:canEdit()?1:0};
+      msg.textContent='Sending…';try{const r=await fetch(DBU+CSN+'/'+s.id+'/'+id+'.json',{method:'PUT',body:JSON.stringify(rec)});if(!r.ok)throw new Error(r.status===401||r.status===403?'not allowed yet – the consultant rule must be added in Firebase':'server '+r.status);
+        (CONSR=CONSR||{})[s.id]=(CONSR[s.id]||[]).concat([Object.assign({id},rec)]);try{lsSet('es_vinfo',Object.assign({},vi,{n:rec.by,c:rec.co}))}catch(x){}toast(CST[st][0]+' · '+wirTxt(s));fill()}catch(x){msg.textContent='Could not send – '+x.message}};
+    box.replaceChildren(...nn(h('div',{class:'lbl'},'Consultant'),
+      ...(L.length?L.map(x=>{const c=CST[x.st]||CST.cmt;return h('div',{class:'row',style:'gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--ln,#2a3035)'},h('span',{style:'flex:none;font-weight:800;color:'+c[1]},c[2]+' '+c[0]),h('span',{style:'flex:1;min-width:0;font-size:12.5px'},h('b',{},x.by),x.co?' · '+x.co:'',' · '+new Date(x.t).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})+(x.own?' · entered by Eng. Sheraz':''),x.note?h('div',{},x.note):null))}):[h('div',{class:'mut',style:'font-size:12.5px'},'No answer from the consultant yet.')]),
+      (CONSULT||canEdit())?h('div',{style:'margin-top:8px'},h('div',{class:'f2'},nm,co),nt,h('div',{class:'row',style:'gap:6px;margin-top:6px;flex-wrap:wrap'},h('button',{class:'btn sm pri',onclick:()=>send('ok')},'✓ Approve'),h('button',{class:'btn sm',onclick:()=>send('cmt')},'💬 Comment'),h('button',{class:'btn sm',style:'color:#ff6b6b',onclick:()=>send('rej')},'✗ Reject')),msg,
+        h('div',{class:'mut',style:'font-size:11px;margin-top:4px'},canEdit()?'You can also record what the consultant said on paper or by phone.':'Your name, the time and your phone are saved with the answer.')):null))};
+  if(CONSR)fill();else{box.append(h('div',{class:'mut'},'Loading…'));consLoad().then(fill)}return box}
+
+/* ---------- 3. PHOTOS ON THE MAP ---------- */
+let PHMAP=lsGet('as2_phmap',false)===true;const PHPOS={};let PHBUSY=false;
+async function phPosLoad(){if(PHBUSY)return;PHBUSY=true;const phc=M.phc||{};for(const s of surveys()){if(PHPOS[s.id]!==undefined)continue;const n=(phc[s.id]||0)+((WIR_SEED[s.wir]||[]).length)+(PHC[s.id]||0);if(!n){continue}
+    try{const P=await ptsOf(s.id);const L=P&&P.length?P:(P&&P.E?toObjs(P,2000):[]);if(L.length){let e=0,nn=0;for(const p of L){e+=p.e;nn+=p.n}PHPOS[s.id]={e:e/L.length,n:nn/L.length,s,c:n}}else PHPOS[s.id]=null}catch(x){PHPOS[s.id]=null}}PHBUSY=false;if(cur==='map')draw()}
+function phDraw(x,P){if(!PHMAP)return;let any=false;for(const k in PHPOS){const o=PHPOS[k];if(!o)continue;any=true;const [u,v]=P(o.e,o.n);x.save();x.fillStyle='#ffffff';x.strokeStyle='#14181c';x.lineWidth=1.5;x.beginPath();x.moveTo(u,v);x.lineTo(u-9,v-14);x.arc(u,v-19,10,Math.PI*0.75,Math.PI*0.25,false);x.closePath();x.fill();x.stroke();
+    x.font='12px system-ui';x.textAlign='center';x.fillText('📷',u,v-15);if(o.c>1){x.fillStyle='#ffb020';x.beginPath();x.arc(u+9,v-27,7,0,7);x.fill();x.fillStyle='#1a1205';x.font='800 9px system-ui';x.fillText(String(o.c),u+9,v-24)}x.restore()}if(!any&&!PHBUSY)phPosLoad()}
+function phHit(sx,sy){if(!PHMAP)return null;let best=null,bd=22;for(const k in PHPOS){const o=PHPOS[k];if(!o)continue;const [u,v]=W2S(o.e,o.n),d=Math.hypot(u-sx,v-19-sy);if(d<bd){bd=d;best=o}}return best}
+function phToggle(){PHMAP=!PHMAP;lsSet('as2_phmap',PHMAP);const b=$('#zPh');if(b)b.classList.toggle('on',PHMAP);if(PHMAP){toast('Site photos on the map – tap a 📷 pin');phPosLoad()}draw()}
+
+/* ---------- 4. WEEKLY BACKUP REMINDER ---------- */
+const bkDue=()=>canEdit()&&Date.now()-(+lsGet('as2_lastbk',0)||0)>7*864e5;
+
+const _ss3=survSheet;survSheet=async function(s){await _ss3(s);const m=[...document.querySelectorAll('.mbg .mdl')].pop();if(!m)return;const ft=m.querySelector('.mft');if(s.wir||s.kind!=='other')m.insertBefore(wirConsCard(s),ft)};
+const _shb=shareBackup;shareBackup=async function(){const r=await _shb.apply(this,arguments);lsSet('as2_lastbk',Date.now());try{attnFill()}catch(e){}return r};
+
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
   if(RO)for(const x of M.designs.concat(M.ngl,M.surf||[])){if(!nPts(await ptsOf(x.id))){const c=await dbGet('cpts:'+x.id);if(c)PTS[x.id]=c}}
-  await rebuild();render();setTimeout(handleHash,300);AUD0=audSnap();consultApply();setTimeout(liveStart,1200);if(canEdit())setTimeout(()=>loadVisits().then(L=>{VISL=L;attnFill()}).catch(()=>{}),4000);teamCheck().then(()=>{if(isSurveyor())mySubs(true)});if(canEdit())setTimeout(()=>loadSubs().then(()=>{attnFill();if(cur==='today')render()}),3000);setTimeout(()=>autoSnap().catch(()=>{}),25000);orthoLoad().then(o=>{if(o&&cur==='map')draw()});setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
+  await rebuild();render();setTimeout(handleHash,300);AUD0=audSnap();consultApply();setTimeout(()=>consLoad().then(()=>{try{attnFill()}catch(e){}if(cur==='surv')render()}),2500);setTimeout(liveStart,1200);if(canEdit())setTimeout(()=>loadVisits().then(L=>{VISL=L;attnFill()}).catch(()=>{}),4000);teamCheck().then(()=>{if(isSurveyor())mySubs(true)});if(canEdit())setTimeout(()=>loadSubs().then(()=>{attnFill();if(cur==='today')render()}),3000);setTimeout(()=>autoSnap().catch(()=>{}),25000);orthoLoad().then(o=>{if(o&&cur==='map')draw()});setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
 boot();
 </script>
 </body>
