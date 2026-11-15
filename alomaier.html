@@ -622,12 +622,15 @@ function rMap(){const bar=$('#mapBar');bar.replaceChildren(...kids(h('div',{clas
     mapFocus?h('button',{class:'btn sm',onclick:()=>{mapFocus=null;rMap()}},'✕ '+mapFocus.title):null));
   legend();requestAnimationFrame(()=>{sizeMap();if(!view)fit();if(mapFocus)fitTo(mapFocus.pts);draw()})}
 function col(t,a,b){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
+/* cut / fill depth in bands so 2 m, 5 m and 10 m look different */
+const DB=[0.5,1,2,5,10],DBF=[[160,210,255],[110,180,250],[60,140,235],[30,95,200],[20,55,150],[60,20,140]],DBC=[[255,190,170],[255,140,120],[245,90,80],[210,45,50],[150,20,35],[90,10,60]];
+function band(v){const a=Math.abs(v);let k=0;while(k<DB.length&&a>DB[k])k++;return v>0?DBF[k]:DBC[k]}
 function ramp(v,max,cn,cp){const t=Math.max(-1,Math.min(1,v/max));const z=[42,48,53];return t<0?col(-t,z,cn):col(t,z,cp)}
 function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B.e0)/r)+4,H=Math.ceil((B.n1-B.n0)/r)+4,cv=document.createElement('canvas');cv.width=W;cv.height=H;const cx=cv.getContext('2d'),im=cx.createImageData(W,H),d=im.data;
   const D=DZ[activeDesign().id],tol=M.tol||0.1,now=Date.now();let A=null,Bz=null;if(mode==='cmp'){const L=designs();A=DZ[cmpA]||DZ[L[Math.max(0,L.length-2)].id];Bz=DZ[cmpB]||DZ[L[L.length-1].id]}
   const KC={1:[224,178,90],2:[92,184,255],3:[255,93,93],4:[62,207,142],5:[179,136,255],6:[142,153,163]};
   for(let i=0;i<B.n;i++){let c=null;const z=D[i],g=G[i],cu=CUR[i];
-    if(mode==='need'){if(z===z&&g===g)c=ramp(z-g,3,[255,93,93],[92,184,255])}
+    if(mode==='need'){if(z===z&&g===g)c=Math.abs(z-g)<0.02?[42,48,53]:band(z-g)}
     else if(mode==='rem'){if(z===z&&cu===cu){const dz=z-cu;c=Math.abs(dz)<=tol?[62,207,142]:ramp(dz,2,[255,93,93],[255,176,32])}}
     else if(mode==='last'){c=LKIND[i]?KC[LKIND[i]]:[44,50,55];if(LKIND[i]&&LAST[i]){const age=(now-Date.parse(LAST[i]))/864e5;const f=age<7?1:age<30?.75:.5;c=c.map(v=>v*f+44*(1-f))}}
     else if(mode==='ngl'){c=NGLSRC[i]>=0?[255,176,32]:[70,78,85]}
@@ -637,15 +640,24 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
     if(!c)continue;const px=Math.round((B.E[i]-B.e0)/r)+2,py=Math.round((B.n1-B.N[i])/r)+2;
     for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const o=((py+b)*W+px+a)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}}
   cx.putImageData(im,0,0);LYR[mode]={cv,r};return LYR[mode]}
-function legend(){const L={need:[['#5cb8ff','fill needed'],['#ff5d5d','cut needed'],['#2a3035','on NGL']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
+function legend(){const hx=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');const L={need:[[hx(DBF[0]),'fill 0–0.5'],[hx(DBF[2]),'fill 1–2'],[hx(DBF[3]),'2–5'],[hx(DBF[4]),'5–10'],[hx(DBF[5]),'fill >10 m'],[hx(DBC[0]),'cut 0–0.5'],[hx(DBC[2]),'cut 1–2'],[hx(DBC[3]),'2–5'],[hx(DBC[4]),'5–10'],[hx(DBC[5]),'cut >10 m']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
     last:Object.values(KIND).map(([n,c])=>[c,n]).concat([['#2c3237','not surveyed']]),ngl:[['#465057','NGL at project start'],['#ffb020','NGL surveyed later']],grade:[[GR[5][1],'final grade'],[GR[4][1],'touch grade'],[GR[3][1],'near grade'],['#4a6a8a','fill working'],['#8a4a4a','cut working'],[GR[1][1],'not started'],[GR[6][1],'over design']],lay:[['#373d42','not prepared'],['#e0b25a','prepared (NGL − 0.30)'],['#285a96','first layers'],['#78c8ff','last layers'],['#3ecf8e','on final design'],['#462828','cut area']],cmp:[['#ff8a00','raised'],['#5cb8ff','lowered'],['#32383d','same (±2 cm)']]}[mapMode]||[];
   $('#mapLeg').replaceChildren(...kids(pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffb020'},'● 0.35–0.40 '),h('span',{style:'color:#ff3b3b'},'● over 0.40 / prep under 0.20 '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
     mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null,
+    (mapMode==='need'||mapMode==='rem')?h('label',{class:'satop',style:'gap:6px'},h('input',{type:'checkbox',checked:VALS,onchange:e=>{VALS=e.target.checked;lsSet('as2_vals',VALS);draw()}}),h('span',{},'Show the cut / fill numbers on the map (zoom in)')):null,
     satOn?h('label',{class:'satop'},h('span',{},'🛰 Colours'),h('input',{type:'range',min:'0',max:'1',step:'0.05',value:String(satOp),oninput:e=>{satOp=+e.target.value;lsSet('as2_satop',satOp);draw()}})):null));satBtn()}
 function sizeMap(){const c=$('#map'),b=$('#mapBox').getBoundingClientRect(),dp=devicePixelRatio||1;c.width=Math.max(10,b.width*dp);c.height=Math.max(10,b.height*dp)}
 function fit(){fitBox(B.e0,B.e1,B.n0,B.n1)}
 function fitBox(e0,e1,n0,n1){const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,s=Math.min(W/(e1-e0+40),H/(n1-n0+40));view={s,e:(e0+e1)/2,n:(n0+n1)/2}}
 function fitTo(P){if(!P||!P.length)return;let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const p of P){e0=Math.min(e0,p.e);e1=Math.max(e1,p.e);n0=Math.min(n0,p.n);n1=Math.max(n1,p.n)}fitBox(e0-60,e1+60,n0-60,n1+60)}
+let VALS=lsGet('as2_vals',true)!==false;
+/* numbers on the map: design − NGL (Design vs NGL) or design − ground now (To go), one label per free spot on the screen */
+function valDraw(x,P,s){if(!VALS||(mapMode!=='need'&&mapMode!=='rem')||s<1.6)return;const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(-20,-20),[e1,n0]=S2W(W+20,H+20),D=DZ[activeDesign().id],tol=M.tol||0.1;
+  const cw=s>5?52:60,ch=19,used=new Set(),L=[];
+  for(let i=0;i<B.n;i++){const e=B.E[i],n=B.N[i];if(e<e0||e>e1||n<n0||n>n1)continue;const z=D[i];if(!(z===z))continue;const v=mapMode==='need'?z-G[i]:z-CUR[i];if(!(v===v))continue;const [u,w]=P(e,n),k=Math.floor(u/cw)+'|'+Math.floor(w/ch);if(used.has(k))continue;used.add(k);L.push([u,w,v]);if(L.length>1400)break}
+  x.save();x.font='700 '+(s>5?11:10)+'px ui-monospace,Menlo,monospace';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=3;
+  for(const [u,w,v] of L){const on=mapMode==='rem'&&Math.abs(v)<=tol,txt=on?'✓':(v>0?'+':'−')+Math.abs(v).toFixed(3);x.strokeStyle='rgba(8,10,12,.9)';x.strokeText(txt,u,w);x.fillStyle=on?'#3ecf8e':v>0?'#9fd2ff':'#ffb0a0';x.fillText(txt,u,w)}
+  x.restore()}
 const W2S=(e,n)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(e-view.e)*view.s+c.width/dp/2,(view.n-n)*view.s+c.height/dp/2]};
 const S2W=(x,y)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(x-c.width/dp/2)/view.s+view.e,view.n-(y-c.height/dp/2)/view.s]};
 function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getContext('2d'),dp=devicePixelRatio||1;x.setTransform(dp,0,0,dp,0,0);x.fillStyle='#0b0e10';x.fillRect(0,0,c.width,c.height);if(satOn)satMap(x);
@@ -654,7 +666,7 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
   x.lineWidth=1.6;K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);valDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
   if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
     if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
@@ -2054,7 +2066,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='6.6',APPD='10 Nov 2026';
+const APPV='6.7',APPD='10 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
