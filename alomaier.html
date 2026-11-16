@@ -200,6 +200,11 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 :root[data-skin=sand]{--hdr:rgba(255,250,242,.97);--bg:#f4ece0;--p1:#fffaf2;--p2:#f3e9d8;--p3:#eadcc6;--ln:#dccbb0;--tx:#2b2116;--mu:#7a6650;--am:#b5651d;--am2:#8f4a10}
 :root[data-skin=sand] body{background:#f4ece0}
 .skg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.skc{border:2px solid transparent;border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;font:inherit;box-shadow:0 4px 0 rgba(0,0,0,.25)}.skc.on{border-color:var(--am)}.skc:active{transform:translateY(2px)}.skp{display:flex;gap:4px}.skp i{display:block;width:22px;height:22px;border-radius:6px;border:1px solid rgba(127,127,127,.3)}.skc b{font-size:13px}.skc small{font-size:11px}
+.per{display:grid;grid-template-columns:1.1fr 1.7fr 1.5fr 1.2fr 30px;gap:4px;align-items:center;margin-bottom:4px}.per input{padding:6px 5px;font-size:12px;min-width:0}.peh{font-size:11px;opacity:.65;font-weight:600;position:sticky;top:0;background:var(--p1,#14181b);z-index:1;padding:3px 0}
+.pel{max-height:44vh;overflow:auto}.pex{border:0;background:color-mix(in srgb,#ff5d5d 18%,transparent);color:#ff6b6b;border-radius:8px;height:30px;font-size:14px;cursor:pointer}
+.pea{display:grid;grid-template-columns:1fr 1.6fr 1.4fr 1.1fr auto;gap:5px}.pea input{min-width:0;padding:8px 6px;font-size:12.5px}
+@media(max-width:520px){.pea{grid-template-columns:1fr 1fr}.pea button{grid-column:span 2}}
+.tact{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9999;background:#222a30;color:#fff;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 30px #0008;font-size:13px;max-width:92vw}.tact button{background:#ffb02e;color:#000;border:0;border-radius:8px;padding:6px 12px;font-weight:700}
 </style>
 </head>
 <body>
@@ -315,7 +320,7 @@ function wirPts(w){return w.pts.filter(q=>q[5]!=null).map(q=>({id:q[0],n:q[1],e:
 const designs=()=>builtDesigns().concat(M.designs).filter(d=>!M.del[d.id]).sort((a,b)=>(a.start||'').localeCompare(b.start||'')||(a.ifc||'').localeCompare(b.ifc||''));
 const ngls=()=>builtNgl().concat(M.ngl).filter(d=>!M.del[d.id]).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
 const surveys=()=>builtSurveys().concat(M.surveys).filter(d=>!M.del[d.id]).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||String(b.id).localeCompare(String(a.id)));
-async function ptsOf(id){if(PTS[id])return PTS[id];if(id==='d1'){PTS[id]={E:B0.E,N:B0.N,Z:B0.Z};return PTS[id]}if(id[0]==='w'&&/^w\d+$/.test(id)){const w=K.wirs.find(x=>'w'+x.no===id);PTS[id]=w?wirPts(w):[];return PTS[id]}const v=await dbGet('pts:'+id);PTS[id]=v||[];return PTS[id]}
+async function ptsOf(id){if(PTS[id])return PTS[id];if(id==='d1'){PTS[id]={E:B0.E,N:B0.N,Z:B0.Z};return PTS[id]}if(id[0]==='w'&&/^w\d+$/.test(id)){if(typeof puOf==='function'&&puOf(id)){const v=(await dbGet('pts:'+id))||(await dbGet('cpts:'+id));if(v){PTS[id]=v;return v}}const w=K.wirs.find(x=>'w'+x.no===id);PTS[id]=w?wirPts(w):[];return PTS[id]}const v=await dbGet('pts:'+id);PTS[id]=v||[];return PTS[id]}
 /* ============================== surfaces ============================== */
 let DZ={},G=null,LOW=null,PZ=null,LL=null,CUR=null,LAST=null,LKIND=null,PREP=null,NGLSRC=null,ready=false;
 function designFor(date){const L=designs();let d=L[0];for(const x of L)if((x.start||'')<=(date||'9999'))d=x;return d}
@@ -477,7 +482,7 @@ async function survSheet(s){const P=await ptsOf(s.id),ck=await survCheck(s,P),st
     h('button',{class:'btn',onclick:()=>{close();mapFocus={pts:P,title:kindName(s.kind,s.layer)+' · '+dmy(s.date)};mapMode='last';show('map')}},'Show on map'),
     h('button',{class:'btn',onclick:()=>download(s.id+'_'+s.date+'.csv','Point,N,E,Z\n'+P.map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n'),'text/csv')},'CSV'),
     h('button',{class:'btn ed',onclick:()=>{close();subFromPts(s)}},'Sub-area from outer points'),
-    h('button',{class:'btn ed',onclick:()=>{close();editSurvey(s)}},'Edit'),h('button',{class:'btn pri',onclick:close},'Close')])}
+    h('button',{class:'btn ed',onclick:()=>{close();editSurvey(s)}},'Edit'),h('button',{class:'btn ed',onclick:()=>{close();ptsEditor(s)}},'✎ Points'),h('button',{class:'btn ed dng',onclick:()=>{close();delSurvey(s)}},'🗑 Delete'),h('button',{class:'btn pri',onclick:close},'Close')])}
 /* parse a pasted or uploaded point list: any order of point id, N, E, Z */
 function parsePts(text){const out=[];let order=null;
   for(const raw of String(text).split(/\r?\n/)){const line=raw.trim();if(!line||/^[#;]/.test(line))continue;const tk=line.split(/[,;\t ]+/).filter(Boolean);const nums=tk.map(t=>parseFloat(t));
@@ -490,10 +495,10 @@ function parsePts(text){const out=[];let order=null;
 function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('as2_lastwho','Muhammad Sheraz Abbasi'),kind:'fill',layer:'',note:'',wir:nextWir(),sub:today()};
   const who=[...new Set(M.surveyors.concat(surveys().map(x=>x.surveyor).filter(x=>x&&x!=='Survey team')))];
   const f={date:h('input',{type:'date',value:s.date}),who:h('input',{list:'whoL',value:s.surveyor||''}),kind:h('select',{},...Object.entries(KIND).map(([k,[n]])=>h('option',{value:k,selected:s.kind===k},n))),
-    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),wir:h('input',{type:'number',min:'1',value:s.wir||'',placeholder:'e.g. '+nextWir()}),sub:h('input',{type:'date',value:s.sub||''}),wref:h('input',{value:s.wref||'',placeholder:'e.g. M4P1-015'}),desc:h('input',{value:s.desc||'',placeholder:'e.g. Layer 03 Zone 07 in Area 02'}),sa:h('select',{}),saN:h('input',{maxlength:'40',style:'margin-top:6px',placeholder:'Its name (optional) e.g. 03-F'}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'})};
+    layer:h('input',{type:'number',min:'1',value:s.layer||'',placeholder:'e.g. 4'}),note:h('input',{value:s.note||'',placeholder:'e.g. east half only'}),wir:h('input',{type:'number',min:'1',value:s.wir||'',placeholder:'e.g. '+nextWir()}),sub:h('input',{type:'date',value:s.sub||''}),wref:h('input',{value:s.wref||'',placeholder:'e.g. M4P1-015'}),desc:h('input',{value:s.desc||'',placeholder:'e.g. Layer 03 Zone 07 in Area 02'}),sa:h('select',{}),saN:h('input',{maxlength:'40',list:'saL',autocomplete:'off',placeholder:'Type the name, e.g. 03-F  (empty = none)'}),saD:h('datalist',{id:'saL'}),txt:h('textarea',{placeholder:'Paste points here: Point, N, E, Z  (comma, space or tab)\n1001, 2762640.049, 666145.400, 641.118'})};
   const prev=h('div',{class:'mut',style:'font-size:12.5px;margin:4px 0 8px'});
-  let saPick=s.sa||'';const saFill=P=>{const L=saList(P&&P.length?P:(PTS[s.id]?(PTS[s.id].E?toObjs(PTS[s.id],3000):PTS[s.id]):null));f.sa.replaceChildren(h('option',{value:''},isNew?'Auto – new from the outer points':'Auto (from the points)'),h('option',{value:'none',selected:saPick==='none'},'No sub-area'),...L.list.map(x=>h('option',{value:x.id,selected:saPick===x.id||(!saPick&&L.best===x.id&&false)},x.name+' · '+x.area.replace('AREA ','Area ')+(L.best===x.id?'  ✓ points are here':''))));if(!saPick&&L.best&&!isNew){}};
-  f.sa.onchange=()=>{saPick=f.sa.value;f.saN.style.display=f.sa.value?'none':''};
+  let saPick=s.sa||'';const saFill=P=>{const L=saList(P&&P.length?P:(PTS[s.id]?(PTS[s.id].E?toObjs(PTS[s.id],3000):PTS[s.id]):null));f.sa.replaceChildren(h('option',{value:''},isNew?'Auto – new from the outer points':'Auto (from the points)'),h('option',{value:'none',selected:saPick==='none'},'No sub-area'),...L.list.map(x=>h('option',{value:x.id,selected:saPick===x.id||(!saPick&&L.best===x.id&&false)},x.name+' · '+x.area.replace('AREA ','Area ')+(L.best===x.id?'  ✓ points are here':''))));if(!saPick&&L.best&&!isNew){}f.sa.style.display='none';f.saD.replaceChildren(...L.list.map(x=>h('option',{value:x.name},x.area.replace('AREA ','Area ')+(L.best===x.id?' ✓ points are here':'')))) };if(s.sa&&s.sa!=='none'){const o0=subs().find(x=>x.id===s.sa);if(o0)f.saN.value=o0.name}
+  
   const upd=()=>{const P=parsePts(f.txt.value);saFill(P);if(!P.length){prev.textContent=isNew?'No points read yet.':'Leave empty to keep the '+fmt(s.n)+' points already saved.';return}const pl=placeOf(P);const L=saList(P);prev.textContent=P.length+' points read · '+pl.txt+(L.best?' · inside sub-area '+subs().find(x=>x.id===L.best).name:'')};
   f.txt.oninput=upd;const say=t=>{prev.textContent=t};
   const src=srcRow((t,name,how,photo)=>{if(how==='plain'&&(/\.xml$/i.test(name)||/<LandXML/i.test(t.slice(0,4000)))){const r=readPoints(t,name,'vertices');f.txt.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else f.txt.value=t;upd();if(how==='rows'){const n=t?t.split('\n').length:0;prev.textContent=(n?n+' rows read from '+name+(photo?' (photo – please check the numbers below; on WIR sheets the finished level is used)':'')+' · ':'No point rows found in '+name+'. ')+prev.textContent}},say);upd();
@@ -502,12 +507,12 @@ function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Work'),f.kind),h('label',{class:'f'},h('span',{},'Layer (fill only – empty = found from the points)'),f.layer)),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'WIR No.'),f.wir),h('label',{class:'f'},h('span',{},'Submitted on'),f.sub)),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Location ref.'),f.wref),h('label',{class:'f'},h('span',{},'Description'),f.desc)),
-    h('div',{class:'f2'},h('div',{class:'f'},h('span',{},'Sub-area'),f.sa,f.saN,h('div',{class:'mut',style:'font-size:11.5px'},'Auto: the border is drawn from the outer points of this survey and saved with the name you type (or the next letter, e.g. 03-F).')),h('label',{class:'f'},h('span',{},'Note'),f.note)),
+    h('div',{class:'f2'},h('div',{class:'f'},h('span',{},'Sub-area name'),f.sa,f.saN,f.saD,h('div',{class:'mut',style:'font-size:11.5px'},'You give the name. A new name makes a new sub-area – its border is drawn from the outer points of this survey. A name already used puts this survey in that sub-area. Empty = no sub-area. Area 01, 02… on the map are the main areas.')),h('label',{class:'f'},h('span',{},'Note'),f.note)),
     s.builtin?h('div',{class:'mut',style:'font-size:12px'},'Points of this WIR are built in and stay as they are.'):[h('div',{class:'f'},h('span',{},'Get the points from'),src),h('label',{class:'f'},h('span',{},'Points (check or type them here)'),f.txt),prev],
     h('div',{class:'mut',style:'font-size:12px'},'Area, zone and phase are found from the points. The quantity is the change from the ground before this survey.'));
   modal(isNew?'New survey':'Edit survey',body,close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:async()=>{
       const P=s.builtin?null:parsePts(f.txt.value);if(isNew&&(!P||!P.length)){toast('Add the survey points first');return}
-      const o={date:f.date.value||today(),surveyor:f.who.value.trim()||'–',kind:f.kind.value,layer:f.kind.value==='fill'&&+f.layer.value?+f.layer.value:null,note:f.note.value.trim(),wir:+f.wir.value||null,sub:f.sub.value||'',wref:f.wref.value.trim(),desc:f.desc.value.trim(),sa:f.sa.value||''};if(!o.sa&&f.saN.value.trim())o.saName=f.saN.value.trim();
+      const o={date:f.date.value||today(),surveyor:f.who.value.trim()||'–',kind:f.kind.value,layer:f.kind.value==='fill'&&+f.layer.value?+f.layer.value:null,note:f.note.value.trim(),wir:+f.wir.value||null,sub:f.sub.value||'',wref:f.wref.value.trim(),desc:f.desc.value.trim(),sa:''};{const nm=f.saN.value.trim();if(!nm)o.sa='none';else{const P2=parsePts(f.txt.value);const L=saList(P2.length?P2:(PTS[s.id]?(PTS[s.id].E?toObjs(PTS[s.id],3000):PTS[s.id]):null));const kk=x=>String(x||'').toUpperCase().replace(/[^A-Z0-9]+/g,'').replace(/^0+/,'');const hit=L.list.filter(x=>kk(x.name)===kk(nm));const pick=hit.find(x=>x.id===L.best)||hit[0];if(pick)o.sa=pick.id;else o.saName=nm}}
       if(o.wir&&surveys().some(x=>x.id!==(s.id||'')&&+x.wir===o.wir)&&!confirm('WIR '+o.wir+' is already used by another survey. Save anyway?'))return;
       if(o.surveyor!=='–'&&!M.surveyors.includes(o.surveyor))M.surveyors.push(o.surveyor);lsSet('as2_lastwho',o.surveyor);
       close();await onSave(o,P&&P.length?P:null)}},'Save')])}
@@ -811,7 +816,7 @@ function mergeMeta(a,b){if(!b)return a;const o=Object.assign(defMeta(),b,a);
   for(const L of ['designs','ngl','surveys','surf','subs','bmchecks','ctests','mbx','audit','piles']){const m=new Map();for(const x of (b[L]||[]))m.set(x.id,x);for(const x of (a[L]||[])){const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)}o[L]=[...m.values()]}
   o.del=Object.assign({},b.del||{},a.del||{});o.edits={};for(const k of new Set([...Object.keys(a.edits||{}),...Object.keys(b.edits||{})])){const x=(a.edits||{})[k],y=(b.edits||{})[k];o.edits[k]=!y?x:!x?y:((x.u||0)>=(y.u||0)?x:y)}
   o.surveyors=[...new Set([...(b.surveyors||[]),...(a.surveyors||[])])];o.phc=Object.assign({},b.phc||{});for(const [k,v] of Object.entries(a.phc||{}))o.phc[k]=Math.max(v,o.phc[k]||0);const sa=a.su||0,sb=b.su||0;for(const k of ['tol','prep','lay','gF','gT','gN'])o[k]=sa>=sb?a[k]:b[k];o.su=Math.max(sa,sb);return o}
-const userIds=m=>[...(m.designs||[]),...(m.ngl||[]),...(m.surveys||[]),...(m.surf||[])].filter(x=>!(m.del||{})[x.id]).map(x=>x.id);
+const userIds=m=>[...(m.designs||[]),...(m.ngl||[]),...(m.surveys||[]),...(m.surf||[])].filter(x=>!(m.del||{})[x.id]).map(x=>x.id).concat(puIds(m));
 let pushT=null;function cloudSoon(){if(!canEdit())return;clearTimeout(pushT);pushT=setTimeout(()=>cloudPushMeta().catch(e=>{CLOUD.err=e.message;cloudBadge()}),1200)}
 async function cloudPushMeta(){if(!canEdit())return;CLOUD.st='saving';cloudBadge();const v=Date.now();await fb('meta','PUT',JSON.parse(JSON.stringify(M)));await fb('ver','PUT',v);CLOUD.ver=v;CLOUD.st='ok';CLOUD.err='';CLOUD.at=Date.now();cloudBadge()}
 async function cloudPushPts(id){if(!canEdit())return;try{await fb('pts/'+id,'PUT',encPts(await ptsOf(id)))}catch(e){CLOUD.err=e.message;cloudBadge()}}
@@ -822,10 +827,10 @@ async function cloudSync(manual){if(!navigator.onLine){CLOUD.st='offline';cloudB
     if(canEdit()){RO=false;const before=JSON.stringify(M),mg=mergeMeta(M,rm);M=mg;lsSet(MK,M);AUD0=audSnap();changed=JSON.stringify(M)!==before;
       const have=new Set(Object.keys((await fetch(DBU+ROOT+'/pts.json?shallow=true',{cache:'no-store'}).then(r=>r.ok?r.json():{}).catch(()=>({})))||{}));
       for(const id of userIds(M)){if(!have.has(id)){const P=await ptsOf(id);if(nPts(P))await fb('pts/'+id,'PUT',encPts(P))}
-        else if(!nPts(await ptsOf(id))){const P=decPts(await fb('pts/'+id));if(P){PTS[id]=P;await dbPut('pts:'+id,P);changed=true}}}
+        else if(puStale(id)||!nPts(await ptsOf(id))){const P=decPts(await fb('pts/'+id));if(P){PTS[id]=P;await dbPut('pts:'+id,P);delete AREA_CACHE[id];puMark(id,puOf(id));changed=true}}}
       if(!rm||JSON.stringify(rm)!==JSON.stringify(JSON.parse(JSON.stringify(M))))await cloudPushMeta();else{CLOUD.ver=ver||0;CLOUD.st='ok'}}
     else{if(!rm){CLOUD.st='none';cloudBadge();return false}const vm=Object.assign(defMeta(),rm);
-      for(const id of userIds(vm)){if(PTS[id]&&nPts(PTS[id]))continue;let P=await dbGet('cpts:'+id);if(!P){P=decPts(await fb('pts/'+id));if(P)await dbPut('cpts:'+id,P)}PTS[id]=P||[]}
+      const M0=M;M=vm;for(const id of userIds(vm)){const st=puStale(id);if(!st&&PTS[id]&&nPts(PTS[id])&&!(id[0]==='w'&&puOf(id)))continue;let P=st?null:await dbGet('cpts:'+id);if(!P){P=decPts(await fb('pts/'+id));if(P){await dbPut('cpts:'+id,P);puMark(id,puOf(id));changed=true}}if(P||!/^w\d+$/.test(id)){PTS[id]=P||[];delete AREA_CACHE[id]}}M=M0;
       changed=!RO||JSON.stringify(vm)!==JSON.stringify(M);M=vm;RO=true;lsSet('as2-view',M);CLOUD.ver=ver||0;CLOUD.st='ok'}
     CLOUD.err='';CLOUD.at=Date.now();document.documentElement.classList.toggle('ro',RO);cloudBadge();if(changed){DZ={};await recalc()}if(manual)toast('Up to date');return true}
   catch(e){CLOUD.st='err';CLOUD.err=e.message||String(e);cloudBadge();if(manual)toast(CLOUD.err);return false}}
@@ -881,7 +886,7 @@ function rData(){const el=$('#p-data');el.replaceChildren(h('h1',{class:'pt'},'D
     return h('button',{class:'skc'+(on?' on':''),style:'background:'+bg+';color:'+(lt?'#2b2116':'#eef1f3'),onclick:()=>{themeSet(k);rData();if(ready&&typeof draw==='function')try{draw()}catch(e){}}},
       h('span',{class:'skp'},h('i',{style:'background:'+p1}),h('i',{style:'background:'+am})),h('b',{},t),on?h('small',{},'✓ in use'):h('small',{style:'opacity:.7'},lt?'light':'dark'))})),
     h('div',{class:'mut',style:'font-size:12px;margin-top:8px'},'The theme changes the survey app and the equipment app together. Light themes are easiest to read in strong sunlight.')));
-  if(canEdit())el.append(liveCard(),visitsCard(),teamCard(),consultCard(),consultKeysCard());el.append(backupCard());el.append(auditCard());
+  if(canEdit())el.append(liveCard(),visitsCard(),teamCard(),consultCard(),consultKeysCard());{const dc=deletedCard();if(dc)el.append(dc)}el.append(backupCard());el.append(auditCard());
   el.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'About')),h('div',{class:'mut',style:'font-size:12.5px'},'ALOMAIER SURVEY 2.0 · Khuzam 4 enabling earthworks · built for Survey Eng. Muhammad Sheraz Abbasi. Grading by grade points (design XYZ, mostly 10 × 10 m).')))}
 /* ============================== start ============================== */
 /* ============================== SATELLITE PHOTO under the map (Esri World Imagery, UTM 38N) ============================== */
@@ -2086,7 +2091,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='6.9',APPD='10 Nov 2026';
+const APPV='7.1',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -4946,20 +4951,21 @@ function ptLayers(e,n,z,sv){const i=nearestBase(e,n,60),D=DZ[activeDesign().id];
 
 /* ============================== CHANGE HISTORY (audit) – who changed what, when ============================== */
 const AUDL=['designs','ngl','surveys','surf','subs','bmchecks','ctests','mbx'];
-const AUDN={designs:'Design',ngl:'NGL',surveys:'Survey',surf:'Surface',subs:'Sub-area',bmchecks:'BM check',ctests:'Compaction test',mbx:'Material in/out',edits:'WIR edit'};
+const AUDN={designs:'Design',ngl:'NGL',surveys:'Survey',surf:'Surface',subs:'Sub-area',bmchecks:'BM check',ctests:'Compaction test',mbx:'Material in/out',edits:'WIR'};
 let AUD0=null;
-const audStrip=x=>{const o={};for(const k in x)if(k!=='u'&&k!=='bb'&&k!=='c')o[k]=x[k];return JSON.stringify(o)};
-function audSnap(){const o={items:{},del:new Set(Object.keys(M.del||{}))};for(const L of AUDL)for(const x of (M[L]||[]))if(x&&x.id)o.items[L+':'+x.id]=[audStrip(x),x];for(const [k,x] of Object.entries(M.edits||{}))if(x)o.items['edits:'+k]=[audStrip(x),Object.assign({id:k},x)];return o}
-function audName(L,x){if(!x)return '';if(L==='surveys'||L==='edits'){const s=L==='edits'?surveys().find(q=>q.id===x.id):x;if(s)return (s.wir?wirNo(s)+' · ':'')+kindName(s.kind,s.layer)+' · '+dmy(s.date)}if(L==='subs')return 'Sub-area '+(x.name||'');if(L==='mbx')return (x.kind||'')+' '+(x.qty||'')+' m³ · '+dmy(x.date);if(L==='ctests')return (x.no||'test')+' · '+dmy(x.date||'');return x.name||x.no||x.date||x.id}
+const audStrip=x=>{const o={};for(const k in x)if(k!=='u'&&k!=='bb'&&k!=='c'&&k[0]!=='_')o[k]=x[k];return JSON.stringify(o)};
+function audSnap(){const o={items:{},del:new Set(Object.keys(M.del||{}).filter(k=>(M.del||{})[k]))};for(const L of AUDL)for(const x of (M[L]||[]))if(x&&x.id)o.items[L+':'+x.id]=[audStrip(x),x];for(const [k,x] of Object.entries(M.edits||{}))if(x)o.items['edits:'+k]=[audStrip(x),Object.assign({id:k},x)];return o}
+function audName(L,x){if(!x)return '';if(L==='surveys'||L==='edits'){const s=L==='edits'?builtSurveys().concat(M.surveys||[]).find(q=>q.id===x.id):x;if(s)return (s.wir?wirNo(s)+' · ':'')+kindName(s.kind,s.layer)+' · '+dmy(s.date)}if(L==='subs')return 'Sub-area '+(x.name||'');if(L==='mbx')return (x.kind||'')+' '+(x.qty||'')+' m³ · '+dmy(x.date);if(L==='ctests')return (x.no||'test')+' · '+dmy(x.date||'');return x.name||x.no||x.date||x.id}
 function audRecord(){if(!AUD0){AUD0=audSnap();return}const N=audSnap(),out=[],by=(AUTH&&AUTH.email)||'';
-  for(const [k,[j,x]] of Object.entries(N.items)){const L=k.split(':')[0],o=AUD0.items[k];if(!o){out.push({act:L==='edits'?'changed':'added',L,rid:x.id,nm:audName(L,x),f:L==='edits'?Object.keys(x).filter(q=>q!=='u'&&q!=='id').slice(0,8).map(q=>q+': → '+String(x[q]).slice(0,40)):undefined})}else if(o[0]!==j){let a={},b={};try{a=JSON.parse(o[0]);b=JSON.parse(j)}catch(e){}const f=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(q=>JSON.stringify(a[q])!==JSON.stringify(b[q]));if(f.length)out.push({act:'changed',L,rid:x.id,nm:audName(L,x),f:f.slice(0,8).map(q=>q+': '+String(a[q]??'–').slice(0,40)+' → '+String(b[q]??'–').slice(0,40))})}}
+  for(const [k,[j,x]] of Object.entries(N.items)){const L=k.split(':')[0],o=AUD0.items[k];if(!o){out.push({act:L==='edits'?'changed':'added',L,rid:x.id,nm:audName(L,x),f:L==='edits'?Object.keys(x).filter(q=>q!=='u'&&q!=='id'&&q[0]!=='_').slice(0,8).map(q=>q==='pu'?'points edited':q+': → '+String(x[q]).slice(0,40)):undefined})}else if(o[0]!==j){let a={},b={};try{a=JSON.parse(o[0]);b=JSON.parse(j)}catch(e){}const f=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(q=>JSON.stringify(a[q])!==JSON.stringify(b[q]));if(f.length)out.push({act:'changed',L,rid:x.id,nm:audName(L,x),f:f.slice(0,8).map(q=>q==='pu'?'points edited':q+': '+String(a[q]??'–').slice(0,40)+' → '+String(b[q]??'–').slice(0,40))})}}
   for(const k of N.del)if(!AUD0.del.has(k)){const id=k.includes(':')?k.split(':').pop():k;let L='',x=null;for(const [kk,[,y]] of Object.entries(AUD0.items))if(y.id===id){L=kk.split(':')[0];x=y;break}out.push({act:'deleted',L:L||'item',rid:id,nm:x?audName(L,x):id})}
+  for(const k of AUD0.del)if(!N.del.has(k)){const y=Object.values(N.items).map(v=>v[1]).find(v=>v.id===k);const s=builtSurveys().find(q=>q.id===k);out.push({act:'restored',L:s?'edits':'item',rid:k,nm:s?audName('edits',s):y?(y.name||y.id):k})}
   AUD0=N;if(!out.length)return;const t=Date.now();M.audit=(M.audit||[]).concat(out.map((o,i)=>Object.assign({id:'au'+t.toString(36)+i+uid().slice(0,4),t,by,u:t},o)));if(M.audit.length>600)M.audit=M.audit.sort((a,b)=>a.t-b.t).slice(-600)}
 function auditCard(){const L=(M.audit||[]).slice().sort((a,b)=>b.t-a.t);const box=h('div',{});let q='';const col={added:'#3ecf8e',changed:'#ffb020',deleted:'#ff6b6b',restored:'#74c0fc',merged:'#e599f7'};
   const fill=()=>{const R=L.filter(x=>!q||[x.nm,x.by,x.act,AUDN[x.L]||x.L,(x.f||[]).join(' ')].join(' ').toLowerCase().includes(q));box.replaceChildren(...R.slice(0,80).map(x=>h('div',{style:'padding:6px 0;border-bottom:1px solid var(--ln,#2a3035);font-size:12.5px'},
     h('div',{},h('b',{style:'color:'+(col[x.act]||'var(--tx)')},x.act),' ',h('span',{},(AUDN[x.L]||x.L||'')+': '),h('b',{},x.nm||'')),
     h('div',{class:'mut',style:'font-size:11.5px'},new Date(x.t).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+(x.by?' · '+x.by:'')),
-    ...(x.f||[]).map(t=>h('div',{class:'mono',style:'font-size:11px;color:var(--mu)'},t)))),R.length?null:h('div',{class:'mut'},L.length?'Nothing matches.':'No changes recorded yet – every add, change and delete from now on is listed here.'))};fill();
+    ...(x.f||[]).map(t=>h('div',{class:'mono',style:'font-size:11px;color:var(--mu)'},t)))),...(R.length?[]:[h('div',{class:'mut'},L.length?'Nothing matches.':'No changes recorded yet – every add, change and delete from now on is listed here.')]))};fill();
   return h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Change history'),h('span',{class:'mut',style:'font-size:12px'},L.length+' entries')),h('input',{placeholder:'Search: WIR no., sub-area, deleted…',oninput:e=>{q=e.target.value.toLowerCase();fill()},style:'margin-bottom:6px'}),h('div',{style:'max-height:360px;overflow:auto'},box))}
 
 /* ============================== BACKUPS – automatic daily copy on this phone, share / restore ============================== */
@@ -5565,6 +5571,72 @@ const SHT={en:{t:'Machine shift',op:'Operator',name:'Your name',meter:'Hour mete
   ar:{t:'وردية المعدة',op:'المشغل',name:'اسمك',meter:'عداد الساعات (اختياري)',idle:'ساعات التوقف',down:'ساعات العطل',note:'ملاحظة (اختياري) – مثل تسريب هيدروليك',start:'▶ بدء الوردية',end:'■ إنهاء الوردية',run:'الوردية تعمل منذ',started:'بدأت الوردية',ended:'انتهت الوردية',again:'امسح نفس الملصق مرة أخرى عند التوقف.',thanks:'شكراً. أُرسلت الساعات إلى المهندس شيراز.',needName:'اكتب اسمك',sending:'جارٍ الإرسال…',notFound:'لم يتم العثور على المعدة. تحقق من الإنترنت وامسح مرة أخرى.',finding:'جارٍ البحث عن المعدة…'}};
 let SHL_=lsGet('as2_shl','ur');
 const sht=k=>(SHT[SHL_]||SHT.en)[k]||SHT.en[k];
+
+/* ============================== v7.0 – manage a survey / WIR: delete, clear, replace, add or delete points ============================== */
+/* points-changed stamps: meta keeps when the points of a survey were last changed, each phone keeps which copy it has */
+const PU=(()=>{try{return JSON.parse(localStorage.getItem('as2_pu')||'{}')}catch(e){return {}}})();
+const puOf=id=>{const e=(M.edits||{})[id];if(e&&e.pu)return e.pu;const x=(M.surveys||[]).find(q=>q.id===id);return x&&x.pu||0};
+function puMark(id,t){PU[id]=t;try{localStorage.setItem('as2_pu',JSON.stringify(PU))}catch(e){}}
+const puIds=m=>Object.entries(m.edits||{}).filter(([k,v])=>v&&v.pu&&!(m.del||{})[k]).map(([k])=>k);
+/* is the copy on this phone older than the one in the cloud? */
+const puStale=id=>{const t=puOf(id);return t>0&&(PU[id]||0)<t};
+
+async function savePts(s,P){if(!guard())return false;const t=Date.now();P=P.map(p=>({id:String(p.id),n:+p.n,e:+p.e,z:+p.z}));
+  await dbPut('pts:'+s.id,P);PTS[s.id]=P;delete AREA_CACHE[s.id];
+  if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},{pu:t,u:t,n:P.length})}
+  else{const x=M.surveys.find(q=>q.id===s.id);if(x)Object.assign(x,{n:P.length,area:P.length?placeOf(P).txt:'–',pu:t,u:t})}
+  puMark(s.id,t);saveMeta();await cloudPushPts(s.id);DZ={};await recalc();return true}
+
+/* ---------- delete a whole survey / WIR (can be brought back from Data) ---------- */
+async function delSurvey(s){if(!guard())return;const nm=(s.wir?'WIR-'+String(s.wir).padStart(4,'0')+' · ':'')+kindName(s.kind,s.layer)+' · '+dmy(s.date);
+  if(!confirm('Delete this survey?\n\n'+nm+'\n\nIt goes out of all the totals, the map and the reports. You can bring it back from Data → Deleted surveys.'))return;
+  M.del[s.id]=Date.now();saveMeta();DZ={};await recalc();render();
+  toastAct('Deleted · '+nm,'Undo',async()=>{M.del[s.id]=0;saveMeta();DZ={};await recalc();render();toast('Brought back')})}
+function toastAct(msg,lbl,fn){const el=h('div',{class:'tact'},h('span',{},msg),h('button',{onclick:()=>{el.remove();fn()}},lbl));document.body.append(el);setTimeout(()=>el.remove(),9000)}
+function deletedCard(){const all=builtSurveys().concat(M.surveys||[]).filter(d=>M.del[d.id]);if(!all.length)return null;
+  return h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Deleted surveys')),h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:6px'},'Surveys and WIRs you deleted. Press Bring back to put one into the totals again.'),
+    ...all.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(d=>h('div',{class:'row',style:'gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ln,#2a3035)'},
+      h('div',{style:'flex:1;font-size:12.5px'},h('b',{},(d.wir?'WIR-'+String(d.wir).padStart(4,'0')+' · ':'')+kindName(d.kind,d.layer)),' · '+dmy(d.date)+' · '+fmt(d.n||0)+' pts'),
+      h('button',{class:'btn sm',onclick:async()=>{if(!guard())return;M.del[d.id]=0;saveMeta();DZ={};await recalc();render();toast('Brought back')}},'Bring back'))))}
+
+/* ---------- point editor ---------- */
+async function ptsEditor(s){if(!guard())return;const P0=await ptsOf(s.id);let W=P0.map(p=>({id:String(p.id),n:p.n,e:p.e,z:p.z}));let dirty=false,lim=150,q='';
+  const info=h('div',{class:'mut',style:'font-size:12.5px'}),list=h('div',{class:'pel'}),msg=h('div',{class:'mut',style:'font-size:12px;min-height:16px'});
+  const num=(v,d)=>h('input',{class:'mono',inputmode:'decimal',value:v==null||!isFinite(v)?'':(+v).toFixed(d)});
+  const mark=()=>{dirty=true;info.textContent=fmt(W.length)+' points'+(W.length!==P0.length?' (was '+fmt(P0.length)+')':'')+' · not saved yet'};
+  const draw=()=>{const F=q?W.filter(p=>p.id.toLowerCase().includes(q)):W;const V=F.slice(0,lim);
+    list.replaceChildren(h('div',{class:'per peh'},h('span',{},'Point'),h('span',{},'N'),h('span',{},'E'),h('span',{},'Z'),h('span',{})),
+      ...V.map(p=>{const a=h('input',{value:p.id}),n=num(p.n,3),e=num(p.e,3),z=num(p.z,3);
+        a.onchange=()=>{p.id=a.value.trim()||p.id;mark()};
+        for(const [el,k] of [[n,'n'],[e,'e'],[z,'z']])el.onchange=()=>{const v=parseFloat(el.value);if(isFinite(v)){p[k]=v;mark()}else el.value=(+p[k]).toFixed(3)};
+        return h('div',{class:'per'},a,n,e,z,h('button',{class:'pex',title:'Delete this point',onclick:()=>{W.splice(W.indexOf(p),1);mark();draw()}},'✕'))}),
+      F.length>lim?h('button',{class:'btn sm',style:'margin-top:6px',onclick:()=>{lim+=300;draw()}},'Show more ('+fmt(F.length-lim)+' left)'):null,
+      !F.length?h('div',{class:'mut',style:'padding:10px 0;font-size:12.5px'},W.length?'No point with that name.':'No points. Add some below or paste a list.'):null)};
+  const sr=h('input',{placeholder:'Find a point…',style:'flex:1'});sr.oninput=()=>{q=sr.value.trim().toLowerCase();lim=150;draw()};
+  /* add one point */
+  const aI=h('input',{placeholder:'Point'}),aN=h('input',{class:'mono',inputmode:'decimal',placeholder:'N  2762640.049'}),aE=h('input',{class:'mono',inputmode:'decimal',placeholder:'E  666145.400'}),aZ=h('input',{class:'mono',inputmode:'decimal',placeholder:'Z  641.118'});
+  const nextId=()=>{const ns=W.map(p=>parseInt(p.id,10)).filter(isFinite);return String(ns.length?Math.max(...ns)+1:W.length+1)};
+  const add1=()=>{const n=parseFloat(aN.value),e=parseFloat(aE.value),z=parseFloat(aZ.value);
+    if(!(n>2.5e6&&n<3.2e6)){msg.textContent='N looks wrong – it should be like 2762640.049';return}if(!(e>4e5&&e<9e5)){msg.textContent='E looks wrong – it should be like 666145.400';return}if(!(z>300&&z<2000)){msg.textContent='Z looks wrong – it should be like 641.118';return}
+    const id=aI.value.trim()||nextId();W.push({id,n,e,z});aI.value=aN.value=aE.value=aZ.value='';msg.textContent='Point '+id+' added';mark();q='';sr.value='';lim=Math.max(lim,W.length);draw();aN.focus()};
+  /* many points: paste or file */
+  let mode='add';const ta=h('textarea',{placeholder:'Paste points: Point, N, E, Z  (one per line)\n1001, 2762640.049, 666145.400, 641.118',style:'min-height:90px'});
+  const useMany=m=>{const R=parsePts(ta.value);if(!R.length){msg.textContent='No points read from the list.';return}
+    if(m==='replace'){if(W.length&&!confirm('Replace all '+fmt(W.length)+' points with these '+fmt(R.length)+' new points?'))return;W=R.map(p=>({id:String(p.id),n:p.n,e:p.e,z:p.z}));msg.textContent=fmt(R.length)+' points put in place of the old ones'}
+    else{const have=new Map(W.map(p=>[p.id,p]));let nw=0,up=0;for(const p of R){const o=have.get(String(p.id));if(o){Object.assign(o,{n:p.n,e:p.e,z:p.z});up++}else{const x={id:String(p.id),n:p.n,e:p.e,z:p.z};W.push(x);have.set(x.id,x);nw++}}msg.textContent=nw+' new points added'+(up?' · '+up+' points with the same name updated':'')}
+    ta.value='';mark();draw()};
+  const src=srcRow((t,name,how)=>{if(how==='plain'&&(/\.xml$/i.test(name)||/<LandXML/i.test(t.slice(0,4000)))){const r=readPoints(t,name,'vertices');ta.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else ta.value=t;msg.textContent=parsePts(ta.value).length+' points read from '+name+' – press Add or Replace all'},t=>{msg.textContent=t});
+  const body=h('div',{},info,h('div',{class:'row',style:'gap:8px;margin:8px 0'},sr,h('button',{class:'btn sm dng',onclick:()=>{if(!W.length)return;if(!confirm('Clear all '+fmt(W.length)+' points of this survey?\n(Nothing changes until you press Save.)'))return;W=[];msg.textContent='All points cleared – add new ones or paste a new list, then Save';mark();draw()}},'Clear all')),
+    list,
+    h('h3',{style:'margin:14px 0 6px'},'Add a point'),h('div',{class:'pea'},aI,aN,aE,aZ,h('button',{class:'btn pri',onclick:add1},'+ Add')),
+    h('h3',{style:'margin:14px 0 6px'},'New data – many points'),h('div',{class:'mut',style:'font-size:12px;margin-bottom:6px'},'Paste a list or open a file (CSV, TXT, XML, Excel or a photo of the sheet). Add puts them next to the old points – a point with the same name gets the new values. Replace all puts them in place of the old points.'),
+    src,ta,h('div',{class:'row',style:'gap:8px;margin-top:6px'},h('button',{class:'btn',onclick:()=>useMany('add')},'+ Add these'),h('button',{class:'btn dng',onclick:()=>useMany('replace')},'⟳ Replace all')),msg);
+  info.textContent=fmt(W.length)+' points';draw();
+  modal('Points · '+kindName(s.kind,s.layer)+' · '+dmy(s.date),body,close=>[
+    h('button',{class:'btn',onclick:()=>{if(dirty&&!confirm('Close without saving the changes?'))return;close()}},'Cancel'),
+    h('button',{class:'btn pri',onclick:async()=>{if(!dirty){close();return}if(!W.length&&!confirm('Save this survey with no points?\n(To take it out completely use 🗑 Delete survey.)'))return;
+      const bad=W.filter(p=>!(isFinite(p.n)&&isFinite(p.e)&&isFinite(p.z)));if(bad.length){msg.textContent=bad.length+' points have an empty or wrong number – fix or delete them';return}
+      msg.textContent='Saving…';if(await savePts(s,W)){close();render();toast('Saved · '+fmt(W.length)+' points')}}},'💾 Save')])}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
