@@ -359,8 +359,8 @@ const STAT={};
 /* cut / fill at one grade point: what is needed (design vs NGL), what is done, what is left, and the m³ of its grid cell */
 function cfRows(i,z,g,c,tol){if(!(z===z)||!(g===g))return [];const m=v=>v.toFixed(2)+' m',cell=B.C[i]||0,v3=v=>' · ≈ '+fmt(Math.round(v*cell))+' m³';const need=z-g;
   if(Math.abs(need)<=0.005)return [['Cut / fill here','none – design = NGL']];
-  if(need>0){const base=prepLevel(i),tot=z-base,dn=prepared(i)?Math.max(0,Math.min(tot,c-base)):0,lf=Math.max(0,z-c);return [['FILL here – needed',m(need)+' above NGL ('+m(tot)+' from the preparation)'+v3(tot)],['Fill done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c>z?'0 – '+m(c-z)+' above design':m(lf)+v3(lf))]]}
-  const cut=-need,dn=Math.max(0,Math.min(cut,g-c)),lf=Math.max(0,c-z);return [['CUT here – needed',m(cut)+' below NGL'+v3(cut)],['Cut done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c<z?'0 – '+m(z-c)+' below design':m(lf)+v3(lf))]]}
+  if(need>0){const base=prepLevel(i),tot=z-base,dn=prepared(i)?Math.max(0,Math.min(tot,c-base)):0,lf=Math.max(0,z-c);return [['FILL here – needed',m(need)+' above NGL ('+m(tot)+' from the preparation)'+v3(tot)],['Fill done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c>z?'0 – '+m(c-z)+' above design':m(lf)+v3(lf)+(nearFin(i,DZ[activeDesign().id])?' → '+(lf<=GTH().t?'touch':'near')+' grade: fill 0.000 now, this goes with the final layer':''))]]}
+  const cut=-need,dn=Math.max(0,Math.min(cut,g-c)),lf=Math.max(0,c-z);return [['CUT here – needed',m(cut)+' below NGL'+v3(cut)],['Cut done · left',m(dn)+' · '+(Math.abs(c-z)<=tol?'on design ✓':c<z?'0 – '+m(z-c)+' below design':m(lf)+v3(lf)+(lf>GTH().f&&lf<=GTH().n?' → '+(lf<=GTH().t?'touch':'near')+' grade':''))]]}
 function prepLevel(i){return PZ[i]===PZ[i]?PZ[i]:G[i]-PD()}
 function prepared(i){return PZ[i]===PZ[i]||LL[i]>0||CUR[i]<G[i]-PD()/2}
 function layersNeeded(i,Z){const z=Z[i];if(!(z===z)||!(G[i]===G[i])||z<=G[i])return 0;return Math.max(1,Math.ceil((z-prepLevel(i))/LT()-0.02))}
@@ -693,7 +693,7 @@ let pick=null;
 function info(e,n){$('#mapInfo').style.marginTop='';const cth=ctAt(e,n);if(cth){const box=$('#mapInfo');box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none'}},'×'),ctCard(cth));box.style.display='block';return}const bmh=bmAt(e,n);if(bmh){const box=$('#mapInfo');SEL=null;box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';draw()}},'×'),bmCard(bmh));box.style.display='block';draw();return}const sn=subNear(e,n);const i=nearestBase(e,n,200);const box=$('#mapInfo');if(i<0&&!sn){box.style.display='none';pick=null;SEL=null;draw();return}if(i<0){SEL={t:'sub',id:sn.id};box.replaceChildren(h('button',{class:'x',onclick:()=>{box.style.display='none';SEL=null;draw()}},'×'),recordCard(grp('sub',sn.id),subCol(sn),polyArea(sn.c)));box.style.display='block';draw();return}pick={e:B.E[i],n:B.N[i]};
   const D=activeDesign(),z=DZ[D.id][i],g=G[i],c=CUR[i],a=B.A[i]>=0?K.areas[B.A[i]]:null,tol=M.tol||0.1,f3=v=>v===v?v.toFixed(3):'–';
   const rows=[['N',B.N[i].toFixed(3)],['E',B.E[i].toFixed(3)],['Area',a?a.name:'–'],['Zone · phase',(a?a.zone+' · ':'')+'Phase '+B.P[i]],...cfRows(i,z,g,c,tol),['Design ('+D.name.split(' – ')[0]+')',f3(z)],['NGL'+(NGLSRC[i]>=0?' (later survey)':''),f3(g)],['Ground now',f3(c)],['Last survey',LAST[i]?dmy(LAST[i])+' · '+(Object.values(KIND)[LKIND[i]-1]||['–'])[0]:'not surveyed']];
-  if(z===z&&g===g&&z>g){const ln=layersNeeded(i,DZ[D.id]),ld=layersDone(i,DZ[D.id]),base=prepLevel(i);rows.push(['Layers here – total · done · left',ln+' · '+ld+' · '+Math.max(0,ln-ld)]);rows.push(['Fill here – total · left',(z-base).toFixed(2)+' m · '+Math.max(0,z-c).toFixed(2)+' m']);rows.push(['Preparation'+(PZ[i]===PZ[i]?' (surveyed)':' (NGL − '+PD().toFixed(2)+')'),f3(base)]);
+  if(z===z&&g===g&&z>g){const ln=layersNeeded(i,DZ[D.id]),ld=layersDone(i,DZ[D.id]),base=prepLevel(i);const nf=nearFin(i,DZ[D.id]);rows.push(['Layers here – total · done · left',ln+' · '+ld+' · '+(nf?'final layer only':Math.max(0,ln-ld))]);rows.push(['Fill here – total · left',(z-base).toFixed(2)+' m · '+(nf?'0.000 now ('+nf.toFixed(2)+' m goes with the final layer)':Math.max(0,z-c).toFixed(2)+' m')]);rows.push(['Preparation'+(PZ[i]===PZ[i]?' (surveyed)':' (NGL − '+PD().toFixed(2)+')'),f3(base)]);
     for(let L=1;L<=ln;L++)rows.push([(L===ln?'Final layer ':'Layer ')+L+(L<=ld?' ✓':''),f3(Math.min(base+LT()*L,z))]);rows.push(['Layers done',ld+' of '+ln])}
   for(const d of designs())if(d.id!==D.id){const v=DZ[d.id][i];if(v===v)rows.push([d.name.split(' – ')[0],f3(v)])}
   const dz=z-c,gk=gradeOf(i,DZ[D.id]);QTMP=QTMP&&Object.keys(QTMP).length?QTMP:qtyRows(DZ[D.id]);SEL=sn?{t:'sub',id:sn.id}:B.A[i]>=0?{t:'area',id:B.A[i]}:null;
@@ -720,12 +720,13 @@ function gradeOf(i,Z){const z=Z[i],g=G[i],c=CUR[i];if(!(z===z)||!(g===g)||!(c===
   if(left<-T.f)return 6;if(Math.abs(left)<=T.f)return 5;
   if(fill?!prepared(i):Math.abs(c-g)<0.02)return 1;
   if(left<=T.t)return 4;if(left<=T.n)return 3;return 2}
+function nearFin(i,Z){const z=Z[i],g=G[i],c=CUR[i];if(!(z===z)||!(g===g)||!(c===c)||z<=g||!prepared(i))return 0;const T=GTH(),lf=z-c;return lf>T.f&&lf<=T.n?lf:0}
 function gradeTxt(i,Z){const k=gradeOf(i,Z);if(!k)return '–';const z=Z[i],c=CUR[i],fill=z>G[i],left=fill?z-c:c-z;
-  return GR[k][0]+(k>=2&&k<=4?' · '+Math.abs(left).toFixed(2)+' m '+(fill?'fill':'cut')+' to go':k===6?' · '+Math.abs(left).toFixed(2)+' m '+(fill?'over-filled':'over-cut'):'')}
+  return GR[k][0]+(k>=2&&k<=4?' · '+Math.abs(left).toFixed(2)+' m '+(fill?'fill':'cut')+' to go'+(fill&&(k===3||k===4)?' – fill 0.000 now, goes with the final layer':''):k===6?' · '+Math.abs(left).toFixed(2)+' m '+(fill?'over-filled':'over-cut'):'')}
 /* totals of one group of points (an area, a phase, the whole site) */
-function groupSum(test,Z){const tol=M.tol,o={fR:0,fD:0,cR:0,cD:0,gF:[0,0,0,0,0,0,0],gC:[0,0,0,0,0,0,0],lN:{},lD:{},n:0};
+function groupSum(test,Z){const tol=M.tol,o={fR:0,fD:0,cR:0,cD:0,gF:[0,0,0,0,0,0,0],gC:[0,0,0,0,0,0,0],lN:{},lD:{},n:0,nfA:0,nfV:0};
   for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g))continue;const cell=B.C[i],c=CUR[i];o.n++;const k=gradeOf(i,Z);
-    if(z>g){const base=prepLevel(i),nf=z-base;o.fR+=nf*cell;if(prepared(i))o.fD+=Math.max(0,Math.min(nf,c-base))*cell;o.gF[k]+=cell;const ln=layersNeeded(i,Z),ld=layersDone(i,Z);o.lN[ln]=(o.lN[ln]||0)+1;o.lD[ld]=(o.lD[ld]||0)+1}
+    if(z>g){const base=prepLevel(i),nf=z-base;o.fR+=nf*cell;if(prepared(i))o.fD+=Math.max(0,Math.min(nf,c-base))*cell;o.gF[k]+=cell;{const r=nearFin(i,Z);if(r){o.nfA+=cell;o.nfV+=r*cell}}const ln=layersNeeded(i,Z),ld=layersDone(i,Z);o.lN[ln]=(o.lN[ln]||0)+1;o.lD[ld]=(o.lD[ld]||0)+1}
     else{const nc=g-z;o.cR+=nc*cell;o.cD+=Math.max(0,Math.min(nc,g-c))*cell;o.gC[k]+=cell}}
   return o}
 function gradeBar(arr){const tot=arr.reduce((a,b)=>a+b,0);if(!tot)return h('div',{class:'mut',style:'font-size:12px'},'–');
@@ -1606,8 +1607,8 @@ function subsDraw(x,P,s){if(s<0.05)return;x.save();x.setLineDash([6,4]);x.lineWi
   x.restore()}
 
 /* ============================== QUANTITY SHEET for any phase / zone / area / sub-area ============================== */
-function qtyOf(test,Z){const tol=M.tol||0.1,r={fR:0,fD:0,cR:0,cD:0,on:0,n:0,prep:0,prepR:0,fz:0,sv:0,lN:{},lD:{},m2:0};
-  for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g))continue;const cell=B.C[i],c=CUR[i],need=z-g;r.n++;r.m2+=cell;if(Math.abs(c-z)<=tol)r.on+=cell;
+function qtyOf(test,Z){const tol=M.tol||0.1,r={fR:0,fD:0,cR:0,cD:0,on:0,n:0,prep:0,prepR:0,fz:0,sv:0,lN:{},lD:{},m2:0,gF:[0,0,0,0,0,0,0],gC:[0,0,0,0,0,0,0],nfA:0,nfV:0};
+  for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g))continue;const cell=B.C[i],c=CUR[i],need=z-g;r.n++;r.m2+=cell;if(Math.abs(c-z)<=tol)r.on+=cell;{const k=gradeOf(i,Z);if(need>0){r.gF[k]+=cell;const q=nearFin(i,Z);if(q){r.nfA+=cell;r.nfV+=q*cell}}else r.gC[k]+=cell}
     if(need>0){const base=prepLevel(i),nf=z-base,pr=prepared(i);r.fR+=nf*cell;if(pr)r.fD+=Math.max(0,Math.min(nf,c-base))*cell;r.prepR+=cell;if(pr)r.prep+=cell;const ln=layersNeeded(i,Z),ld=layersDone(i,Z);r.lN[ln]=(r.lN[ln]||0)+1;r.lD[ld]=(r.lD[ld]||0)+1}
     else{r.cR+=-need*cell;r.cD+=Math.max(0,Math.min(-need,g-c))*cell}}
   return r}
@@ -1729,7 +1730,12 @@ function layLine(t){if(!t.ls)return '';const s=t.ls;return (s.min===s.max?s.max+
 function statusOf(o){const lk=Object.keys(o.lN||{}).map(Number),need=lk.length?Math.max(...lk):0,dn=Object.keys(o.lD||{}).length?+Object.entries(o.lD).sort((x,y)=>y[1]-x[1])[0][0]:0,ls=layStats(o.lN);
   const kind=o.fR<1&&o.cR<1?'ON DESIGN':o.fR>o.cR*3?'FILL':o.cR>o.fR*3?'CUT':'CUT & FILL';return {kind,need,dn,ls,left:Math.max(0,need-dn),col:kind==='FILL'?'#148c50':kind==='CUT'?'#c8281e':kind==='ON DESIGN'?'#3ecf8e':'#b45309'}}
 function statusRows(o){const t=statusOf(o),pc=(a,b)=>b>0?Math.round(a/b*100)+'%':'–';return [['Status',t.kind+' area',1],t.need&&t.ls?['Fill layers – min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+' of the fill area)':'')]:null,t.need?['Layers done · still to place',(t.dn?'layer '+t.dn:'preparation')+' · '+Math.max(0,t.ls.most-t.dn)+' to go for most of the area'+(t.ls.max>t.ls.most?', '+t.left+' at the deepest part':'')]:null,
-  o.fR>1?['Fill m³ – total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)]:null,o.cR>1?['Cut m³ – total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)]:null].filter(Boolean)}
+  o.fR>1?['Fill m³ – total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)]:null,o.cR>1?['Cut m³ – total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)]:null,...grRows(o)].filter(Boolean)}
+function grRows(o){const T=GTH(),sF=(o.gF||[]).reduce((a,b)=>a+b,0),sC=(o.gC||[]).reduce((a,b)=>a+b,0),pc=(a,b)=>b>0?Math.round(a/b*100)+'%':'–';const L=[];
+  if(sF>0&&(o.gF[3]||o.gF[4]||o.gF[5]))L.push(['Fill – near grade (≤'+T.n.toFixed(2)+') · touch grade (≤'+T.t.toFixed(2)+') · final',fmt(o.gF[3])+' · '+fmt(o.gF[4])+' · '+fmt(o.gF[5])+' m²  ('+pc(o.gF[3],sF)+' · '+pc(o.gF[4],sF)+' · '+pc(o.gF[5],sF)+')']);
+  if(o.nfA>0)L.push(['Fill 0.000 now – rest goes with the final layer',fmt(o.nfA)+' m² ('+pc(o.nfA,sF)+' of the fill area) · '+fmt(o.nfV)+' m³ placed with the final layer']);
+  if(sC>0&&(o.gC[3]||o.gC[4]||o.gC[5]))L.push(['Cut – near grade (≤'+T.n.toFixed(2)+') · touch grade (≤'+T.t.toFixed(2)+') · final',fmt(o.gC[3])+' · '+fmt(o.gC[4])+' · '+fmt(o.gC[5])+' m²  ('+pc(o.gC[3],sC)+' · '+pc(o.gC[4],sC)+' · '+pc(o.gC[5],sC)+')']);
+  return L}
 function layDist(t){const s=t.ls,mx=Math.max(...s.dist.map(x=>x[1]));return h('div',{style:'margin:2px 0 10px'},h('div',{class:'mut',style:'font-size:11.5px;margin-bottom:4px'},'How many layers each part of the fill needs (share of the fill area):'),
   ...s.dist.map(([k,p,n])=>h('div',{class:'row',style:'gap:8px;font-size:12px;margin:2px 0'},h('span',{style:'width:64px;flex:none'},k+' layer'+(k>1?'s':'')+(k===s.most?' ★':'')),h('span',{style:'flex:1;height:9px;border-radius:5px;background:rgba(127,127,127,.18);overflow:hidden'},h('i',{style:'display:block;height:100%;width:'+(p/mx*100).toFixed(1)+'%;background:'+(k<=t.dn?'#3ecf8e':k===s.most?'#ffb020':'#5cb8ff')})),h('span',{class:'mono',style:'width:52px;text-align:right;flex:none'},pctTxt(p)),h('span',{class:'mut mono',style:'width:52px;text-align:right;flex:none'},fmt(n)+' pt'))),
   h('div',{class:'mut',style:'font-size:11px;margin-top:3px'},'★ most of the area · green = done · '+(s.l95<s.max?'95% of the fill area needs '+s.l95+' layers or fewer':'')))}
@@ -2046,7 +2052,7 @@ function recordCard(g,col,size){const Z=DZ[activeDesign().id],o=qtyOf(g.test,Z),
     h('div',{class:'row',style:'gap:6px;margin-bottom:4px;flex-wrap:wrap'},h('b',{style:'font-size:14px'},g.name.split(' · ')[0]),h('span',{style:'background:'+t.col+';color:#fff;font-weight:800;font-size:10.5px;padding:1px 8px;border-radius:999px'},t.kind)),
     h('div',{class:'kv',style:'font-size:12px'},...r('Area number',g.type==='sub'?g.sub.name+' (in '+g.sub.area+')':K.areas[g.ai].name.replace('AREA ','Area ')+' · '+(K.areas[g.ai].zone||'')),...r('Area',fmt(Math.round(size||o.m2))+' m²'),...r('Grade points',fmt(o.n)),
       ...(o.fR>1?r('Fill total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)+' m³','#3ecf8e'):[]),...(o.cR>1?r('Cut total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)+' m³','#ff5d5d'):[]),
-      ...(t.need&&t.ls?r('Layers min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+')':'')):[]),...(t.need?r('Layers now · to go',(t.dn?'L'+t.dn:'prep')+' · '+Math.max(0,t.ls.most-t.dn)+(t.ls.max>t.ls.most?'–'+t.left:'')):[]),...(()=>{const gs=gradeSplit(g.test,Z);return gs.more+gs.fin+gs.done>0?[...r('More fill first (> 0.30)',fmt(Math.round(gs.more))+' m²','#e8590c'),...r('Final layer only (0.10–0.30)',fmt(Math.round(gs.fin))+' m²','#4dabf7'),...r('At grade',fmt(Math.round(gs.done))+' m²','#3ecf8e')]:[]})()),
+      ...(t.need&&t.ls?r('Layers min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+')':'')):[]),...(t.need?r('Layers now · to go',(t.dn?'L'+t.dn:'prep')+' · '+Math.max(0,t.ls.most-t.dn)+(t.ls.max>t.ls.most?'–'+t.left:'')):[]),...(()=>{const gs=gradeSplit(g.test,Z);return gs.more+gs.fin+gs.done>0?[...r('More fill first (> 0.30)',fmt(Math.round(gs.more))+' m²','#e8590c'),...r('Final layer only (0.10–0.30)',fmt(Math.round(gs.fin))+' m²','#4dabf7'),...r('At grade',fmt(Math.round(gs.done))+' m²','#3ecf8e')]:[]})(),...(()=>{const T=GTH(),F=o.gF||[],C=o.gC||[],L=[];if(F[3]||F[4])L.push(...r('Fill near (≤'+T.n.toFixed(2)+') · touch (≤'+T.t.toFixed(2)+')',fmt(Math.round(F[3]))+' · '+fmt(Math.round(F[4]))+' m²','#ffd27a'));if(o.nfA)L.push(...r('Fill 0.000 now → final layer',fmt(Math.round(o.nfA))+' m² · '+fmt(Math.round(o.nfV))+' m³','#4dabf7'));if(C[3]||C[4])L.push(...r('Cut near (≤'+T.n.toFixed(2)+') · touch (≤'+T.t.toFixed(2)+')',fmt(Math.round(C[3]))+' · '+fmt(Math.round(C[4]))+' m²','#ff9f9f'));return L})()),
     h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet(g.type,g.key)},'Full record & report ›'))}
 
 /* ============================== OUTLINE THROUGH THE OUTER POINTS (concave hull) ============================== */
@@ -2091,7 +2097,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='7.1',APPD='16 Nov 2026';
+const APPV='7.2',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
