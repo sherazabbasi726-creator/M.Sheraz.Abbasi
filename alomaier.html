@@ -207,6 +207,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 .tact{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9999;background:#222a30;color:#fff;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 30px #0008;font-size:13px;max-width:92vw}.tact button{background:#ffb02e;color:#000;border:0;border-radius:8px;padding:6px 12px;font-weight:700}
 .ssp{margin-top:10px;border:1px solid var(--ln,#2a3035);border-radius:10px;padding:8px 10px}.ssp>summary{font-weight:700;font-size:13px;cursor:pointer}
 .ssp table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}.ssp th{position:sticky;top:0;background:var(--p2,#1b2126);text-align:left;padding:4px 5px;font-size:10.5px;white-space:nowrap}.ssp td{padding:3px 5px;border-top:1px solid var(--ln,#2a3035);white-space:nowrap;font-variant-numeric:tabular-nums}
+.anb{margin:6px 0 10px}.anr{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;margin:5px 0;font-size:12px}.anl{color:#495057;white-space:nowrap}.anw i{display:block;height:9px;border-radius:5px;min-width:3px;margin-bottom:2px}.anw span{font-size:11.5px;color:#495057}
 </style>
 </head>
 <body>
@@ -1805,6 +1806,7 @@ function rRep(){const el=$('#p-rep');el.replaceChildren();const R=repRange();
     h('tr',{},h('td',{},'Fill progress'),R.word==='project'?null:h('td',{class:'n'},''),h('td',{class:'n'},pc(tot.fD,tot.fR)),h('td',{class:'n'},'layers '+layTxt(tot))),
     h('tr',{},h('td',{},'Surveyed by'),h('td',{class:'n',colspan:R.word==='project'?'2':'3'},X.who.join(', ')||'–'))));
   if(R.word!=='day'&&R.word!=='project'){const sv=cumSvg(X);if(sv)paper.append(h('h2',{},'Fill placed – running total per day (m³)'),h('div',{html:sv}))}
+  try{const an=anaHtml(X);if(an)paper.append(an)}catch(e){console.error(e)}
   // site maps with clouds
   const [img,img2]=repMaps(X,1500);
   paper.append(h('h2',{},'Where the work was surveyed'),h('div',{class:'pmaps'},img2?h('img',{class:'pmap',src:img2,alt:''}):null,h('img',{class:'pmap',src:img,alt:''})));
@@ -1859,6 +1861,7 @@ async function repPdf(X,maps){await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window
     body:[['Preparation (m2)',X.prepM2,X.prepAll,fmt(Math.round(tt.prepR))+' / '+fmt(Math.round(tt.prepR-tt.prep))],['Fill placed (m3)',X.vf,tt.fD,fmt(tt.fR)+' / '+fmt(tt.fR-tt.fD)],['Cut executed (m3)',X.vc,tt.cD,fmt(tt.cR)+' / '+fmt(tt.cR-tt.cD)]].concat(X.waste||X.wasteAll?[['Waste removed (m3)',X.waste,X.wasteAll,'']]:[])
       .map(([a,v,t,r])=>[a].concat(R.word==='project'?[]:[fmt(Math.round(v))],[fmt(Math.round(t)),r])).concat([['Fill progress'].concat(R.word==='project'?[]:[''],[pc(tt.fD,tt.fR),'layers '+layTxt(tt)]),['Surveyed by'].concat(R.word==='project'?[]:[''],[X.who.join(', ')||'–',''])]),columnStyles:{1:{halign:'right'},2:{halign:'right'},3:{halign:'right'}}});y=doc.lastAutoTable.finalY+6;
   if(X.SG){y=room(y,40);y=H2(X.SG.name+' – status to '+dmy(R.d1),y);KV(statusRows(X.so),M_,W-2*M_,y);y=doc.lastAutoTable.finalY+6}
+  try{y=anaPdf(doc,X,y,H2,AT,room,M_,W)}catch(e){console.error(e)}
   // running total chart for week / month
   if(R.word==='week'||R.word==='month'){const days=[];for(let k=R.d0;k<=R.d1;k=addDays(k,1))days.push([k,X.day[k]||0]);let run=0;const cum=days.map(([k,v])=>{run+=v;return [k,run,v]});if(run>0){y=room(y,48);y=H2('Fill placed – running total per day (m3)',y);const ch=34,cw=W-2*M_,bw=cw/cum.length,mx=run*1.12;
     cum.forEach(([k,c,v],i)=>{const bh=c/mx*ch;doc.setFillColor(...(v?AM:[243,210,139]));doc.rect(M_+i*bw+0.4,y+ch-bh,Math.max(0.6,bw-0.8),bh,'F');doc.setFontSize(6);doc.setTextColor(110);if(cum.length<=10||i%3===0)doc.text(String(+k.slice(8)),M_+i*bw+bw/2,y+ch+3,{align:'center'})});
@@ -1874,7 +1877,7 @@ async function repPdf(X,maps){await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window
     KV([['Date',dNice(s.date)],['Surveyor',s.surveyor||'–'],['Work',kindName(s.kind,s.layer)+(s.note?' · '+s.note:'')],['Areas covered',ar.map(a=>K.areas[a].name+' ('+o.areas[a]+')').join(', ')||'–'],sb.length?['Sub-areas',sb.join(', ')]:null,['Zone · phase',survArea(s).split(' · ').slice(1).join(' · ')]],M_,half,y);
     let y2=doc.lastAutoTable.finalY+4;doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text('Survey results',M_,y2+2);doc.setFont('helvetica','normal');
     KV([['Points surveyed',fmt(o.n)+' · '+fmt(o.cells)+' grade points'],['Area covered',fmt(Math.round(o.m2))+' m2'],['Executed fill',fmt(o.vf)+' m3',1],['Executed cut',fmt(o.vc)+' m3'],o.tn?['Layer thickness',o.tmin.toFixed(2)+' to '+o.tmax.toFixed(2)+' m, mean '+(o.tsum/o.tn).toFixed(2)]:null,o.dmin<1e8?['Design - surveyed (fill/-cut)',(-o.dmax).toFixed(3)+' to '+(-o.dmin).toFixed(3)+' m']:null,
-      ['Within +/-'+(tol*100).toFixed(0)+' cm',o.on+' of '+o.cells+' ('+(o.cells?Math.round(o.on/o.cells*100):0)+'%)'],['Fill left to design',fmt(o.fl)+' m3'],['Cut left to design',fmt(o.cl)+' m3']],M_,half,y2+4);
+      ['On target +/-'+(tol*100).toFixed(0)+' cm',o.on+' of '+o.cells+' ('+(o.cells?Math.round(o.on/o.cells*100):0)+'%)'],['Fill left to design',fmt(o.fl)+' m3'],['Cut left to design',fmt(o.cl)+' m3']],M_,half,y2+4);
     y=Math.max(doc.lastAutoTable.finalY,yR)+6;
     if(repPts){const rows=survRows(s,X.SG&&X.SG.test),hasT=rows.some(r=>r.tg===r.tg),hasTh=rows.some(r=>r.th===r.th),hasS=rows.some(r=>r.st),lim=1500,thC=6+(hasT?3:1),stC=thC+(hasTh?1:0);
       if(hasS){const sm=stSummary(rows),img=stMapImg(rows,1000);y=room(y,90);doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text('Points by what is left to design',M_,y+3);doc.setFont('helvetica','normal');doc.setFontSize(7.8);
@@ -2111,7 +2114,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='7.6',APPD='16 Nov 2026';
+const APPV='7.7',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -5669,6 +5672,54 @@ async function ptsEditor(s){if(!guard())return;const P0=await ptsOf(s.id);let W=
     h('button',{class:'btn pri',onclick:async()=>{if(!dirty){close();return}if(!W.length&&!confirm('Save this survey with no points?\n(To take it out completely use 🗑 Delete survey.)'))return;
       const bad=W.filter(p=>!(isFinite(p.n)&&isFinite(p.e)&&isFinite(p.z)));if(bad.length){msg.textContent=bad.length+' points have an empty or wrong number – fix or delete them';return}
       msg.textContent='Saving…';if(await savePts(s,W)){close();render();toast('Saved · '+fmt(W.length)+' points')}}},'💾 Save')])}
+
+/* ============================== v7.7 – data analysis in the report ============================== */
+const ANB=[['> +0.30','More than a layer to fill',0.30,1e9,'#e8590c'],['+0.15 … +0.30','Near grade – fill',0.15,0.30,'#f59f00'],['+0.05 … +0.15','Touch grade – fill',0.05,0.15,'#fab005'],['± 0.05','On design',-0.05,0.05,'#2f9e44'],['−0.05 … −0.15','Touch grade – cut / high',-0.15,-0.05,'#4dabf7'],['−0.15 … −0.30','Near grade – cut / high',-0.30,-0.15,'#1c7ed6'],['< −0.30','More than 0.30 to cut',-1e9,-0.30,'#c92a2a']];
+function anaData(X){const tol=M.tol||0.1,test=X.SG&&X.SG.test,A={n:0,on:0,sum:0,sq:0,min:1e9,max:-1e9,bands:ANB.map(()=>0),th:{n:0,sum:0,min:1e9,max:-1e9,over:0,under:0,bad:0},kinds:{},who:{},areas:{},worst:[],days:{}};
+  for(const s of X.inP){if(s.kind==='waste')continue;const rows=survRows(s,test);if(!rows.length)continue;const k=kindName(s.kind,s.layer).split(' ')[0];const K_=A.kinds[k]=A.kinds[k]||{s:0,n:0,on:0};K_.s++;
+    const w=s.surveyor||'–',W_=A.who[w]=A.who[w]||{s:0,n:0,on:0,days:new Set()};W_.s++;W_.days.add(s.date);A.days[s.date]=(A.days[s.date]||0)+1;
+    for(const r of rows){const d=r.dd;if(!(d===d))continue;const on=Math.abs(r.dt===r.dt?r.dt:d)<=tol;A.n++;A.sum+=d;A.sq+=d*d;if(d<A.min)A.min=d;if(d>A.max)A.max=d;if(on)A.on++;K_.n++;W_.n++;if(on){K_.on++;W_.on++}
+      const bi=ANB.findIndex(b=>d>b[2]&&d<=b[3]);A.bands[bi<0?(d>0?0:6):bi]++;
+      if(r.th===r.th){const T=A.th;T.n++;T.sum+=r.th;if(r.th<T.min)T.min=r.th;if(r.th>T.max)T.max=r.th;if(r.thF==='over')T.over++;else if(r.thF==='under')T.under++;else if(r.thF==='bad')T.bad++}
+      if(!X.SG){const i=nearestBase(r.e,r.n,400),ai=i>=0?B.A[i]:-1;if(ai>=0){const a=A.areas[ai]=A.areas[ai]||{n:0,on:0,sum:0,hi:0,lo:0};a.n++;a.sum+=d;if(on)a.on++;else if(d<0)a.hi++;else a.lo++}}
+      if(d<-tol||r.thF==='bad')A.worst.push({s,r,d})}}
+  A.mean=A.n?A.sum/A.n:0;A.sd=A.n>1?Math.sqrt(Math.max(0,A.sq/A.n-A.mean*A.mean)):0;
+  A.worst.sort((p,q)=>p.d-q.d);A.worst=A.worst.slice(0,12);
+  /* production: fill placed per day in this period */
+  const dv=Object.entries(X.day).filter(([,v])=>v>0).sort();A.prod={days:dv.length,tot:dv.reduce((a,[,v])=>a+v,0),best:dv.reduce((b,x)=>x[1]>b[1]?x:b,['',0])};A.prod.avg=A.prod.days?A.prod.tot/A.prod.days:0;
+  const left=X.tot.fR-X.tot.fD;A.prod.left=left;A.prod.daysLeft=A.prod.avg>0?Math.ceil(left/A.prod.avg):null;
+  A.grade=(()=>{const g=X.tot.gF||[],s=g.reduce((a,b)=>a+b,0);return s?{near:g[3]/s,touch:g[4]/s,fin:g[5]/s,s}:null})();
+  return A}
+const anaP=(a,b)=>b?(a/b*100).toFixed(1)+'%':'–';
+function anaFacts(A){const tol=M.tol||0.1,T=A.th;return [['Points analysed',fmt(A.n)+' points in '+Object.values(A.kinds).reduce((a,k)=>a+k.s,0)+' surveys'],['On its target level ±'+(tol*100).toFixed(0)+' cm (layer level / prep level / design)',fmt(A.on)+' ('+anaP(A.on,A.n)+')',1],
+  ['Design − surveyed: mean',(A.mean>=0?'+':'')+A.mean.toFixed(3)+' m  ('+(A.mean>0?'on average still below design – fill to go':'on average above design')+')'],['Spread (standard deviation)',A.sd.toFixed(3)+' m'],
+  A.n?['Lowest · highest point vs design',(A.max>=0?'+':'')+A.max.toFixed(3)+' m below · '+Math.abs(Math.min(0,A.min)).toFixed(3)+' m above']:null,
+  T.n?['Layer thickness avg · min · max',(T.sum/T.n).toFixed(3)+' · '+T.min.toFixed(3)+' · '+T.max.toFixed(3)+' m']:null,
+  T.n?['Thickness out of rule',(T.over+T.under)+' points to check · '+T.bad+' points wrong ('+anaP(T.over+T.under+T.bad,T.n)+')']:null,
+  A.grade?['Fill area at near · touch · final grade',anaP(A.grade.near,1).replace('%','')+'% · '+(A.grade.touch*100).toFixed(1)+'% · '+(A.grade.fin*100).toFixed(1)+'%']:null,
+  A.prod.days?['Fill placed per working day','avg '+fmt(Math.round(A.prod.avg))+' m³ · best '+fmt(Math.round(A.prod.best[1]))+' m³ ('+dmy(A.prod.best[0])+') · '+A.prod.days+' days']:null,
+  A.prod.daysLeft?['At this rate the fill left needs',fmt(Math.round(A.prod.left))+' m³ → about '+A.prod.daysLeft+' working days',1]:null].filter(Boolean)}
+function anaBarsSvg(A,w){w=w||640;const mx=Math.max(1,...A.bands),bh=22,lw=150,H=ANB.length*bh+6;
+  return `<svg viewBox="0 0 ${w} ${H}" width="100%" style="max-width:${w}px;font:12px system-ui,sans-serif">`+ANB.map((b,i)=>{const v=A.bands[i],bw=(w-lw-120)*v/mx,y=i*bh+3;return `<text x="0" y="${y+15}" fill="#495057">${b[0]} m</text><rect x="${lw}" y="${y+3}" width="${Math.max(v?2:0,bw)}" height="${bh-8}" rx="3" fill="${b[4]}"/><text x="${lw+bw+6}" y="${y+15}" fill="#212529" font-weight="700">${fmt(v)} <tspan font-weight="400" fill="#868e96">(${anaP(v,A.n)}) ${b[1]}</tspan></text>`}).join('')+'</svg>'}
+function anaHtml(X){const A=anaData(X);if(!A.n)return null;const tol=M.tol||0.1;
+  const tbl=(head,rows)=>h('table',{class:'rt'},h('tr',{},...head.map(t=>h('th',{},t))),...rows.map(r=>h('tr',{},...r.map((c,j)=>h('td',{class:j?'n':''},c)))));
+  const AR=Object.entries(A.areas).map(([ai,a])=>({a:K.areas[ai],o:a})).filter(x=>x.a).sort((p,q)=>p.a.name.localeCompare(q.a.name,undefined,{numeric:true}));
+  return h('div',{class:'ana'},h('h2',{},'Data analysis'),h('div',{class:'rpn'},'From every surveyed point in this report (waste surveys left out). On target = the level this survey had to reach (layer level for a fill layer, preparation level, or design). The bars compare with the final design: + = still below design (fill to go), − = above design (cut / high).'),
+    h('table',{class:'rt kvt'},...anaFacts(A).map(([k,v,key])=>h('tr',{class:key?'key':''},h('th',{},k),h('td',{},v)))),
+    h('div',{class:'h3'},'How far the surveyed points are from design'),h('div',{class:'anb'},...ANB.map((b,i)=>{const v=A.bands[i],mx=Math.max(1,...A.bands);return h('div',{class:'anr'},h('span',{class:'anl'},b[0]+' m'),h('div',{class:'anw'},h('i',{style:'width:'+(v/mx*100).toFixed(1)+'%;background:'+b[4]}),h('span',{},h('b',{},fmt(v)),' ('+anaP(v,A.n)+') '+b[1])))})),
+    Object.keys(A.kinds).length>1?h('div',{},h('div',{class:'h3'},'By type of work'),tbl(['Work','Surveys','Points','On target ±'+(tol*100).toFixed(0)+' cm'],Object.entries(A.kinds).map(([k,o])=>[k,o.s,fmt(o.n),anaP(o.on,o.n)]))):null,
+    AR.length>1?h('div',{},h('div',{class:'h3'},'By area'),tbl(['Area','Points','On target ±'+(tol*100).toFixed(0)+' cm','Mean design − surv.','Above design','Below design'],AR.map(({a,o})=>[a.name,fmt(o.n),anaP(o.on,o.n),(o.sum/o.n>=0?'+':'')+(o.sum/o.n).toFixed(3),fmt(o.hi),fmt(o.lo)]))):null,
+    h('div',{class:'h3'},'By surveyor'),tbl(['Surveyor','Surveys','Days','Points','On target ±'+(tol*100).toFixed(0)+' cm'],Object.entries(A.who).map(([k,o])=>[k,o.s,o.days.size,fmt(o.n),anaP(o.on,o.n)])),
+    A.worst.length?h('div',{},h('div',{class:'h3'},'Points to check (highest above design / wrong thickness)'),tbl(['Survey','Point','Northing','Easting','Design − surv.','Thickness'],A.worst.map(({s,r,d})=>[wirNo(s)+' · '+dmy(s.date),r.id,r.n.toFixed(3),r.e.toFixed(3),d.toFixed(3),r.th===r.th?r.th.toFixed(3):'']))):null)}
+function anaPdf(doc,X,y,H2,AT,room,M_,W){const A=anaData(X);if(!A.n)return y;const tol=M.tol||0.1;
+  y=room(y,60);y=H2('Data analysis',y);AT({startY:y,body:anaFacts(A).map(([k,v,key])=>[{content:k,styles:{fontStyle:'bold',fillColor:key?[255,243,214]:[246,247,248],cellWidth:(W-2*M_)*0.42}},{content:String(v),styles:key?{fontStyle:'bold',fillColor:[255,243,214]}:{}}])});y=doc.lastAutoTable.finalY+5;
+  y=room(y,ANB.length*6+12);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(11,42,74);doc.text('How far the surveyed points are from design',M_,y+2);doc.setFont('helvetica','normal');y+=5;
+  const mx=Math.max(1,...A.bands),lw=30,bwMax=W-2*M_-lw-62;ANB.forEach((b,i)=>{const v=A.bands[i],bw=bwMax*v/mx,c=b[4];doc.setFontSize(7.5);doc.setTextColor(70);doc.text(b[0].replace(/−/g,'-').replace('…','to')+' m',M_,y+4);doc.setFillColor(parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16));if(v)doc.rect(M_+lw,y+1,Math.max(0.8,bw),4,'F');doc.setTextColor(30);doc.text(fmt(v)+' ('+anaP(v,A.n)+') '+b[1].replace(/–/g,'-'),M_+lw+bw+2,y+4);y+=6});y+=4;
+  const AR=Object.entries(A.areas).map(([ai,a])=>({a:K.areas[ai],o:a})).filter(x=>x.a).sort((p,q)=>p.a.name.localeCompare(q.a.name,undefined,{numeric:true}));
+  if(AR.length>1){y=room(y,30);AT({startY:y,head:[['Area','Points','On target +/-'+(tol*100).toFixed(0)+' cm','Mean design - surv.','Above design','Below design']],body:AR.map(({a,o})=>[a.name,fmt(o.n),anaP(o.on,o.n),(o.sum/o.n).toFixed(3),fmt(o.hi),fmt(o.lo)])});y=doc.lastAutoTable.finalY+5}
+  y=room(y,25);AT({startY:y,head:[['Surveyor','Surveys','Days','Points','On target +/-'+(tol*100).toFixed(0)+' cm']],body:Object.entries(A.who).map(([k,o])=>[k,o.s,o.days.size,fmt(o.n),anaP(o.on,o.n)])});y=doc.lastAutoTable.finalY+5;
+  if(A.worst.length){y=room(y,30);AT({startY:y,head:[['Points to check','Point','Northing','Easting','Design - surv.','Thickness']],body:A.worst.map(({s,r,d})=>[wirNo(s)+' · '+dmy(s.date),r.id,r.n.toFixed(3),r.e.toFixed(3),d.toFixed(3),r.th===r.th?r.th.toFixed(3):''])});y=doc.lastAutoTable.finalY+6}
+  return y}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
