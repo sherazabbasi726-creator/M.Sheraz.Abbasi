@@ -205,6 +205,8 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 .pea{display:grid;grid-template-columns:1fr 1.6fr 1.4fr 1.1fr auto;gap:5px}.pea input{min-width:0;padding:8px 6px;font-size:12.5px}
 @media(max-width:520px){.pea{grid-template-columns:1fr 1fr}.pea button{grid-column:span 2}}
 .tact{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:9999;background:#222a30;color:#fff;border-radius:12px;padding:10px 12px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 30px #0008;font-size:13px;max-width:92vw}.tact button{background:#ffb02e;color:#000;border:0;border-radius:8px;padding:6px 12px;font-weight:700}
+.ssp{margin-top:10px;border:1px solid var(--ln,#2a3035);border-radius:10px;padding:8px 10px}.ssp>summary{font-weight:700;font-size:13px;cursor:pointer}
+.ssp table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}.ssp th{position:sticky;top:0;background:var(--p2,#1b2126);text-align:left;padding:4px 5px;font-size:10.5px;white-space:nowrap}.ssp td{padding:3px 5px;border-top:1px solid var(--ln,#2a3035);white-space:nowrap;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -477,7 +479,8 @@ async function survSheet(s){const P=await ptsOf(s.id),ck=await survCheck(s,P),st
         h('span',{},'Thicker than '+LT().toFixed(2)+' m (+tol)'),h('b',{},st.T.thick+' pts'),
         h('span',{},s.kind==='final'?'On design level':'On target layer level'),h('b',{},st.T.on+' pts'),h('span',{},'Above target'),h('b',{},st.T.hi+' pts'),h('span',{},'Below target'),h('b',{},st.T.lo+' pts')),
       h('div',{class:'mut',style:'font-size:11.5px;margin-top:6px'},'Target of layer n = preparation level + n × '+LT().toFixed(2)+' m, never above the design.')):null,
-    s.desc?h('div',{class:'mut',style:'font-size:12px;margin-bottom:6px'},s.desc):null,s.note?h('div',{style:'font-size:13px'},s.note):null);
+    s.desc?h('div',{class:'mut',style:'font-size:12px;margin-bottom:6px'},s.desc):null,s.note?h('div',{style:'font-size:13px'},s.note):null,
+    P.length?repPtsBox(s,null,'📋 Survey points ('+fmt(P.length)+') – N, E, Z, design, fill / cut',P.length<=400):h('div',{class:'mut',style:'font-size:12.5px;margin-top:8px'},'No points saved in this survey on this phone. Check the internet and open it again – or add them with ✎ Points.'));
   modal(kindName(s.kind,s.layer)+' · '+dmy(s.date),body,close=>[
     h('button',{class:'btn',onclick:()=>{close();mapFocus={pts:P,title:kindName(s.kind,s.layer)+' · '+dmy(s.date)};mapMode='last';show('map')}},'Show on map'),
     h('button',{class:'btn',onclick:()=>download(s.id+'_'+s.date+'.csv','Point,N,E,Z\n'+P.map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n'),'text/csv')},'CSV'),
@@ -1490,12 +1493,12 @@ function repRange(){if(repKind==='day')return {d0:repDay,d1:repDay,word:'day',ti
 const PREVC={};
 function prevState(date){const k=addDays(date,-1);if(!PREVC[k])PREVC[k]=stateAt(k);return PREVC[k]}
 /* points of one survey as an open-on-tap box (used when the report has many surveys) */
-function repPtsBox(s,test){const d=h('details',{class:'psv'}),sm=h('summary',{},dmy(s.date)+' · '+wirNo(s)+' · '+kindName(s.kind,s.layer)+' · '+survArea(s)+' · '+fmt(s.n||((PTS[s.id]||[]).length)||0)+' pts');let done=false;d.append(sm);
+function repPtsBox(s,test,lbl,op){const d=h('details',{class:'psv'+(lbl?' ssp':'')}),sm=h('summary',{},lbl||(dmy(s.date)+' · '+wirNo(s)+' · '+kindName(s.kind,s.layer)+' · '+survArea(s)+' · '+fmt(s.n||((PTS[s.id]||[]).length)||0)+' pts'));if(op)setTimeout(()=>{d.open=true},0);let done=false;d.append(sm);
   d.ontoggle=async()=>{if(done||!d.open)return;done=true;if(!PTS[s.id])await ptsOf(s.id);const rows=survRows(s,test),hasT=rows.some(r=>r.tg===r.tg),hasTh=rows.some(r=>r.th===r.th),hasS=rows.some(r=>r.st),cl=v=>!(v===v)?'':v>0.0005?'color:#148c50;font-weight:600':v<-0.0005?'color:#c8281e;font-weight:600':'color:#5b6672';
     if(!rows.length){d.append(h('div',{class:'rpn'},'No points of this survey here.'));return}
-    d.append(h('div',{style:'overflow-x:auto'},h('table',{class:'pt2 ptp'},h('tr',{},...['Point','Northing','Easting','Design','Before','Surveyed','Design − surv. (fill / −cut)'].concat(hasT?['Target','Target − surv.']:[],hasTh?[s.kind==='prep'?'Depth below NGL':'Thickness']:[],hasS?['Status']:[]).map(x=>h('th',{},x))),
+    d.append(h('div',{style:'overflow:auto'+(lbl?';max-height:55vh':'')},h('table',{class:'pt2 ptp'},h('tr',{},...['Point','Northing','Easting','Design','Before','Surveyed','Design − surv. (fill / −cut)'].concat(hasT?['Target','Target − surv.']:[],hasTh?[s.kind==='prep'?'Depth below NGL':'Thickness']:[],hasS?['Status']:[]).map(x=>h('th',{},x))),
       ...rows.slice(0,1500).map(r=>h('tr',{},h('td',{},r.id),h('td',{},r.n.toFixed(3)),h('td',{},r.e.toFixed(3)),h('td',{},f3(r.des)),h('td',{},f3(r.prev)),h('td',{},f3(r.z)),h('td',{style:cl(r.dd)},sg(r.dd)),...(hasT?[h('td',{},f3(r.tg)),h('td',{style:cl(r.dt)},sg(r.dt))]:[]),...(hasTh?[h('td',{style:TH_BG[r.thF]||''},f3(r.th))]:[]),...(hasS?[h('td',{style:r.st?'color:'+ST[r.st][1]+';font-weight:700;white-space:nowrap':''},r.st?ST[r.st][0].split(' (')[0]:'')]:[]))))),
-      rows.length>1500?h('div',{class:'rpn'},'First 1500 of '+rows.length+' points shown – CSV in the survey has all.'):null)};
+      ...(rows.length>1500?[h('div',{class:'rpn'},'First 1500 of '+rows.length+' points shown – CSV in the survey has all.')]:[]))};
   return d}
 function survRows(s,test){const P=PTS[s.id];if(!P)return [];const T=P.E?P:null,n=T?T.E.length:P.length,D=designFor(s.date),Z=DZ[D.id]||DZ[activeDesign().id],S0=prevState(s.date),rows=[];
   for(let t=0;t<n;t++){const e=T?T.E[t]:P[t].e,nn=T?T.N[t]:P[t].n,z=T?T.Z[t]:P[t].z,id=T?String(t+1):(P[t].id||String(t+1)),i=nearestBase(e,nn);if(test&&!(i>=0&&test(i)))continue;
@@ -2108,7 +2111,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='7.5',APPD='16 Nov 2026';
+const APPV='7.6',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
