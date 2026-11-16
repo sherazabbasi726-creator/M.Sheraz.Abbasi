@@ -1489,6 +1489,14 @@ function repRange(){if(repKind==='day')return {d0:repDay,d1:repDay,word:'day',ti
 /* every point of a survey: design, the level before it, the level surveyed, and for a fill layer its target */
 const PREVC={};
 function prevState(date){const k=addDays(date,-1);if(!PREVC[k])PREVC[k]=stateAt(k);return PREVC[k]}
+/* points of one survey as an open-on-tap box (used when the report has many surveys) */
+function repPtsBox(s,test){const d=h('details',{class:'psv'}),sm=h('summary',{},dmy(s.date)+' · '+wirNo(s)+' · '+kindName(s.kind,s.layer)+' · '+survArea(s)+' · '+fmt(s.n||((PTS[s.id]||[]).length)||0)+' pts');let done=false;d.append(sm);
+  d.ontoggle=async()=>{if(done||!d.open)return;done=true;if(!PTS[s.id])await ptsOf(s.id);const rows=survRows(s,test),hasT=rows.some(r=>r.tg===r.tg),hasTh=rows.some(r=>r.th===r.th),hasS=rows.some(r=>r.st),cl=v=>!(v===v)?'':v>0.0005?'color:#148c50;font-weight:600':v<-0.0005?'color:#c8281e;font-weight:600':'color:#5b6672';
+    if(!rows.length){d.append(h('div',{class:'rpn'},'No points of this survey here.'));return}
+    d.append(h('div',{style:'overflow-x:auto'},h('table',{class:'pt2 ptp'},h('tr',{},...['Point','Northing','Easting','Design','Before','Surveyed','Design − surv. (fill / −cut)'].concat(hasT?['Target','Target − surv.']:[],hasTh?[s.kind==='prep'?'Depth below NGL':'Thickness']:[],hasS?['Status']:[]).map(x=>h('th',{},x))),
+      ...rows.slice(0,1500).map(r=>h('tr',{},h('td',{},r.id),h('td',{},r.n.toFixed(3)),h('td',{},r.e.toFixed(3)),h('td',{},f3(r.des)),h('td',{},f3(r.prev)),h('td',{},f3(r.z)),h('td',{style:cl(r.dd)},sg(r.dd)),...(hasT?[h('td',{},f3(r.tg)),h('td',{style:cl(r.dt)},sg(r.dt))]:[]),...(hasTh?[h('td',{style:TH_BG[r.thF]||''},f3(r.th))]:[]),...(hasS?[h('td',{style:r.st?'color:'+ST[r.st][1]+';font-weight:700;white-space:nowrap':''},r.st?ST[r.st][0].split(' (')[0]:'')]:[]))))),
+      rows.length>1500?h('div',{class:'rpn'},'First 1500 of '+rows.length+' points shown – CSV in the survey has all.'):null)};
+  return d}
 function survRows(s,test){const P=PTS[s.id];if(!P)return [];const T=P.E?P:null,n=T?T.E.length:P.length,D=designFor(s.date),Z=DZ[D.id]||DZ[activeDesign().id],S0=prevState(s.date),rows=[];
   for(let t=0;t<n;t++){const e=T?T.E[t]:P[t].e,nn=T?T.N[t]:P[t].n,z=T?T.Z[t]:P[t].z,id=T?String(t+1):(P[t].id||String(t+1)),i=nearestBase(e,nn);if(test&&!(i>=0&&test(i)))continue;
     const des=i>=0?Z[i]:NaN,prev=i>=0?S0.CUR[i]:NaN;let tgt=NaN;
@@ -1799,7 +1807,7 @@ function rRep(){const el=$('#p-rep');el.replaceChildren();const R=repRange();
   paper.append(h('h2',{},'Where the work was surveyed'),h('div',{class:'pmaps'},img2?h('img',{class:'pmap',src:img2,alt:''}):null,h('img',{class:'pmap',src:img,alt:''})));
   // every WIR / survey
   const tol=M.tol||0.1;
-  if(R.word!=='project'||inP.length<=12)for(const s of inP){const o=survStats(s);if(!o)continue;const T=(STAT[s.id]||{}).T,ar=Object.keys(o.areas).sort((a,b)=>o.areas[b]-o.areas[a]),sb=Object.keys(o.subs);
+  if(R.word!=='project'||inP.length<=12||(X.SG&&inP.length<=40))for(const s of inP){const o=survStats(s);if(!o)continue;const T=(STAT[s.id]||{}).T,ar=Object.keys(o.areas).sort((a,b)=>o.areas[b]-o.areas[a]),sb=Object.keys(o.subs);
     paper.append(h('div',{class:'wb'},h('h2',{style:'display:flex;align-items:center;gap:8px'},h('span',{style:'flex:1'},wirNo(s)+' · '+kindName(s.kind,s.layer)),h('img',{src:qrImg(qrLink('w='+s.id),300),alt:'QR',title:'Scan to open this WIR',style:'width:58px;height:58px;border-radius:3px'})),h('div',{class:'wbg'},
       h('div',{},h('table',{class:'rt kvt'},...[['Date',dNice(s.date)],['Surveyor',s.surveyor||'–'],['Work',kindName(s.kind,s.layer)+(s.note?' · '+s.note:'')],['Areas covered',ar.map(a=>K.areas[a].name+' ('+o.areas[a]+' pts)').join(', ')||'–'],sb.length?['Sub-areas',sb.join(', ')]:null,['Zone · phase',survArea(s).split(' · ').slice(1).join(' · ')]].filter(Boolean).map(([k,v])=>h('tr',{},h('th',{},k),h('td',{},v)))),
         h('div',{class:'h3'},'Survey results (surveyed points vs '+(designFor(s.date).name.split(' – ')[0])+')'),
@@ -1812,7 +1820,8 @@ function rRep(){const el=$('#p-rep');el.replaceChildren();const R=repRange();
         return h('div',{},hasS?h('div',{class:'psv'},h('b',{style:'font-size:12.5px'},'Points by what is left to design'),stLine(sm),img?h('img',{src:img,alt:'',style:'width:100%;max-width:640px;border:1px solid #dee2e6;border-radius:6px;display:block'}):null):null,
           h('details',{class:'psv',open:rows.length<=60},h('summary',{},'Survey points ('+rows.length+')'+(hasTh?' · '+thRule(s.kind==='prep'):'')),h('table',{class:'pt2 ptp'},h('tr',{},...['Point','Northing','Easting','Design','Before','Surveyed','Design − surv. (fill / −cut)'].concat(hasT?['Target','Target − surv.']:[],hasTh?[thN]:[],hasS?['Status']:[]).map(t=>h('th',{},t))),
           ...rows.slice(0,400).map(r=>h('tr',{},h('td',{},r.id),h('td',{},r.n.toFixed(3)),h('td',{},r.e.toFixed(3)),h('td',{},f3(r.des)),h('td',{},f3(r.prev)),h('td',{},f3(r.z)),h('td',{style:cl(r.dd)},sg(r.dd)),...(hasT?[h('td',{},f3(r.tg)),h('td',{style:cl(r.dt)},sg(r.dt))]:[]),...(hasTh?[h('td',{style:TH_BG[r.thF]||''},f3(r.th))]:[]),...(hasS?[h('td',{style:r.st?'color:'+ST[r.st][1]+';font-weight:700;white-space:nowrap':''},r.st?ST[r.st][0].split(' (')[0]:'')]:[])))),rows.length>400?h('div',{class:'pnone'},'… '+(rows.length-400)+' more in the PDF / Excel'):null))})():null))}
-  else paper.append(h('h2',{},'Surveys'),h('table',{class:'pt2'},h('tr',{},...['Date','WIR / survey','Work','Area','Fill m³','Cut m³'].map(t=>h('th',{},t))),...inP.map(s=>h('tr',{},h('td',{},dmy(s.date)),h('td',{},wirNo(s)),h('td',{},kindName(s.kind,s.layer)),h('td',{},survArea(s)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vf)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vc))))));
+  else paper.append(h('h2',{},'Surveys'),h('table',{class:'pt2'},h('tr',{},...['Date','WIR / survey','Work','Area','Fill m³','Cut m³'].map(t=>h('th',{},t))),...inP.map(s=>h('tr',{},h('td',{},dmy(s.date)),h('td',{},wirNo(s)),h('td',{},kindName(s.kind,s.layer)),h('td',{},survArea(s)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vf)),h('td',{},fmt(STAT[s.id]&&STAT[s.id].vc))))),
+    repPts?h('h2',{},'Survey points of each survey'):null,repPts?h('div',{class:'rpn'},'Tap a survey to see its points.'):null,...(repPts?inP.slice().reverse().map(s=>repPtsBox(s,X.SG&&X.SG.test)):[]));
   // area panels
   if(AR.length){paper.append(h('h2',{},'Work areas – design, executed and still to do'),h('div',{class:'rpn'},'For each area: left = design cut (red) / fill (blue) from the natural ground; middle = what has been done (gold = prepared, blue = fill layers, green = on final design); right = what is still left (amber = fill, red = cut, green = done).'));
     for(const {ai,a} of AR){const hold=h('div',{class:'ap3'},h('div',{class:'rpn'},'Preparing…'));paper.append(h('div',{class:'ap'},h('div',{class:'aph'},h('b',{},a.name),h('span',{},(a.zone||'')+' · Phase '+(B0.P[nearestIn(B0,a.lx,a.ly,900)]||''))),hold,h('table',{class:'rt kvt'},...areaFacts(ai,S1,Z).map(([k,v])=>h('tr',{},h('th',{},k),h('td',{},v))))));
@@ -1855,7 +1864,9 @@ async function repPdf(X,maps){await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window
   y=room(y,95);y=H2('Where the work was surveyed (red cloud)',y);const mw=W-2*M_,mh=mw*0.62/(maps[1]?2:1)*(maps[1]?1:0.85);
   if(maps[1]){const w2=(mw-3)/2,h2=w2*0.62;doc.addImage(maps[1],'JPEG',M_,y,w2,h2,'m1');doc.addImage(maps[0],'JPEG',M_+w2+3,y,w2,h2,'m0');y+=h2+6}else{doc.addImage(maps[0],'JPEG',M_,y,mw,mw*0.62,'m0');y+=mw*0.62+6}
   // every survey
-  if(R.word!=='project'||X.inP.length<=12)for(const s of X.inP){const o=survStats(s);if(!o)continue;doc.addPage();y=18;pdfQR(doc,qrLink('w='+s.id),W-M_-15,6,15);y=H2(wirNo(s)+' · '+kindName(s.kind,s.layer),y);const ar=Object.keys(o.areas).sort((a,b)=>o.areas[b]-o.areas[a]),sb=Object.keys(o.subs);
+  const _all=R.word!=='project'||X.inP.length<=12||(X.SG&&X.inP.length<=40);
+  if(!_all&&repPts&&X.inP.length){y=room(y,40);y=H2('Surveys ('+X.inP.length+')',y);AT({startY:y,head:[['Date','WIR / survey','Work','Area','Points','Fill m3','Cut m3']],body:X.inP.map(s=>[dmy(s.date),wirNo(s),kindName(s.kind,s.layer),survArea(s),fmt(s.n||0),fmt(STAT[s.id]&&STAT[s.id].vf),fmt(STAT[s.id]&&STAT[s.id].vc)])});y=doc.lastAutoTable.finalY+3;doc.setFontSize(7.5);doc.setTextColor(110);doc.text('Points of every survey: make the report for one area / sub-area, or for a week or a month – or scan the WIR QR.',M_,y+2);y+=8}
+  if(_all)for(const s of X.inP){const o=survStats(s);if(!o)continue;doc.addPage();y=18;pdfQR(doc,qrLink('w='+s.id),W-M_-15,6,15);y=H2(wirNo(s)+' · '+kindName(s.kind,s.layer),y);const ar=Object.keys(o.areas).sort((a,b)=>o.areas[b]-o.areas[a]),sb=Object.keys(o.subs);
     const u=survMapImg(s,1000),half=(W-2*M_-4)/2;let yR=y;if(u){const j=await toJpg(u,'#0b0e10',0.8);doc.addImage(j,'JPEG',M_+half+4,y,half,half*0.62);yR=y+half*0.62+3}
     KV([['Date',dNice(s.date)],['Surveyor',s.surveyor||'–'],['Work',kindName(s.kind,s.layer)+(s.note?' · '+s.note:'')],['Areas covered',ar.map(a=>K.areas[a].name+' ('+o.areas[a]+')').join(', ')||'–'],sb.length?['Sub-areas',sb.join(', ')]:null,['Zone · phase',survArea(s).split(' · ').slice(1).join(' · ')]],M_,half,y);
     let y2=doc.lastAutoTable.finalY+4;doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text('Survey results',M_,y2+2);doc.setFont('helvetica','normal');
@@ -2097,7 +2108,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='7.4',APPD='16 Nov 2026';
+const APPV='7.5',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
