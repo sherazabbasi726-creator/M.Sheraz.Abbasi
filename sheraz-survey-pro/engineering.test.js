@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),e=require('./engineering.js');
+const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} vs ${b}`);
+const sq=[[0,0],[10,0],[10,10],[0,10]];
+close(e.evaluateArea({boundary:sq},[{pointNo:'A',easting:5,northing:5,designRL:101,nglRL:100}],10).fill,100);
+close(e.evaluateArea({boundary:sq},[{pointNo:'A',easting:5,northing:5,designRL:99,nglRL:100}],10).cut,100);
+close(e.evaluateArea({boundary:sq},[{pointNo:'A',easting:0,northing:0,designRL:101,nglRL:100}],10).coveredArea,25);
+close(e.evaluateArea({boundary:[[0,0],[10,0],[0,10]]},[{pointNo:'A',easting:5,northing:5,designRL:101,nglRL:100}],10).coveredArea,50);
+close(e.evaluateArea({boundary:[[0,0],[20,0],[20,10],[10,10],[10,20],[0,20]]},[{pointNo:'A',easting:10,northing:10,designRL:101,nglRL:100}],20).coveredArea,300);
+const m=e.evaluateArea({boundary:sq},[{pointNo:'A',easting:5,northing:5,designRL:101,nglRL:null}],10);assert.equal(m.missing,1);close(m.fill,0);
+console.log('PASS: square fill/cut, edge clipping, triangle, concave L, missing NGL');

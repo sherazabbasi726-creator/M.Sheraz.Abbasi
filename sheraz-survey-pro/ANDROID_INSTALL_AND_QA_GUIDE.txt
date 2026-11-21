@@ -1,0 +1,30 @@
+SHERAZ SURVEY PRO — ANDROID INSTALL & FIELD QA (RELEASE 12)
+Prepared for Engr Muhammad Sheraz Abbasi
+
+DEPLOY TO GITHUB PAGES
+1. Extract ZIP and upload ALL contents of the sheraz-survey-pro folder to the repository root (the folder's files, not the ZIP).
+2. In GitHub repository Settings > Pages, publish from the branch and folder holding index.html.
+3. Wait for deployment; open the published HTTPS URL in Chrome on Android.
+4. Open Chrome menu > Add to Home screen > Install app (wording varies). Some devices will show an Install App button in the header.
+5. For an existing installation, reload while online to receive updated assets. If outdated, close and reopen the app.
+
+OFFLINE SMOKE TEST
+A. Open while online, allow the page to finish loading and source archive to cache.
+B. Switch on Airplane mode, reopen the installed app.
+C. Open Projects, Master Grading Points, Layers and Backup; verify they render.
+D. Add a TEST project and point; close and reopen; verify data persists.
+E. Export a JSON backup; verify downloaded file exists.
+F. Restore only into a disposable TEST workspace: restore may replace/merge local records; retain original backup.
+G. Switch online; verify no console errors (optional desktop DevTools).
+
+ENGINEERING QA (USE TEST DATA)
+- Square boundary 10m x 10m; one 10m cell at center; Design 101.000, NGL 100.000 -> fill 100 m3.
+- Layer setup: NGL 100, Design 101, preparation 0.30, layer thickness 0.30 -> first previous RL 99.700, last target 101.000.
+- Add Pending survey; should NOT count as accepted. Add Accepted survey; check progress.
+- Import original archive in small batches first; do not assume source WIR records are approved.
+- Audit irregular boundaries and any uncovered or overlapping cells before using quantities.
+
+IMPORTANT
+No physical Android handset test was performed by the assistant.
+All data is local to browser IndexedDB. Uninstalling, clearing site storage or switching browser profiles may lose data unless backed up.
+This release is not an independently certified engineering calculation system.
