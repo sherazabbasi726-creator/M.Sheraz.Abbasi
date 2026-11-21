@@ -208,7 +208,28 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 .ssp{margin-top:10px;border:1px solid var(--ln,#2a3035);border-radius:10px;padding:8px 10px}.ssp>summary{font-weight:700;font-size:13px;cursor:pointer}
 .ssp table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}.ssp th{position:sticky;top:0;background:var(--p2,#1b2126);text-align:left;padding:4px 5px;font-size:10.5px;white-space:nowrap}.ssp td{padding:3px 5px;border-top:1px solid var(--ln,#2a3035);white-space:nowrap;font-variant-numeric:tabular-nums}
 .anb{margin:6px 0 10px}.anr{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;margin:5px 0;font-size:12px}.anl{color:#495057;white-space:nowrap}.anw i{display:block;height:9px;border-radius:5px;min-width:3px;margin-bottom:2px}.anw span{font-size:11.5px;color:#495057}
+.lyrpop{position:absolute;left:10px;top:10px;z-index:6;background:rgba(14,17,19,.96);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;font-size:12.5px;display:flex;flex-direction:column;gap:6px;min-width:210px;box-shadow:0 10px 30px #0008}
+.lyrpop label{display:flex!important;flex-direction:row!important;gap:8px;align-items:center;justify-content:flex-start;text-align:left;white-space:nowrap;cursor:pointer;margin:0;font-size:12.5px}.lyrpop input{width:auto!important;margin:0}
+.hleg{margin-bottom:6px;font-size:11.5px}.hleg .hrow{display:flex;align-items:center;gap:6px;margin:2px 0}.hleg i{width:22px;height:11px;border-radius:3px;display:inline-block}.hleg em{opacity:.65;font-style:normal;margin-left:auto}
+#atlasKpi{display:none}.hbar{display:none}
+@media (max-width:700px){.hleg .hrow{display:none}.hbar{display:block;margin:2px 0 4px}.hleg{min-width:230px}.hleg .hbar i{display:block;width:100%;height:10px;border-radius:5px}.hbar div{display:flex;justify-content:space-between;font-size:10.5px;opacity:.8;margin-top:2px}}
+@media (min-width:1100px){
+ body{display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+ body>header{grid-column:1/3;grid-row:1}body>main{grid-column:2;grid-row:2;min-height:0}
+ body>nav{grid-column:1;grid-row:2;display:flex!important;flex-direction:column;gap:4px;margin:8px!important;padding:10px 8px!important;border-radius:16px;overflow:auto;align-self:stretch}
+ nav button{flex-direction:row!important;justify-content:flex-start;gap:10px!important;font-size:13px!important;padding:6px 8px!important;border-radius:12px;width:100%}
+ nav button.on{background:rgba(255,176,32,.12);color:var(--tx)}nav button i{width:34px!important;height:30px!important;flex:none}
+ #atlasKpi{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:10px 12px;background:var(--p1);border-bottom:1px solid var(--ln)}
+ #atlasKpi .ak{display:flex;gap:9px;align-items:center;background:var(--p2,#1b2126);border:1px solid var(--ln);border-radius:12px;padding:8px 10px;min-width:0}
+ #atlasKpi .ai{font-size:20px;color:#ffb020;flex:none}#atlasKpi small{display:block;font-size:10.5px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#atlasKpi b{font-size:13.5px;display:block;line-height:1.2}#atlasKpi .ak>div{min-width:0}
+ #atlasKpi .c b{color:#ff6b6b}#atlasKpi .f b{color:#51cf66}#atlasKpi .n b{color:#51cf66}#atlasKpi .d b{color:#ffd43b}
+ #mapInfo{width:360px!important;right:62px!important;font-size:13px}
+}
+.lctl{margin-top:8px;border:1px solid var(--ln);border-radius:10px;padding:8px 10px;background:rgba(255,176,32,.05)}.lch{font-weight:800;margin-bottom:4px}.lcr{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:12px;border-bottom:1px dashed rgba(128,128,128,.18)}.lcr b{font-variant-numeric:tabular-nums}.lcr.key b{color:#ffb020}
+.rlk{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px}.rlk>div{border:1px solid var(--ln);border-radius:10px;padding:8px 10px}.rlk small{display:block;font-size:10.5px;opacity:.7}.rlk b{font-size:16px}.rlk .bad b{color:#ff6b6b}.rlk .warn b{color:#ffb020}
+.rla td,.rla th{white-space:nowrap;font-size:11.5px}
 </style>
+
 </head>
 <body>
 <header>
@@ -220,7 +241,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 </header>
 <main id="main">
   <section class="page on" id="p-today"></section>
-  <section class="page full" id="p-map"><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="zPh" aria-label="Site photos" title="Site photos on the map">📷</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
+  <section class="page full" id="p-map"><div id="atlasKpi"></div><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zLy" aria-label="Map layers" title="Map layers">🗂</button><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="zPh" aria-label="Site photos" title="Site photos on the map">📷</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
   <section class="page" id="p-surv"></section>
   <section class="page" id="p-design"></section>
   <section class="page" id="p-qty"></section>
@@ -395,7 +416,7 @@ function rToday(){const el=$('#p-today');el.replaceChildren();const now=new Date
   const L=h('div',{}),Rr=h('div',{});el.append(h('div',{class:'grid2'},L,Rr));Rr.append(attnCard());
   {const sp=speedData(),r7=(sp.d7.f+sp.d7.c)/7,PS=pileSum();const qb=(ic,t,s2,fn)=>h('button',{class:'qt',onclick:fn},h('span',{class:'qi'},ic),h('b',{},t),h('small',{},s2));
     L.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'Tools'),h('span',{class:'mut',style:'font-size:11px'},'v'+APPV+' · '+APPD)),h('div',{class:'qg'},
-      qb('📰','Daily report','site · equipment · PDF',()=>dsSheet()),qb('✂️','Section','cut a line on the map',()=>sectStart()),qb('🏁','Finish forecast','when each area ends',()=>fcSheet()),qb('🧱','Next layer','m³ · loads · days',()=>nlSheet()),qb('⛰','Stockpile register','left · trucks · surveys',()=>pileSheet()),qb('🎯','Stake-out','GPS · cut / fill here',()=>stakeStart()),
+      qb('📰','Daily report','site · equipment · PDF',()=>dsSheet()),qb('✂️','Section','cut a line on the map',()=>sectStart()),qb('🏁','Finish forecast','when each area ends',()=>fcSheet()),qb('🧱','Next layer','m³ · loads · days',()=>nlSheet()),qb('⛰','Stockpile register','left · trucks · surveys',()=>pileSheet()),qb('🎯','Stake-out','GPS · cut / fill here',()=>stakeStart()),qb('📏','RL audit','every area vs design',()=>rlAuditSheet()),qb('📅','Area progress','Gantt timeline',()=>ganttSheet()),
       qb('⚡','Speed',fmt(Math.round(r7))+' m³/day',()=>{qView='speed';lsSet('as2_qv','speed');show('qty')}),
       qb('🧊','3D view','before ⇄ now',()=>{show('map');setTimeout(()=>v3Open(),50)}),
       qb('🛰','Satellite','map + wadis',()=>{satOn=true;lsSet('as2_sat',true);show('map')}),
@@ -637,10 +658,10 @@ function qtyCsv(Q,D){const L=[['Group','Fill required m3','Fill done m3','Fill t
   download('Quantities_'+D.name.split(' – ')[0].replace(/\W+/g,'_')+'_'+today()+'.csv','Alomaier Survey 2.0 – quantities with '+D.name+' – '+dNice(today())+'\n'+L.join('\n'),'text/csv')}
 /* ============================== SITE MAP ============================== */
 let mapMode=lsGet('as2_mm','grade'),view=null,LYR={},mapFocus=null;
-const MODES=[['grade','Grade status'],['need','Design vs NGL'],['rem','To go'],['lay','Layers'],['last','Last survey'],['ngl','NGL record'],['cmp','Design change']];
+const MODES=[['heat','Cut / fill heatmap'],['grade','Grade status'],['need','Design vs NGL'],['rem','To go'],['lay','Layers'],['last','Last survey'],['ngl','NGL record'],['cmp','Design change']];
 function rMap(){const bar=$('#mapBar');bar.replaceChildren(...kids(h('div',{class:'seg'},...MODES.map(([k,l])=>h('button',{class:mapMode===k?'on':'',onclick:()=>{mapMode=k;lsSet('as2_mm',k);rMap()}},l))),
     mapFocus?h('button',{class:'btn sm',onclick:()=>{mapFocus=null;rMap()}},'✕ '+mapFocus.title):null));
-  legend();requestAnimationFrame(()=>{sizeMap();if(!view)fit();if(mapFocus)fitTo(mapFocus.pts);draw()})}
+  legend();try{atlasKpi()}catch(e){}requestAnimationFrame(()=>{sizeMap();if(!view)fit();if(mapFocus)fitTo(mapFocus.pts);draw()})}
 function col(t,a,b){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
 /* cut / fill depth in bands so 2 m, 5 m and 10 m look different */
 const DB=[0.5,1,2,5,10],DBF=[[160,210,255],[110,180,250],[60,140,235],[30,95,200],[20,55,150],[60,20,140]],DBC=[[255,190,170],[255,140,120],[245,90,80],[210,45,50],[150,20,35],[90,10,60]];
@@ -650,7 +671,8 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
   const D=DZ[activeDesign().id],tol=M.tol||0.1,now=Date.now();let A=null,Bz=null;if(mode==='cmp'){const L=designs();A=DZ[cmpA]||DZ[L[Math.max(0,L.length-2)].id];Bz=DZ[cmpB]||DZ[L[L.length-1].id]}
   const KC={1:[224,178,90],2:[92,184,255],3:[255,93,93],4:[62,207,142],5:[179,136,255],6:[142,153,163]};
   for(let i=0;i<B.n;i++){let c=null;const z=D[i],g=G[i],cu=CUR[i];
-    if(mode==='need'){if(z===z&&g===g)c=Math.abs(z-g)<0.02?[42,48,53]:band(z-g)}
+    if(mode==='heat'){const v=heatVal(i);if(v===v)c=heatCol(v)}
+    else if(mode==='need'){if(z===z&&g===g)c=Math.abs(z-g)<0.02?[42,48,53]:band(z-g)}
     else if(mode==='rem'){if(z===z&&cu===cu){const dz=z-cu;c=Math.abs(dz)<=tol?[62,207,142]:ramp(dz,2,[255,93,93],[255,176,32])}}
     else if(mode==='last'){c=LKIND[i]?KC[LKIND[i]]:[44,50,55];if(LKIND[i]&&LAST[i]){const age=(now-Date.parse(LAST[i]))/864e5;const f=age<7?1:age<30?.75:.5;c=c.map(v=>v*f+44*(1-f))}}
     else if(mode==='ngl'){c=NGLSRC[i]>=0?[255,176,32]:[70,78,85]}
@@ -659,12 +681,12 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
     else if(mode==='cmp'){if(A&&Bz&&A[i]===A[i]&&Bz[i]===Bz[i]){const dd=Bz[i]-A[i];c=Math.abs(dd)<0.02?[50,56,61]:ramp(dd,1,[92,184,255],[255,138,0])}}
     if(!c)continue;const px=Math.round((B.E[i]-B.e0)/r)+2,py=Math.round((B.n1-B.N[i])/r)+2;
     for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const o=((py+b)*W+px+a)*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255}}
-  cx.putImageData(im,0,0);LYR[mode]={cv,r};return LYR[mode]}
+  cx.putImageData(im,0,0);if(mode==='heat'){LYR[mode]={cv:heatSmooth(cv),r:r/4,sm:1};return LYR[mode]}LYR[mode]={cv,r};return LYR[mode]}
 function legend(){const hx=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');const L={need:[[hx(DBF[0]),'fill 0–0.5'],[hx(DBF[2]),'fill 1–2'],[hx(DBF[3]),'2–5'],[hx(DBF[4]),'5–10'],[hx(DBF[5]),'fill >10 m'],[hx(DBC[0]),'cut 0–0.5'],[hx(DBC[2]),'cut 1–2'],[hx(DBC[3]),'2–5'],[hx(DBC[4]),'5–10'],[hx(DBC[5]),'cut >10 m']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
     last:Object.values(KIND).map(([n,c])=>[c,n]).concat([['#2c3237','not surveyed']]),ngl:[['#465057','NGL at project start'],['#ffb020','NGL surveyed later']],grade:[[GR[5][1],'final grade'],[GR[4][1],'touch grade'],[GR[3][1],'near grade'],['#4a6a8a','fill working'],['#8a4a4a','cut working'],[GR[1][1],'not started'],[GR[6][1],'over design']],lay:[['#373d42','not prepared'],['#e0b25a','prepared (NGL − 0.30)'],['#285a96','first layers'],['#78c8ff','last layers'],['#3ecf8e','on final design'],['#462828','cut area']],cmp:[['#ff8a00','raised'],['#5cb8ff','lowered'],['#32383d','same (±2 cm)']]}[mapMode]||[];
-  $('#mapLeg').replaceChildren(...kids(pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffb020'},'● 0.35–0.40 '),h('span',{style:'color:#ff3b3b'},'● over 0.40 / prep under 0.20 '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
+  $('#mapLeg').replaceChildren(...kids(mapMode==='heat'?heatLegend():null,pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffb020'},'● 0.35–0.40 '),h('span',{style:'color:#ff3b3b'},'● over 0.40 / prep under 0.20 '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
     mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null,
-    (mapMode==='need'||mapMode==='rem')?h('label',{class:'satop',style:'gap:6px'},h('input',{type:'checkbox',checked:VALS,onchange:e=>{VALS=e.target.checked;lsSet('as2_vals',VALS);draw()}}),h('span',{},'Show the cut / fill numbers on the map (zoom in)')):null,
+    (mapMode==='need'||mapMode==='rem'||mapMode==='heat')?h('label',{class:'satop',style:'gap:6px'},h('input',{type:'checkbox',checked:VALS,onchange:e=>{VALS=e.target.checked;lsSet('as2_vals',VALS);draw()}}),h('span',{},'Show the cut / fill numbers on the map (zoom in)')):null,
     satOn?h('label',{class:'satop'},h('span',{},'🛰 Colours'),h('input',{type:'range',min:'0',max:'1',step:'0.05',value:String(satOp),oninput:e=>{satOp=+e.target.value;lsSet('as2_satop',satOp);draw()}})):null));satBtn()}
 function sizeMap(){const c=$('#map'),b=$('#mapBox').getBoundingClientRect(),dp=devicePixelRatio||1;c.width=Math.max(10,b.width*dp);c.height=Math.max(10,b.height*dp)}
 function fit(){fitBox(B.e0,B.e1,B.n0,B.n1)}
@@ -672,22 +694,22 @@ function fitBox(e0,e1,n0,n1){const c=$('#map'),dp=devicePixelRatio||1,W=c.width/
 function fitTo(P){if(!P||!P.length)return;let e0=1e12,e1=-1e12,n0=1e12,n1=-1e12;for(const p of P){e0=Math.min(e0,p.e);e1=Math.max(e1,p.e);n0=Math.min(n0,p.n);n1=Math.max(n1,p.n)}fitBox(e0-60,e1+60,n0-60,n1+60)}
 let VALS=lsGet('as2_vals',true)!==false;
 /* numbers on the map: design − NGL (Design vs NGL) or design − ground now (To go), one label per free spot on the screen */
-function valDraw(x,P,s){if(!VALS||(mapMode!=='need'&&mapMode!=='rem')||s<1.6)return;const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(-20,-20),[e1,n0]=S2W(W+20,H+20),D=DZ[activeDesign().id],tol=M.tol||0.1;
+function valDraw(x,P,s){if(!VALS||(mapMode!=='need'&&mapMode!=='rem'&&mapMode!=='heat')||s<1.6)return;const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(-20,-20),[e1,n0]=S2W(W+20,H+20),D=DZ[activeDesign().id],tol=M.tol||0.1;
   const cw=s>5?52:60,ch=19,used=new Set(),L=[];
-  for(let i=0;i<B.n;i++){const e=B.E[i],n=B.N[i];if(e<e0||e>e1||n<n0||n>n1)continue;const z=D[i];if(!(z===z))continue;const v=mapMode==='need'?z-G[i]:z-CUR[i];if(!(v===v))continue;const [u,w]=P(e,n),k=Math.floor(u/cw)+'|'+Math.floor(w/ch);if(used.has(k))continue;used.add(k);L.push([u,w,v]);if(L.length>1400)break}
+  for(let i=0;i<B.n;i++){const e=B.E[i],n=B.N[i];if(e<e0||e>e1||n<n0||n>n1)continue;const z=D[i];if(!(z===z))continue;const v=mapMode==='heat'?heatVal(i):mapMode==='need'?z-G[i]:z-CUR[i];if(!(v===v))continue;const [u,w]=P(e,n),k=Math.floor(u/cw)+'|'+Math.floor(w/ch);if(used.has(k))continue;used.add(k);L.push([u,w,v]);if(L.length>1400)break}
   x.save();x.font='700 '+(s>5?11:10)+'px ui-monospace,Menlo,monospace';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=3;
   for(const [u,w,v] of L){const on=mapMode==='rem'&&Math.abs(v)<=tol,txt=on?'✓':(v>0?'+':'−')+Math.abs(v).toFixed(3);x.strokeStyle='rgba(8,10,12,.9)';x.strokeText(txt,u,w);x.fillStyle=on?'#3ecf8e':v>0?'#9fd2ff':'#ffb0a0';x.fillText(txt,u,w)}
   x.restore()}
 const W2S=(e,n)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(e-view.e)*view.s+c.width/dp/2,(view.n-n)*view.s+c.height/dp/2]};
 const S2W=(x,y)=>{const c=$('#map'),dp=devicePixelRatio||1;return [(x-c.width/dp/2)/view.s+view.e,view.n-(y-c.height/dp/2)/view.s]};
 function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getContext('2d'),dp=devicePixelRatio||1;x.setTransform(dp,0,0,dp,0,0);x.fillStyle='#0b0e10';x.fillRect(0,0,c.width,c.height);if(satOn)satMap(x);
-  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=view.s*L.r<3;orthoDraw(x);x.globalAlpha=(satOn||(ORTHO&&ORTHO_ON))?satOp:1;if(x.globalAlpha>0.01)x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);x.globalAlpha=1;
+  const L=layer(mapMode),[sx,sy]=W2S(B.e0-2*L.r,B.n1+2*L.r);x.imageSmoothingEnabled=!!L.sm||view.s*L.r<3;orthoDraw(x);x.globalAlpha=(satOn||(ORTHO&&ORTHO_ON))?satOp:1;if(x.globalAlpha>0.01&&LYRV.colour)x.drawImage(L.cv,sx,sy,L.cv.width*L.r*view.s,L.cv.height*L.r*view.s);x.globalAlpha=1;
   const poly=(R,close=true)=>{x.beginPath();R.forEach((q,i)=>{const [a,b]=W2S(q[0],q[1]);i?x.lineTo(a,b):x.moveTo(a,b)});if(close)x.closePath()};
-  x.lineWidth=1.6;K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
-  const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
-  if(K.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);valDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
-  if(view.s>0.08){x.textAlign='center';x.textBaseline='middle';x.font='700 '+Math.max(10,Math.min(14,view.s*40))+'px IBM Plex Sans,system-ui';for(const a of K.areas){const [p,q]=W2S(a.lx,a.ly);x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.7)';const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','');x.strokeText(t,p,q);x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,q)}}
+  x.lineWidth=1.6;if(LYRV.areas)K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
+  const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;if(LYRV.phases)for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
+  if(K.site&&LYRV.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);ifcDraw(x,W2S,view.s);valDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
+  labelsDraw(x,W2S,view.s);scaleDraw(x,view.s);
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
     if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
   if(DRAW&&view.s>0.5){x.font='700 10px IBM Plex Sans,system-ui';x.textAlign='center';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#ffd43b';DRAW.pts.forEach((q,k)=>{const [a,b]=W2S(q[0],q[1]);x.strokeText(String(k+1),a,b-11);x.fillText(String(k+1),a,b-11)})}
@@ -713,7 +735,7 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(SECT){SECT.pts.push([we,wn]);sectBar();draw()}else if(PDRAW){PDRAW.pts.push([we,wn]);pileBar();draw()}else if(STK&&STK.pick){STK.tgt={e:we,n:wn,name:'tapped spot'};STK.pick=false;stakeUpd();draw()}else if(phHit(e.offsetX,e.offsetY)){survSheet(phHit(e.offsetX,e.offsetY).s)}else if(hit)ptCard(hit);else{if(SECTV){SECTV=null;draw()}info(we,wn)}}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
-  $('#zSat').onclick=satToggle;$('#zPh').onclick=phToggle;$('#zPh').classList.toggle('on',PHMAP);$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
+  $('#zSat').onclick=satToggle;$('#zLy').onclick=lyrPanel;$('#zPh').onclick=phToggle;$('#zPh').classList.toggle('on',PHMAP);$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
   addEventListener('resize',()=>{if(cur==='map'){sizeMap();draw()}})}
 /* ============================== GRADE STATUS (final / touch / near) ============================== */
 const GTH=()=>({f:+M.gF||0.05,t:+M.gT||0.15,n:+M.gN||0.30});
@@ -2079,7 +2101,7 @@ function recordCard(g,col,size){const Z=DZ[activeDesign().id],o=qtyOf(g.test,Z),
     h('div',{class:'kv',style:'font-size:12px'},...r('Area number',g.type==='sub'?g.sub.name+' (in '+g.sub.area+')':K.areas[g.ai].name.replace('AREA ','Area ')+' · '+(K.areas[g.ai].zone||'')),...r('Area',fmt(Math.round(size||o.m2))+' m²'),...r('Grade points',fmt(o.n)),
       ...(o.fR>1?r('Fill total · done · left',fmt(o.fR)+' · '+fmt(o.fD)+' ('+pc(o.fD,o.fR)+') · '+fmt(o.fR-o.fD)+' m³','#3ecf8e'):[]),...(o.cR>1?r('Cut total · done · left',fmt(o.cR)+' · '+fmt(o.cD)+' ('+pc(o.cD,o.cR)+') · '+fmt(o.cR-o.cD)+' m³','#ff5d5d'):[]),
       ...(t.need&&t.ls?r('Layers min · most · max',t.ls.min+' · '+t.ls.most+' · '+t.ls.max+(t.ls.max>t.ls.most?' (max on '+pctTxt(t.ls.maxPct)+')':'')):[]),...(t.need?r('Layers now · to go',(t.dn?'L'+t.dn:'prep')+' · '+Math.max(0,t.ls.most-t.dn)+(t.ls.max>t.ls.most?'–'+t.left:'')):[]),...(()=>{const gs=gradeSplit(g.test,Z);return gs.more+gs.fin+gs.done>0?[...r('More fill first (> 0.30)',fmt(Math.round(gs.more))+' m²','#e8590c'),...r('Final layer only (0.10–0.30)',fmt(Math.round(gs.fin))+' m²','#4dabf7'),...r('At grade',fmt(Math.round(gs.done))+' m²','#3ecf8e')]:[]})(),...(()=>{const T=GTH(),F=o.gF||[],C=o.gC||[],L=[];if(F[3]||F[4])L.push(...r('Fill near (≤'+T.n.toFixed(2)+') · touch (≤'+T.t.toFixed(2)+')',fmt(Math.round(F[3]))+' · '+fmt(Math.round(F[4]))+' m²','#ffd27a'));if(o.nfA)L.push(...r('Fill 0.000 now → final layer',fmt(Math.round(o.nfA))+' m² · '+fmt(Math.round(o.nfV))+' m³','#4dabf7'));if(C[3]||C[4])L.push(...r('Cut near (≤'+T.n.toFixed(2)+') · touch (≤'+T.t.toFixed(2)+')',fmt(Math.round(C[3]))+' · '+fmt(Math.round(C[4]))+' m²','#ff9f9f'));return L})()),
-    h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet(g.type,g.key)},'Full record & report ›'))}
+    (()=>{try{return layCtlBox(g.test,Z)}catch(e){return null}})(),h('button',{class:'btn sm',style:'width:100%;margin-top:6px',onclick:()=>qtySheet(g.type,g.key)},'Full record & report ›'))}
 
 /* ============================== OUTLINE THROUGH THE OUTER POINTS (concave hull) ============================== */
 /* Delaunay triangulation (Bowyer–Watson), then triangles with a side longer than ~2.5 point spacings are dropped;
@@ -2123,7 +2145,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='8.2',APPD='16 Nov 2026';
+const APPV='8.5',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -5741,6 +5763,107 @@ function anaPdf(doc,X,y,H2,AT,room,M_,W){const A=anaData(X);if(!A.n)return y;con
   y=room(y,25);AT({startY:y,head:[['Surveyor','Surveys','Days','Points','On target +/-'+(tol*100).toFixed(0)+' cm']],body:Object.entries(A.who).map(([k,o])=>[k,o.s,o.days.size,fmt(o.n),anaP(o.on,o.n)])});y=doc.lastAutoTable.finalY+5;
   if(A.worst.length){y=room(y,30);AT({startY:y,head:[['Points to check','Point','Northing','Easting','Design - surv.','Thickness']],body:A.worst.map(({s,r,d})=>[wirNo(s)+' · '+dmy(s.date),r.id,r.n.toFixed(3),r.e.toFixed(3),d.toFixed(3),r.th===r.th?r.th.toFixed(3):''])});y=doc.lastAutoTable.finalY+6}
   return y}
+
+/* ============================== v8.3 – Atlas map: smooth cut/fill heatmap, area labels, map layers, scale bar, wide-screen layout ============================== */
+/* ---------- continuous cut / fill colours: blue = much fill, green = on level, red = much cut ---------- */
+const HSTOP=[[-1.5,[230,30,30]],[-1.0,[255,150,30]],[-0.5,[245,230,60]],[0,[70,215,90]],[0.5,[60,215,240]],[1.0,[40,130,255]],[1.5,[20,40,200]]];
+function heatCol(v){if(v<=HSTOP[0][0])return HSTOP[0][1];for(let k=1;k<HSTOP.length;k++){const [a,ca]=HSTOP[k-1],[b,cb]=HSTOP[k];if(v<=b){const t=(v-a)/(b-a);return col(t,ca,cb)}}return HSTOP[HSTOP.length-1][1]}
+let HEATSRC=lsGet('as2_heatsrc','rem');          // rem = design − ground now (still to do) · need = design − NGL (whole job)
+const heatVal=i=>{const z=DZ[activeDesign().id][i],b=HEATSRC==='need'?G[i]:CUR[i];return z===z&&b===b?z-b:NaN};
+/* soft blur of the small colour picture, then 4× bigger so the browser blends it smoothly */
+function heatSmooth(cv){const W=cv.width,H=cv.height,cx=cv.getContext('2d'),im=cx.getImageData(0,0,W,H),d=im.data,n=W*H;
+  const A=new Float32Array(n*4);for(let i=0;i<n;i++){const a=d[i*4+3]/255;A[i*4]=d[i*4]*a;A[i*4+1]=d[i*4+1]*a;A[i*4+2]=d[i*4+2]*a;A[i*4+3]=a}
+  const T=new Float32Array(n*4),R=2;
+  for(let pass=0;pass<2;pass++){const src=pass?T:A,dst=pass?A:T;for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s0=0,s1=0,s2=0,s3=0,c=0;for(let k=-R;k<=R;k++){const xx=pass?x:x+k,yy=pass?y+k:y;if(xx<0||yy<0||xx>=W||yy>=H)continue;const o=(yy*W+xx)*4;s0+=src[o];s1+=src[o+1];s2+=src[o+2];s3+=src[o+3];c++}const o=(y*W+x)*4;dst[o]=s0/c;dst[o+1]=s1/c;dst[o+2]=s2/c;dst[o+3]=s3/c}}
+  for(let i=0;i<n;i++){const o=i*4,a=A[o+3],keep=d[o+3]>0;if(!keep||a<0.02){d[o+3]=0;continue}d[o]=A[o]/a;d[o+1]=A[o+1]/a;d[o+2]=A[o+2]/a;d[o+3]=255}
+  cx.putImageData(im,0,0);const S=4,big=document.createElement('canvas');big.width=W*S;big.height=H*S;const bx=big.getContext('2d');bx.imageSmoothingEnabled=true;bx.imageSmoothingQuality='high';bx.drawImage(cv,0,0,W*S,H*S);return big}
+
+/* ---------- map layers on / off ---------- */
+const LYRV=Object.assign({areas:true,phases:true,labels:true,colour:true,ifc:false,site:true,scale:true},lsGet('as2_lyrv',{}));
+function lyrSet(k,v){LYRV[k]=v;lsSet('as2_lyrv',LYRV);draw()}
+function lyrPanel(){const box=$('#lyrPop');if(box){box.remove();return}
+  const L=[['colour','Colours / heatmap'],['areas','Area borders'],['phases','Phase borders'],['labels','Area names + points'],['ifc','IFC design points (zoom in)'],['site','Site boundary'],['scale','Scale bar']];
+  const p=h('div',{id:'lyrPop',class:'lyrpop'},h('div',{style:'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px'},h('b',{},'🗂 Map layers'),h('button',{class:'lnk',onclick:()=>p.remove()},'✕')),
+    ...L.map(([k,t])=>h('label',{},h('input',{type:'checkbox',checked:LYRV[k],onchange:e=>lyrSet(k,e.target.checked)}),' ',t)));
+  $('#mapBox').append(p)}
+/* small IFC design points when zoomed in */
+function ifcDraw(x,P,s){if(!LYRV.ifc||s<0.9)return;const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(-5,-5),[e1,n0]=S2W(W+5,H+5),D=DZ[activeDesign().id];let k=0;
+  x.fillStyle='rgba(255,255,255,.85)';const r=Math.max(0.9,Math.min(2.2,s*0.35));for(let i=0;i<B.n;i++){const e=B.E[i],n=B.N[i];if(e<e0||e>e1||n<n0||n>n1||!(D[i]===D[i]))continue;if(++k>25000)break;const [u,w]=P(e,n);x.fillRect(u-r/2,w-r/2,r,r)}}
+/* scale bar + north arrow */
+function scaleDraw(x,s){if(!LYRV.scale)return;const c=$('#map'),dp=devicePixelRatio||1,H=c.height/dp,Wd=c.width/dp;const want=Math.min(140,Wd*0.3)/s,p=Math.pow(10,Math.floor(Math.log10(want))),m=[1,2,2.5,5,10].map(f=>f*p).filter(v=>v<=want).pop()||p,len=m*s,x0=Math.round(Wd/2-len/2),y0=H-22;
+  x.save();x.fillStyle='rgba(10,14,16,.75)';x.beginPath();x.roundRect?x.roundRect(x0-14,y0-22,len+44,34,8):x.rect(x0-14,y0-22,len+44,34);x.fill();
+  for(let k=0;k<4;k++){x.fillStyle=k%2?'#fff':'#111';x.fillRect(x0+len*k/4,y0,len/4,6)}x.strokeStyle='#fff';x.lineWidth=1;x.strokeRect(x0,y0,len,6);
+  x.fillStyle='#fff';x.font='600 10px IBM Plex Sans,system-ui';x.textAlign='center';x.textBaseline='bottom';x.fillText('0',x0,y0-2);x.fillText(fmt(m/2),x0+len/2,y0-2);x.fillText(fmt(m)+' m',x0+len,y0-2);
+  x.restore()}
+/* area labels in a box: name + number of design points */
+let AREA_NPTS=null;
+function areaPts(){if(AREA_NPTS)return AREA_NPTS;AREA_NPTS={};for(let i=0;i<B.n;i++){const a=B.A[i];if(a>=0)AREA_NPTS[a]=(AREA_NPTS[a]||0)+1}return AREA_NPTS}
+function labelsDraw(x,P,s){if(!LYRV.labels||s<=0.045)return;const tiny=s<0.08;const N=areaPts(),big=s>0.22;x.save();x.textAlign='center';x.textBaseline='middle';
+  K.areas.forEach((a,ai)=>{const [p,q]=P(a.lx,a.ly);const t=a.w?'Wadi '+a.name.replace(/^W\s*/,''):a.name.replace('AREA ','A-');x.font='800 '+(big?13:tiny?9:11)+'px IBM Plex Sans,system-ui';
+    const sub=!a.w&&big&&N[ai]?fmt(N[ai])+' pts':'',w=Math.max(x.measureText(t).width,sub?x.measureText(sub).width*0.85:0)+14,hh=sub?32:tiny?14:19;
+    x.fillStyle=a.w?'rgba(10,40,60,.78)':'rgba(10,14,16,.80)';x.strokeStyle=a.w?'#4dabf7':'rgba(255,255,255,.55)';x.lineWidth=1;x.beginPath();x.roundRect?x.roundRect(p-w/2,q-hh/2,w,hh,6):x.rect(p-w/2,q-hh/2,w,hh);x.fill();x.stroke();
+    x.fillStyle=a.w?'#cdeeff':'#fff';x.fillText(t,p,sub?q-6:q);if(sub){x.font='600 10px IBM Plex Sans,system-ui';x.fillStyle='#c9d3db';x.fillText(sub,p,q+8)}});x.restore()}
+function heatLegend(){const stops=[['> +1.50','fill'],['+1.00 – +1.50',''],['+0.50 – +1.00',''],['−0.50 – +0.50','on level'],['−1.00 – −0.50',''],['−1.50 – −1.00',''],['< −1.50','cut']],cs=[1.75,1.25,0.75,0,-0.75,-1.25,-1.75].map(v=>'rgb('+heatCol(v).map(Math.round).join(',')+')');
+  return h('div',{class:'hleg'},h('div',{style:'font-weight:700;margin-bottom:4px'},'Cut / fill (m) – '+(HEATSRC==='need'?'design − NGL':'design − ground now')),
+    h('div',{class:'hbar'},h('i',{style:'display:block;width:100%;min-width:200px;height:10px;border-radius:5px;background:linear-gradient(90deg,'+cs.slice().reverse().join(',')+')'}),h('div',{},h('span',{},'cut −1.5'),h('span',{},'0'),h('span',{},'+1.5 fill'))),
+    ...stops.map(([t,s],k)=>h('div',{class:'hrow'},h('i',{style:'background:'+cs[k]}),h('span',{},t),s?h('em',{},s):null)),
+    h('div',{class:'seg',style:'margin-top:6px'},h('button',{class:HEATSRC==='rem'?'on':'',onclick:()=>{HEATSRC='rem';lsSet('as2_heatsrc','rem');delete LYR.heat;legend();draw()}},'Still to do'),h('button',{class:HEATSRC==='need'?'on':'',onclick:()=>{HEATSRC='need';lsSet('as2_heatsrc','need');delete LYR.heat;legend();draw()}},'Design vs NGL')))}
+
+/* ---------- top numbers strip (big screens) ---------- */
+function atlasKpi(){const el=$('#atlasKpi');if(!el||!ready)return;const D=DZ[activeDesign().id];let nD=0;for(let i=0;i<B.n;i++)if(D[i]===D[i])nD++;
+  const q=qtyOf(()=>true,D),nW=surveys().filter(s=>s.wir).length,nA=K.areas.filter(a=>!a.w).length,nP=Object.keys(K.phases||{}).length||4;
+  const T=[['📍','IFC design points',fmt(nD),''],['▦','Areas',nA,''],['◫','Phases',nP,''],['🗎','WIR records',nW,''],['Σ','Total cut',fmt(Math.round(q.cR))+' m³','c'],['Σ','Total fill',fmt(Math.round(q.fR))+' m³','f'],['⚖','Net (fill − cut)',(q.fR-q.cR>=0?'+':'')+fmt(Math.round(q.fR-q.cR))+' m³','n'],['✓','Fill done',fmt(Math.round(q.fD))+' m³ ('+(q.fR>0?(q.fD/q.fR*100).toFixed(1):'0')+'%)','d']];
+  el.replaceChildren(...T.map(([i,t,v,c])=>h('div',{class:'ak '+c},h('span',{class:'ai'},i),h('div',{},h('small',{},t),h('b',{},String(v))))))}
+
+/* ============================== v8.4 – Layer control, RL audit, area progress (Gantt) ============================== */
+/* ---------- layer control of any group (area / sub-area / zone / phase) ---------- */
+function layCtl(test,Z){const tol=M.tol||0.1,lt=LT(),most={},NM={};let n=0,sZ=0,sG=0,sC=0,sP=0,fin=0;
+  for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i],c=CUR[i];if(!(z===z)||!(g===g)||!(c===c)||z<=g)continue;n++;sZ+=z;sG+=g;sC+=c;sP+=prepLevel(i);const ld=layersDone(i,Z);most[ld]=(most[ld]||0)+1;const ln=layersNeeded(i,Z);NM[ln]=(NM[ln]||0)+1;if(Math.abs(c-z)<=tol)fin++}
+  if(!n)return null;const cur=+Object.entries(most).sort((a,b)=>b[1]-a[1])[0][0],avgZ=sZ/n,avgC=sC/n,avgP=sP/n,prev=cur>0?avgP+lt*(cur-1):null,curRL=cur>0?avgP+lt*cur:avgP,next=Math.min(avgZ,curRL+lt);
+  return {n,cur,prevRL:cur>0?(cur>1?avgP+lt*(cur-1):avgP):null,curRL,nextRL:next,lt,finalRL:avgZ,ngl:sG/n,now:avgC,prep:avgP,left:Math.max(0,+Object.entries(NM).sort((a,b)=>b[1]-a[1])[0][0]-cur),fin,finPct:fin/n}}
+function layCtlBox(test,Z){const L=layCtl(test,Z);if(!L)return null;const f=v=>v==null?'–':v.toFixed(3)+' m';
+  const R=[['Current layer',L.cur?'Layer '+L.cur:'Preparation'],['Previous RL',L.cur?f(L.prevRL):'NGL '+f(L.ngl)],['This layer RL',f(L.curRL)],['Layer thickness',L.lt.toFixed(3)+' m'],['Next layer RL',L.left?f(L.nextRL):'– (at final)'],['Final grading level (design)',f(L.finalRL)],['Layers still to go',String(L.left)],['Ground now (average)',f(L.now)]];
+  return h('div',{class:'lctl'},h('div',{class:'lch'},'🧱 Layer control'),...R.map(([k,v],j)=>h('div',{class:'lcr'+(j===4?' key':'')},h('span',{},k),h('b',{},v))),
+    h('div',{class:'mut',style:'font-size:10.5px;margin-top:4px'},'Averages of the fill points here · '+fmt(L.n)+' points · '+Math.round(L.finPct*100)+'% already at final'))}
+
+/* ---------- RL audit ---------- */
+function rlAudit(){const Z=DZ[activeDesign().id],tol=M.tol||0.1,lt=LT(),A=K.areas.map((a,ai)=>({a,ai,n:0,sv:0,over:0,low:0,thick:0,noPrep:0,sZ:0,sG:0,sC:0,mn:1e9,mx:-1e9,last:''})).filter(x=>!x.a.w);const byA={};A.forEach(x=>byA[x.ai]=x);
+  for(let i=0;i<B.n;i++){const x=byA[B.A[i]];if(!x)continue;const z=Z[i],g=G[i],c=CUR[i];if(!(z===z)||!(g===g))continue;x.n++;x.sZ+=z;x.sG+=g;x.sC+=c;const d=z-c;if(d<x.mn)x.mn=d;if(d>x.mx)x.mx=d;
+    if(LAST[i]){x.sv++;if(LAST[i]>x.last)x.last=LAST[i]}if(c>z+tol&&z>g)x.over++;if(z>g&&LAST[i]&&!prepared(i))x.noPrep++;
+    if(z>g&&LL[i]>0){const exp=prepLevel(i)+lt*LL[i];if(Math.abs(c-exp)>tol&&Math.abs(c-z)>tol)x.low++}}
+  return A.filter(x=>x.n)}
+function rlAuditSheet(){const ov=sheetOpen('RL audit'),c=ov.body,L=rlAudit(),tol=M.tol||0.1;
+  const tot=L.reduce((s,x)=>({n:s.n+x.n,over:s.over+x.over,low:s.low+x.low,noPrep:s.noPrep+x.noPrep,sv:s.sv+x.sv}),{n:0,over:0,low:0,noPrep:0,sv:0});
+  const rows=L.map(x=>[x.a.name,x.a.zone||'',fmt(x.n),Math.round(x.sv/x.n*100)+'%',(x.sZ/x.n).toFixed(3),(x.sG/x.n).toFixed(3),(x.sC/x.n).toFixed(3),(x.mx>=0?'+':'')+x.mx.toFixed(3),x.mn.toFixed(3),x.over,x.low,x.noPrep,x.last?dmy(x.last):'–']);
+  const H=['Area','Zone','Design pts','Surveyed','Avg design RL','Avg NGL','Avg ground now','Max to fill','Max over (−)','Above design','Off layer level','Fill on NGL (no prep)','Last survey'];
+  const csv=()=>{const s=[H].concat(rows).map(r=>r.map(v=>/[,"]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v).join(',')).join('\n');shareOrSave(new Blob([s],{type:'text/csv'}),'RL_audit_'+today()+'.csv','RL audit','')};
+  c.replaceChildren(h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:8px'},'Every area checked point by point against the design and the layer levels. Above design = ground now more than '+(tol*100).toFixed(0)+' cm over design in a fill area. Off layer level = the last layer is not at its planned RL (prep + n × '+LT().toFixed(2)+' m). Tap an area to see it on the map.'),
+    h('div',{class:'rlk'},...[['Design points',fmt(tot.n)],['Surveyed',Math.round(tot.sv/Math.max(1,tot.n)*100)+'%'],['Above design',fmt(tot.over),tot.over?'bad':''],['Off layer level',fmt(tot.low),tot.low?'warn':''],['Fill on NGL (no prep)',fmt(tot.noPrep),tot.noPrep?'warn':'']].map(([k,v,cl])=>h('div',{class:cl||''},h('small',{},k),h('b',{},v)))),
+    h('div',{style:'overflow:auto;max-height:62vh'},h('table',{class:'rt rla'},h('tr',{},...H.map(t=>h('th',{},t))),...rows.map((r,k)=>h('tr',{style:'cursor:pointer',onclick:()=>{ov.close();SEL={t:'area',id:L[k].ai};show('map');const a=L[k].a;setTimeout(()=>{fitTo(a.c.map(q=>({e:q[0],n:q[1]})));draw()},120)}},...r.map((v,j)=>h('td',{class:j>1?'n':'',style:(j===9&&+v>0)?'color:#ff6b6b;font-weight:700':(j===10||j===11)&&+v>0?'color:#ffb020;font-weight:700':''},v)))))),
+    h('div',{class:'row',style:'gap:8px;margin-top:10px'},h('button',{class:'btn',onclick:csv},'⬇ Excel (CSV)')))}
+
+/* ---------- area progress timeline (Gantt) ---------- */
+function ganttData(){const by={};for(const s of surveys()){if(s.kind==='waste'||s.kind==='pile')continue;const st=STAT[s.id]||{};const ai=st.areas?Object.keys(st.areas).map(Number):[];
+    const L=ai.length?ai:(()=>{const P=PTS[s.id];if(!P||!P.length)return [];const c={};const pp=P.E?toObjs(P,400):P.slice(0,400);for(const p of pp){const i=nearestBase(p.e,p.n,60);if(i>=0&&B.A[i]>=0)c[B.A[i]]=1}return Object.keys(c).map(Number)})();
+    for(const a of L){if(!K.areas[a]||K.areas[a].w)continue;(by[a]=by[a]||[]).push(s)}}
+  const Z=DZ[activeDesign().id];return Object.entries(by).map(([ai,S])=>{ai=+ai;S.sort((p,q)=>p.date.localeCompare(q.date));const o=qtyOf(i=>B.A[i]===ai,Z);return {ai,a:K.areas[ai],S,d0:S[0].date,d1:S[S.length-1].date,pct:o.fR>0?o.fD/o.fR:0,cpct:o.cR>0?o.cD/o.cR:0}}).sort((p,q)=>p.a.name.localeCompare(q.a.name,undefined,{numeric:true}))}
+const escG=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const GKC={prep:'#e0b25a',fill:'#4dabf7',final:'#3ecf8e',cut:'#ff6b6b',ngl:'#adb5bd'};
+function ganttSvg(L,W){if(!L.length)return '';const t0=Date.parse(L.reduce((m,x)=>x.d0<m?x.d0:m,'9999')),t1=Math.max(Date.now(),Date.parse(L.reduce((m,x)=>x.d1>m?x.d1:m,'0'))),span=Math.max(864e5*7,t1-t0),lw=74,rw=70,pw=W-lw-rw,rh=22,H=L.length*rh+30;
+  const X=d=>lw+(Date.parse(d)-t0)/span*pw;let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="font:11px system-ui,sans-serif">`;
+  const m0=new Date(t0);m0.setDate(1);for(let d=new Date(m0);d.getTime()<=t1;d.setMonth(d.getMonth()+1)){const x=lw+(d.getTime()-t0)/span*pw;if(x<lw-1)continue;s+=`<line x1="${x}" y1="14" x2="${x}" y2="${H}" stroke="#8884" /><text x="${x+3}" y="11" fill="#999">${d.toLocaleString('en',{month:'short'})} ${String(d.getFullYear()).slice(2)}</text>`}
+  const xn=lw+(Date.now()-t0)/span*pw;s+=`<line x1="${xn}" y1="14" x2="${xn}" y2="${H}" stroke="#ffb020" stroke-dasharray="4 3"/><text x="${xn-2}" y="${H-2}" fill="#ffb020" text-anchor="end">today</text>`;
+  L.forEach((g,k)=>{const y=20+k*rh,x0=X(g.d0),x1=Math.max(x0+4,X(g.d1)+4);s+=`<text x="0" y="${y+13}" fill="currentColor" font-weight="700">${escG(g.a.name.replace('AREA ','A-'))}</text><rect x="${x0}" y="${y+3}" width="${x1-x0}" height="${rh-8}" rx="4" fill="#ffffff14" stroke="#8886"/>`;
+    s+=`<rect x="${x0}" y="${y+3}" width="${(x1-x0)*Math.min(1,g.pct)}" height="${rh-8}" rx="4" fill="#51cf6655"/>`;
+    g.S.forEach(sv=>{const x=X(sv.date);s+=`<rect x="${x}" y="${y+4}" width="4" height="${rh-10}" rx="1.5" fill="${GKC[sv.kind]||'#ccc'}"><title>${escG(dmy(sv.date)+' · '+kindName(sv.kind,sv.layer)+(sv.wir?' · WIR-'+String(sv.wir).padStart(4,'0'):''))}</title></rect>`});
+    s+=`<text x="${W-rw+6}" y="${y+13}" fill="currentColor">${Math.round(g.pct*100)}% fill</text>`});
+  return s+'</svg>'}
+function ganttSheet(){const ov=sheetOpen('Area progress (Gantt)'),c=ov.body,L=ganttData();
+  const W=Math.max(640,Math.min(1100,(innerWidth||800)-120));
+  c.replaceChildren(h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:6px'},'One line per area, from its first to its last survey. Each tick is a survey (colour = work), the green part shows how much of the area’s fill is done. Tap and hold a tick to see the WIR.'),
+    h('div',{style:'display:flex;flex-wrap:wrap;gap:12px;margin-bottom:6px;font-size:12px'},...Object.entries({prep:'Preparation',fill:'Fill layer',final:'Final level',cut:'Cut'}).map(([k,t])=>h('span',{style:'display:inline-flex;align-items:center;gap:5px'},h('i',{style:'display:inline-block;width:10px;height:14px;border-radius:2px;background:'+GKC[k]}),t)),h('span',{style:'display:inline-flex;align-items:center;gap:5px'},h('i',{style:'display:inline-block;width:22px;height:12px;border-radius:3px;background:#51cf6655'}),'fill done')),
+    L.length?h('div',{style:'overflow-x:auto'},h('div',{style:'min-width:640px',html:ganttSvg(L,W)})):h('div',{class:'mut'},'No surveys yet.'),
+    h('div',{style:'overflow:auto;margin-top:10px'},h('table',{class:'rt'},h('tr',{},...['Area','First survey','Last survey','Surveys','Fill done','Cut done'].map(t=>h('th',{},t))),...L.map(g=>h('tr',{},h('td',{},g.a.name),h('td',{},dmy(g.d0)),h('td',{},dmy(g.d1)),h('td',{class:'n'},g.S.length),h('td',{class:'n'},Math.round(g.pct*100)+'%'),h('td',{class:'n'},Math.round(g.cpct*100)+'%'))))))}
 
 async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
