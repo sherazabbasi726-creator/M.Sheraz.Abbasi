@@ -1,0 +1,29 @@
+
+:root{--gold:#e5b64f;--navy:#07192b;--panel:#10283f;--line:#2c4c65;--muted:#9fb7c9}
+body{background:#071827!important;color:#f2f5f8!important;font-family:Inter,system-ui,Arial,sans-serif!important}
+header{background:#071a2e!important;border-bottom:1px solid #8b6c34!important;color:#fff!important}
+.brand strong,.engineer{color:#fff!important}.brand em,.brandicon{color:var(--gold)!important}
+.layout aside{background:linear-gradient(180deg,#0b2239,#07192b)!important;border-right:1px solid #31516a!important}
+.sidecap,.aside-bottom small{color:#a5b8c9!important}.nav{color:#d7e2eb!important;border-radius:9px!important}.nav.active,.nav:hover{background:linear-gradient(120deg,#f3cb69,#dba941)!important;color:#112237!important;font-weight:750!important}
+main{background:#071827!important}.topline h1{color:#fff!important}.topline p,.eyebrow{color:#a5bacb!important}.status{background:#103a35!important;color:#9cf0c2!important;border:1px solid #276b59!important}
+.card,.metric{background:linear-gradient(140deg,#132d44,#0c2136)!important;border:1px solid #35536c!important;color:#eaf1f6!important;border-radius:13px!important;box-shadow:0 8px 24px #0003!important}
+.card h2,.metric strong{color:#fff!important}.metric small,.metric span,.note{color:#adc0cf!important}.metric{border-top:3px solid #c69a40!important}
+button,.outline,select,input{border-radius:9px!important}button.outline,.outline{color:#f4c767!important;border-color:#b58a36!important;background:#12283e!important}
+.map-canvas{background:#0b2537!important;border:1px solid #42627b!important;border-radius:12px!important;overflow:hidden}.map-canvas svg{background:#10283b!important}
+.map-canvas svg rect{fill:#0c2b3d!important}.map-canvas svg polygon{stroke:#f4c05d!important;stroke-width:2!important}.map-canvas svg text{fill:#f8fbff!important;font-weight:700!important;paint-order:stroke;stroke:#11283c;stroke-width:3px}
+.mapfooter,.barlabel,.tablewrap,.tablewrap table,.tablewrap th,.tablewrap td{color:#e4eef5!important}.tablewrap th{background:#1a3b53!important}.tablewrap tr:nth-child(even){background:#123149!important}.tablewrap tr{border-color:#35536c!important}
+input,select{background:#102d45!important;color:#fff!important;border:1px solid #4c6a80!important}
+.module-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.module-grid a{display:flex;flex-direction:column;gap:8px;background:linear-gradient(150deg,#19374f,#0c243a);border:1px solid #ad833a;border-radius:12px;padding:18px;color:#eac065;text-decoration:none;font-size:25px}.module-grid strong{color:#fff;font-size:15px}.module-grid small{font-size:12px;color:#a8bece}
+.maptools{display:flex;gap:8px;flex-wrap:wrap;padding:8px}.maptools button{background:#15374f;color:#e9c36a;border:1px solid #4a6980;padding:8px 12px;cursor:pointer}
+@media(max-width:1050px){.module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.module-grid a{padding:12px}.header-right .engineer{display:none}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* Eng Sheraz Survey Atlas approved navy/gold design */
+:root{--atlas-navy:#0c2036;--atlas-gold:#d6ae55}
+body{background:#091b2e!important;color:#e9f0f8!important}
+header,.layout>aside{background:#0c2036!important;color:#edf3f9!important}
+.brand strong,.brand em,.sidecap,.eyebrow{color:#e3b95b!important}
+.layout>aside .nav{color:#d6e1ec!important;border-radius:10px}
+.layout>aside .nav.active,.layout>aside .nav:hover{background:#213b56!important;color:#f0c76a!important}
+main .card,main .metric,main .panel .card{border-color:#314a63!important}
+#engineeringFrame{background:#0c2036!important}

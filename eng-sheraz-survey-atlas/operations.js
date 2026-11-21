@@ -1,0 +1,8 @@
+'use strict';
+const SurveyOps=(()=>{
+const validRL=x=>typeof x==='number'&&Number.isFinite(x);
+function layers(point,thickness=.3,preparation=.3,maxLayers=30){if(!validRL(point.nglRL)||!validRL(point.designRL))return {error:'Missing NGL or Design RL',rows:[]};if(!(thickness>0&&preparation>=0&&maxLayers>=1))return {error:'Invalid layer settings',rows:[]};let start=point.nglRL-preparation,depth=point.designRL-start;if(depth<=0)return {rows:[],start,depth,kind:'CUT_OR_LEVEL'};let count=Math.ceil((depth-1e-10)/thickness);if(count>maxLayers)return {error:`Requires ${count} layers, above limit ${maxLayers}`,rows:[],start,depth};let rows=[];for(let i=1;i<=count;i++){let previous=start+(i-1)*thickness,target=Math.min(point.designRL,start+i*thickness);rows.push({layer:i,previousRL:previous,targetRL:target,thickness:target-previous})}return {rows,start,depth,kind:'FILL'} }
+function latestAccepted(surveys,pointId){return surveys.filter(s=>s.pointId===pointId&&s.status==='ACCEPTED'&&validRL(s.actualRL)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||'').localeCompare(a.createdAt||''))[0]||null}
+function progress(point,surveys,settings){let plan=layers(point,settings.thickness,settings.preparation,settings.maxLayers),accepted=latestAccepted(surveys,point.id);if(plan.error)return {...plan,accepted,completed:0,remaining:null};let completed=accepted?plan.rows.filter(l=>accepted.actualRL>=l.targetRL-settings.tolerance).length:0;return {...plan,accepted,completed,remaining:accepted?Math.max(0,point.designRL-accepted.actualRL):null}}
+return {layers,latestAccepted,progress};})();
+if(typeof module!=='undefined')module.exports=SurveyOps;
