@@ -228,7 +228,50 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 .lctl{margin-top:8px;border:1px solid var(--ln);border-radius:10px;padding:8px 10px;background:rgba(255,176,32,.05)}.lch{font-weight:800;margin-bottom:4px}.lcr{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:12px;border-bottom:1px dashed rgba(128,128,128,.18)}.lcr b{font-variant-numeric:tabular-nums}.lcr.key b{color:#ffb020}
 .rlk{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px}.rlk>div{border:1px solid var(--ln);border-radius:10px;padding:8px 10px}.rlk small{display:block;font-size:10.5px;opacity:.7}.rlk b{font-size:16px}.rlk .bad b{color:#ff6b6b}.rlk .warn b{color:#ffb020}
 .rla td,.rla th{white-space:nowrap;font-size:11.5px}
+#atlasRow{flex:1;display:flex;min-height:0}#mapCol{flex:1;display:flex;flex-direction:column;min-width:0}#atlasSide{display:none}
+#lyrBar{display:flex;gap:6px;align-items:center;padding:6px 10px;background:var(--p1);border-bottom:1px solid var(--ln);overflow-x:auto;white-space:nowrap;font-size:12px;scrollbar-width:none}
+#lyrBar .lbt{margin-right:4px;font-size:12px}#lyrBar label{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--ln);border-radius:9px;cursor:pointer;margin:0;font-size:12px;flex:none}
+#lyrBar label.on{border-color:#ffb02088;background:rgba(255,176,32,.10)}#lyrBar input{width:auto!important;margin:0;accent-color:#ffb020}
+#legR{display:none}
+.abar{display:block;height:6px;border-radius:3px;background:rgba(128,128,128,.25);margin-top:3px;overflow:hidden}.abar i{display:block;height:100%;border-radius:3px}
+@media (min-width:1100px){
+ #atlasSide{display:block;width:380px;flex:none;overflow:auto;border-left:1px solid var(--ln);background:var(--p1);padding:10px 12px 20px}
+ #mapBox>#mapInfo{display:none!important}
+ #atlasSide #mapInfo{position:static!important;width:auto!important;max-height:none!important;border:0;background:none;padding:0;display:block}
+ #atlasSide #mapInfo .x{display:none}
+ .stabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.stabs button{border:1px solid var(--ln);background:none;color:var(--tx);border-radius:10px;padding:8px 4px;font:700 12px var(--sans);cursor:pointer}
+ .stabs button.on{background:linear-gradient(180deg,#ffc24d,#ff9a0a);color:#1a1200;border-color:#ffb020}
+ .spick{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:10px}.spick label{display:flex!important;flex-direction:row!important;align-items:center;gap:6px;font-size:12px;margin:0}.spick select{flex:1;min-width:0;padding:6px}
+ .scf{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.scf>div{border-radius:10px;padding:8px;border:1px solid var(--ln)}.scf small{display:block;font-size:11px;opacity:.85}.scf b{font-size:14px;white-space:nowrap}
+ .scf .c{background:rgba(255,80,80,.14);border-color:#ff6b6b66}.scf .c b{color:#ff8787}.scf .f{background:rgba(77,171,247,.14);border-color:#4dabf766}.scf .f b{color:#74c0fc}.scf .n{background:rgba(81,207,102,.10)}.scf .n b{color:#69db7c}
+ .skv{width:100%;border-collapse:collapse;font-size:12px}.skv th{text-align:left;font-weight:500;opacity:.85;padding:5px 4px;border-bottom:1px solid var(--ln)}.skv td{text-align:right;padding:5px 4px;border-bottom:1px solid var(--ln);font-variant-numeric:tabular-nums;font-weight:600}.skv em{opacity:.65;font-style:normal;font-weight:400}
+ .sq td{min-width:170px}
+ .ssec{margin-top:10px;border:1px solid var(--ln);border-radius:12px;overflow:hidden}.ssh{width:100%;display:flex;justify-content:space-between;align-items:center;background:rgba(255,176,32,.08);border:0;color:var(--tx);font:800 13px var(--sans);padding:9px 10px;cursor:pointer}.ssh em{font-style:normal;opacity:.7}.ssb{padding:6px 10px 10px}.ssb .lctl{margin-top:0;border:0;padding:0;background:none}.ssb .lch{display:none}
+ #legR{display:flex;flex-direction:column;gap:8px;position:absolute;right:62px;top:10px;z-index:4;width:180px;pointer-events:auto}
+ .lgb{background:rgba(12,15,17,.88);border:1px solid var(--ln);border-radius:10px;padding:8px 10px;font-size:11.5px}.lgb>b{display:block;margin-bottom:4px;font-size:12.5px}.lgr{display:flex;align-items:center;gap:7px;margin:3px 0}.lgr i{display:inline-block;width:20px;height:11px;border-radius:3px;flex:none}
+ .lgb .seg button{padding:3px 8px;font-size:11px}
+}
+:root[data-theme=light] .lgb{background:rgba(255,255,255,.94)}
+#mapTools{display:none}.navx{display:none!important}.hx{display:none!important}
+.mbar{position:absolute;left:10px;top:10px;z-index:5;background:rgba(14,17,19,.95);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;min-width:220px;font-size:12.5px}
+:root[data-theme=light] .mbar{background:rgba(255,255,255,.96)}
+#expPop .btn{width:100%;text-align:left}
+@media (min-width:1100px){
+ #mapTools{display:flex;gap:6px;align-items:stretch;padding:8px 10px;background:var(--p1);border-top:1px solid var(--ln);overflow-x:auto}
+ #mapTools button{flex:1;min-width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--p2,#1b2126);border:1px solid var(--ln);border-radius:10px;color:var(--tx);font:600 11.5px var(--sans);padding:7px 4px;cursor:pointer}
+ #mapTools button .ti{font-size:17px;line-height:1}#mapTools button.on{border-color:#ffb020;background:rgba(255,176,32,.16);color:#ffd27a}
+ #mapTools .tsep{width:1px;background:var(--ln);margin:4px 2px;flex:none}
+ .navx{display:flex!important}.nsep{height:1px;background:var(--ln);margin:6px 4px;padding:0!important}
+ nav .navx .nxi{width:34px;height:30px;display:grid;place-items:center;font-style:normal;font-size:16px;flex:none}
+ .hx{display:flex!important}
+ header .hwho{flex-direction:column;border-left:2px solid #ffb02066;padding-left:14px;margin-left:14px}header .hwho b{font-size:15px}header .hwho small{font-size:11px;opacity:.7}
+ header .hproj{flex-direction:column;margin-left:auto;margin-right:14px;border:1px solid var(--ln);border-radius:10px;padding:4px 12px}header .hproj small{font-size:10px;opacity:.65}header .hproj b{font-size:12.5px}
+ header .hnet{align-items:center;font:700 12px var(--sans);padding:5px 10px;border-radius:14px;margin:0 6px}header .hnet.on{color:#51cf66;background:rgba(81,207,102,.12)}header .hnet.off{color:#ff8787;background:rgba(255,80,80,.12)}
+ header .hbtn.hx{margin-left:4px}
+}
 </style>
+
+
 
 </head>
 <body>
@@ -241,7 +284,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
 </header>
 <main id="main">
   <section class="page on" id="p-today"></section>
-  <section class="page full" id="p-map"><div id="atlasKpi"></div><div id="mapBar"></div><div id="mapBox"><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zLy" aria-label="Map layers" title="Map layers">🗂</button><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="zPh" aria-label="Site photos" title="Site photos on the map">📷</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div></section>
+  <section class="page full" id="p-map"><div id="atlasKpi"></div><div id="atlasRow"><div id="mapCol"><div id="mapBar"></div><div id="lyrBar"></div><div id="mapBox"><div id="legR"></div><canvas id="map"></canvas><div id="mapLeg"></div><div id="mapInfo"></div><div class="zb"><button id="zLy" aria-label="Map layers" title="Map layers">🗂</button><button id="zSat" aria-label="Satellite" title="Satellite">🛰</button><button id="zPh" aria-label="Site photos" title="Site photos on the map">📷</button><button id="z3d" class="t3" aria-label="3D view" title="3D view">3D</button><button id="zMe" aria-label="My location" title="My location">📍</button><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zFit" aria-label="Fit">⤢</button></div></div><div id="mapTools"></div></div><div id="atlasSide"></div></div></section>
   <section class="page" id="p-surv"></section>
   <section class="page" id="p-design"></section>
   <section class="page" id="p-qty"></section>
@@ -661,7 +704,7 @@ let mapMode=lsGet('as2_mm','grade'),view=null,LYR={},mapFocus=null;
 const MODES=[['heat','Cut / fill heatmap'],['grade','Grade status'],['need','Design vs NGL'],['rem','To go'],['lay','Layers'],['last','Last survey'],['ngl','NGL record'],['cmp','Design change']];
 function rMap(){const bar=$('#mapBar');bar.replaceChildren(...kids(h('div',{class:'seg'},...MODES.map(([k,l])=>h('button',{class:mapMode===k?'on':'',onclick:()=>{mapMode=k;lsSet('as2_mm',k);rMap()}},l))),
     mapFocus?h('button',{class:'btn sm',onclick:()=>{mapFocus=null;rMap()}},'✕ '+mapFocus.title):null));
-  legend();try{atlasKpi()}catch(e){}requestAnimationFrame(()=>{sizeMap();if(!view)fit();if(mapFocus)fitTo(mapFocus.pts);draw()})}
+  legend();try{atlasKpi();lyrBar();legR();atlasSide();mapTools()}catch(e){console.error(e)}requestAnimationFrame(()=>{sizeMap();if(!view)fit();if(mapFocus)fitTo(mapFocus.pts);draw()})}
 function col(t,a,b){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
 /* cut / fill depth in bands so 2 m, 5 m and 10 m look different */
 const DB=[0.5,1,2,5,10],DBF=[[160,210,255],[110,180,250],[60,140,235],[30,95,200],[20,55,150],[60,20,140]],DBC=[[255,190,170],[255,140,120],[245,90,80],[210,45,50],[150,20,35],[90,10,60]];
@@ -684,7 +727,7 @@ function layer(mode){if(LYR[mode])return LYR[mode];const r=5,W=Math.ceil((B.e1-B
   cx.putImageData(im,0,0);if(mode==='heat'){LYR[mode]={cv:heatSmooth(cv),r:r/4,sm:1};return LYR[mode]}LYR[mode]={cv,r};return LYR[mode]}
 function legend(){const hx=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');const L={need:[[hx(DBF[0]),'fill 0–0.5'],[hx(DBF[2]),'fill 1–2'],[hx(DBF[3]),'2–5'],[hx(DBF[4]),'5–10'],[hx(DBF[5]),'fill >10 m'],[hx(DBC[0]),'cut 0–0.5'],[hx(DBC[2]),'cut 1–2'],[hx(DBC[3]),'2–5'],[hx(DBC[4]),'5–10'],[hx(DBC[5]),'cut >10 m']],rem:[['#ffb020','fill to go'],['#ff5d5d','cut to go'],['#3ecf8e','on design ±'+(M.tol*100).toFixed(0)+' cm']],
     last:Object.values(KIND).map(([n,c])=>[c,n]).concat([['#2c3237','not surveyed']]),ngl:[['#465057','NGL at project start'],['#ffb020','NGL surveyed later']],grade:[[GR[5][1],'final grade'],[GR[4][1],'touch grade'],[GR[3][1],'near grade'],['#4a6a8a','fill working'],['#8a4a4a','cut working'],[GR[1][1],'not started'],[GR[6][1],'over design']],lay:[['#373d42','not prepared'],['#e0b25a','prepared (NGL − 0.30)'],['#285a96','first layers'],['#78c8ff','last layers'],['#3ecf8e','on final design'],['#462828','cut area']],cmp:[['#ff8a00','raised'],['#5cb8ff','lowered'],['#32383d','same (±2 cm)']]}[mapMode]||[];
-  $('#mapLeg').replaceChildren(...kids(mapMode==='heat'?heatLegend():null,pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffb020'},'● 0.35–0.40 '),h('span',{style:'color:#ff3b3b'},'● over 0.40 / prep under 0.20 '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
+  $('#mapLeg').replaceChildren(...kids(mapMode==='heat'&&!WIDE()?heatLegend():null,pondLegend(),QCMARK?h('div',{style:'margin-bottom:4px'},h('b',{style:'color:#ff8a80'},'QC points: '),h('span',{style:'color:#ff5d5d'},'● spike '),h('span',{style:'color:#ffb020'},'● 0.35–0.40 '),h('span',{style:'color:#ff3b3b'},'● over 0.40 / prep under 0.20 '),h('span',{style:'color:#b388ff'},'● gap '),h('button',{class:'btn sm',style:'margin-left:6px;padding:1px 8px',onclick:()=>{QCMARK=null;legend();draw()}},'✕')):null,h('div',{class:'lg2'},...L.map(([c,t])=>h('span',{},h('i',{style:'background:'+c}),t)),h('span',{},h('i',{style:'background:linear-gradient(90deg,#1a6aa6,#2a90cc)'}),'wadi · ➝ water flow'),h('span',{style:'cursor:pointer;opacity:'+(BMV?1:.45),onclick:()=>{BMV=!BMV;lsSet('as2_bmv',BMV);legend();draw()}},h('b',{style:'color:#ffd43b;margin-right:4px'},'▲'),'BM K4 ',h('b',{style:'color:#4dabf7;margin:0 4px'},'▲'),'K3 '+(BMV?'(tap to hide)':'(hidden – tap to show)'))),mapMode==='rem'||mapMode==='need'?h('div',{class:'mut',style:'margin-top:4px'},'Design: '+activeDesign().name.split(' – ')[0]):null,
     mapMode==='cmp'?h('div',{class:'mut',style:'margin-top:4px'},designs().length<2?'Add a second design IFC to see changes':'Old → new as picked in Design & NGL'):null,
     (mapMode==='need'||mapMode==='rem'||mapMode==='heat')?h('label',{class:'satop',style:'gap:6px'},h('input',{type:'checkbox',checked:VALS,onchange:e=>{VALS=e.target.checked;lsSet('as2_vals',VALS);draw()}}),h('span',{},'Show the cut / fill numbers on the map (zoom in)')):null,
     satOn?h('label',{class:'satop'},h('span',{},'🛰 Colours'),h('input',{type:'range',min:'0',max:'1',step:'0.05',value:String(satOp),oninput:e=>{satOp=+e.target.value;lsSet('as2_satop',satOp);draw()}})):null));satBtn()}
@@ -708,7 +751,7 @@ function draw(){if(cur!=='map'||!ready||!view)return;const c=$('#map'),x=c.getCo
   x.lineWidth=1.6;if(LYRV.areas)K.areas.forEach((a,ai)=>{if(a.w)return;x.strokeStyle=areaCol(ai);x.globalAlpha=SEL&&SEL.t==='area'&&SEL.id===ai?1:0.75;x.lineWidth=SEL&&SEL.t==='area'&&SEL.id===ai?4:1.6;poly(a.c);x.stroke()});x.globalAlpha=1;x.lineWidth=1;
   const PC={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};x.lineWidth=2.2;if(LYRV.phases)for(const [i,rings] of Object.entries(K.phases||{}))for(const r of rings||[]){if(!r||r.length<3)continue;poly(r);x.strokeStyle=PC[i];x.stroke()}
   if(K.site&&LYRV.site){poly(K.site);x.setLineDash([7,5]);x.strokeStyle='#ffeb3b';x.lineWidth=1.6;x.stroke();x.setLineDash([])}
-  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);ifcDraw(x,W2S,view.s);valDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
+  wadiDraw(x,W2S,view.s);subsDraw(x,W2S,view.s);selPtsDraw(x,W2S,view.s);bmsDraw(x,W2S,view.s);qcDraw(x,W2S,view.s);ctDraw(x,W2S,view.s);pondDraw(x,W2S,view.s);ifcDraw(x,W2S,view.s);svyDraw(x,W2S,view.s);valDraw(x,W2S,view.s);meDraw(x,W2S,view.s);sectDraw(x,W2S,view.s);measDraw(x,W2S);pileDraw(x,W2S,view.s);stakeDraw(x,W2S);phDraw(x,W2S);
   labelsDraw(x,W2S,view.s);scaleDraw(x,view.s);
   if(mapFocus){x.fillStyle='#fff';x.strokeStyle='#ffb020';for(const p of mapFocus.pts){const [a,b]=W2S(p.e,p.n);x.beginPath();x.arc(a,b,Math.max(1.6,Math.min(4,view.s*2)),0,7);x.fill()}
     if(view.s>1.3&&mapFocus.pts.length<6000){x.font='600 10.5px IBM Plex Sans,system-ui';x.textAlign='left';x.textBaseline='middle';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';for(const p of mapFocus.pts){if(p.id==null)continue;const [a,b]=W2S(p.e,p.n);if(a<-20||b<-20||a>3000||b>3000)continue;x.strokeText(p.id,a+6,b-6);x.fillText(p.id,a+6,b-6)}}}
@@ -732,7 +775,7 @@ function mapEvents(){const c=$('#map'),P=new Map();let moved=0,last=null,pinch=n
   c.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(P.size===2&&pinch){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);view.s=Math.max(0.01,Math.min(20,pinch.s*d/pinch.d));moved=9;draw();return}
     const dx=e.offsetX-last[0],dy=e.offsetY-last[1];if(Math.abs(dx)+Math.abs(dy)>0){moved+=Math.abs(dx)+Math.abs(dy);view.e-=dx/view.s;view.n+=dy/view.s;last=[e.offsetX,e.offsetY];draw()}});
-  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(SECT){SECT.pts.push([we,wn]);sectBar();draw()}else if(PDRAW){PDRAW.pts.push([we,wn]);pileBar();draw()}else if(STK&&STK.pick){STK.tgt={e:we,n:wn,name:'tapped spot'};STK.pick=false;stakeUpd();draw()}else if(phHit(e.offsetX,e.offsetY)){survSheet(phHit(e.offsetX,e.offsetY).s)}else if(hit)ptCard(hit);else{if(SECTV){SECTV=null;draw()}info(we,wn)}}if(P.size===1)last=[...P.values()][0]}};
+  const up=e=>{if(P.has(e.pointerId)){P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size&&moved<6){const [we,wn]=S2W(e.offsetX,e.offsetY);const hit=ptHit(we,wn);if(MEAS){MEAS.pts.push([we,wn]);measBar();draw()}else if(TOOL==='pan'){}else if(DRAW){if(hit)ptCard(hit);else if(DRAW.lock)toast('Corners are locked – press “✎ Add corners” to change the border');else{DRAW.pts.push([we,wn]);drawBar();draw()}}else if(SECT){SECT.pts.push([we,wn]);sectBar();draw()}else if(PDRAW){PDRAW.pts.push([we,wn]);pileBar();draw()}else if(STK&&STK.pick){STK.tgt={e:we,n:wn,name:'tapped spot'};STK.pick=false;stakeUpd();draw()}else if(phHit(e.offsetX,e.offsetY)){survSheet(phHit(e.offsetX,e.offsetY).s)}else if(hit)ptCard(hit);else{if(SECTV){SECTV=null;draw()}info(we,wn)}}if(P.size===1)last=[...P.values()][0]}};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{P.delete(e.pointerId);pinch=null});
   c.addEventListener('wheel',e=>{e.preventDefault();const [we,wn]=S2W(e.offsetX,e.offsetY),k=Math.exp(-e.deltaY*0.0015);view.s=Math.max(0.01,Math.min(20,view.s*k));const [x2,y2]=W2S(we,wn);view.e+=(x2-e.offsetX)/view.s;view.n-=(y2-e.offsetY)/view.s;draw()},{passive:false});
   $('#zSat').onclick=satToggle;$('#zLy').onclick=lyrPanel;$('#zPh').onclick=phToggle;$('#zPh').classList.toggle('on',PHMAP);$('#z3d').onclick=()=>v3Open();addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#v3'))v3Close()});$('#zIn').onclick=()=>{view.s*=1.4;draw()};$('#zMe').onclick=meStart;$('#map').addEventListener('pointerdown',()=>{MEFOL=false});$('#zOut').onclick=()=>{view.s/=1.4;draw()};$('#zFit').onclick=()=>{fit();draw()};
@@ -2145,7 +2188,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='8.5',APPD='16 Nov 2026';
+const APPV='8.7',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -5779,7 +5822,7 @@ function heatSmooth(cv){const W=cv.width,H=cv.height,cx=cv.getContext('2d'),im=c
   cx.putImageData(im,0,0);const S=4,big=document.createElement('canvas');big.width=W*S;big.height=H*S;const bx=big.getContext('2d');bx.imageSmoothingEnabled=true;bx.imageSmoothingQuality='high';bx.drawImage(cv,0,0,W*S,H*S);return big}
 
 /* ---------- map layers on / off ---------- */
-const LYRV=Object.assign({areas:true,phases:true,labels:true,colour:true,ifc:false,site:true,scale:true},lsGet('as2_lyrv',{}));
+const LYRV=Object.assign({areas:true,phases:true,labels:true,colour:true,ifc:false,svy:false,site:true,scale:true},lsGet('as2_lyrv',{}));
 function lyrSet(k,v){LYRV[k]=v;lsSet('as2_lyrv',LYRV);draw()}
 function lyrPanel(){const box=$('#lyrPop');if(box){box.remove();return}
   const L=[['colour','Colours / heatmap'],['areas','Area borders'],['phases','Phase borders'],['labels','Area names + points'],['ifc','IFC design points (zoom in)'],['site','Site boundary'],['scale','Scale bar']];
@@ -5865,7 +5908,119 @@ function ganttSheet(){const ov=sheetOpen('Area progress (Gantt)'),c=ov.body,L=ga
     L.length?h('div',{style:'overflow-x:auto'},h('div',{style:'min-width:640px',html:ganttSvg(L,W)})):h('div',{class:'mut'},'No surveys yet.'),
     h('div',{style:'overflow:auto;margin-top:10px'},h('table',{class:'rt'},h('tr',{},...['Area','First survey','Last survey','Surveys','Fill done','Cut done'].map(t=>h('th',{},t))),...L.map(g=>h('tr',{},h('td',{},g.a.name),h('td',{},dmy(g.d0)),h('td',{},dmy(g.d1)),h('td',{class:'n'},g.S.length),h('td',{class:'n'},Math.round(g.pct*100)+'%'),h('td',{class:'n'},Math.round(g.cpct*100)+'%'))))))}
 
-async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');mapEvents();show(cur);
+/* ============================== v8.6 – Atlas side panel, legend boxes, layer bar ============================== */
+const WIDE=()=>matchMedia('(min-width:1100px)').matches;
+const ASEL=Object.assign({area:-1,phase:'',tab:'area'},lsGet('as2_asel',{}));
+const aselSave=()=>lsSet('as2_asel',{area:ASEL.area,phase:ASEL.phase,tab:ASEL.tab});
+const PHC2={1:'#ff9f43',2:'#54a0ff',3:'#c56cf0',4:'#1dd1a1'};
+let APH=null;function areaPh(ai){if(!APH){APH={};const c={};for(let i=0;i<B.n;i++){const a=B.A[i];if(a<0)continue;const k=a+'|'+B.P[i];c[k]=(c[k]||0)+1}const best={};for(const [k,v] of Object.entries(c)){const [a,p]=k.split('|');if(!best[a]||v>best[a][1])best[a]=[p,v]}for(const a in best)APH[a]=best[a][0]}return String(K.areas[ai]&&K.areas[ai].phase||APH[ai]||'')}
+function aselTest(){if(ASEL.area>=0){const a=ASEL.area;return i=>B.A[i]===a}if(ASEL.phase){const p=+ASEL.phase;return i=>B.P[i]===p}return ()=>true}
+function aselName(){return ASEL.area>=0&&K.areas[ASEL.area]?K.areas[ASEL.area].name.replace('AREA ','A-'):ASEL.phase?'Phase '+ASEL.phase:'Whole site'}
+function aselStats(test,Z){let n=0,m2=0,sZ=0,sG=0,sd=0,mn=1e9,mx=-1e9;for(let i=0;i<B.n;i++){if(!test(i))continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g))continue;const d=z-g;n++;m2+=B.C[i];sZ+=z;sG+=g;sd+=d;if(d<mn)mn=d;if(d>mx)mx=d}return n?{n,m2,z:sZ/n,g:sG/n,d:sd/n,mn,mx}:null}
+const sgn=v=>(v>=0?'+':'')+v.toFixed(3)+' m';
+function aBar(p,col){return h('span',{class:'abar'},h('i',{style:'width:'+Math.min(100,Math.max(0,p*100)).toFixed(1)+'%;background:'+col}))}
+function sideSec(title,key,kids){const open=lsGet('as2_ss_'+key,true)!==false;const body=h('div',{class:'ssb',style:open?'':'display:none'},...kids.filter(Boolean));
+  return h('div',{class:'ssec'},h('button',{class:'ssh',onclick:e=>{const o=body.style.display==='none';body.style.display=o?'':'none';e.currentTarget.querySelector('em').textContent=o?'▴':'▾';lsSet('as2_ss_'+key,o)}},h('span',{},title),h('em',{},open?'▴':'▾')),body)}
+function atlasSide(){const S=$('#atlasSide');if(!S||!ready)return;if(!WIDE()){S.style.display='none';const mi=$('#mapInfo');if(mi&&mi.parentElement!==$('#mapBox'))$('#mapBox').append(mi);return}S.style.display='';
+  const Z=DZ[activeDesign().id],tabs=[['area','📍 Area details'],['point','⬡ Point details'],['rl','📊 RL audit']];
+  const tb=h('div',{class:'stabs'},...tabs.map(([k,t])=>h('button',{class:ASEL.tab===k?'on':'',onclick:()=>{ASEL.tab=k;aselSave();atlasSide()}},t)));
+  const phs=Object.keys(K.phases||{}).sort();
+  const selA=h('select',{onchange:e=>{ASEL.area=+e.target.value;if(ASEL.area>=0){ASEL.phase=areaPh(ASEL.area)||ASEL.phase;SEL={t:'area',id:ASEL.area};const a=K.areas[ASEL.area];fitTo(a.c.map(q=>({e:q[0],n:q[1]})))}else SEL=null;aselSave();draw();atlasSide()}},h('option',{value:-1},ASEL.phase?'All of Phase '+ASEL.phase:'All areas'),
+    ...K.areas.map((a,ai)=>[a,ai]).filter(([a,ai])=>!a.w&&(!ASEL.phase||areaPh(ai)===String(ASEL.phase))).map(([a,ai])=>h('option',{value:ai,selected:ai===ASEL.area},a.name.replace('AREA ','A-')+(a.zone?' · '+a.zone:''))));
+  const selP=h('select',{onchange:e=>{ASEL.phase=e.target.value;if(ASEL.area>=0&&areaPh(ASEL.area)!==ASEL.phase)ASEL.area=-1;aselSave();atlasSide()}},h('option',{value:''},'All phases'),...phs.map(p=>h('option',{value:p,selected:String(p)===String(ASEL.phase)},'Phase '+p)));
+  const pick=h('div',{class:'spick'},h('label',{},'Area',selA),h('label',{},'Phase',selP));
+  let body;{const mi=$('#mapInfo');if(mi&&ASEL.tab!=='point'&&mi.parentElement!==$('#mapBox'))$('#mapBox').append(mi)}
+  if(ASEL.tab==='point'){const mi=$('#mapInfo');body=h('div',{class:'spt'});if(mi){body.append(mi);if(mi.style.display!=='block'||!mi.children.length)body.append(h('div',{class:'mut',style:'padding:14px 4px;font-size:12.5px'},'Tap any point on the map to see its N, E, design, NGL, ground now, cut / fill and layers here.'))}}
+  else{const test=aselTest(),q=qtyOf(test,Z),st=aselStats(test,Z);
+    if(ASEL.tab==='rl'){const L=rlAudit().filter(x=>ASEL.area>=0?x.ai===ASEL.area:ASEL.phase?areaPh(x.ai)===String(ASEL.phase):true),T=L.reduce((s,x)=>({n:s.n+x.n,sv:s.sv+x.sv,over:s.over+x.over,low:s.low+x.low,np:s.np+x.noPrep,last:x.last>s.last?x.last:s.last}),{n:0,sv:0,over:0,low:0,np:0,last:''});
+      body=h('div',{},h('table',{class:'skv'},...[['Design points',fmt(T.n)],['Surveyed',T.n?Math.round(T.sv/T.n*100)+'%':'–'],['Above design (> '+((M.tol||0.1)*100).toFixed(0)+' cm)',fmt(T.over),T.over?'#ff6b6b':''],['Off layer level',fmt(T.low),T.low?'#ffb020':''],['Fill on NGL (no prep)',fmt(T.np),T.np?'#ffb020':''],['Last survey',T.last?dmy(T.last):'–']].map(([k,v,c])=>h('tr',{},h('th',{},k),h('td',{style:c?'color:'+c+';font-weight:800':''},v)))),
+        h('button',{class:'btn sm',style:'width:100%;margin-top:8px',onclick:()=>rlAuditSheet()},'Full RL audit – every area ›'))}
+    else{const net=q.fR-q.cR;
+      body=h('div',{},h('div',{class:'scf'},h('div',{class:'c'},h('small',{},'Cut'),h('b',{},fmt(Math.round(q.cR))+' m³')),h('div',{class:'f'},h('small',{},'Fill'),h('b',{},fmt(Math.round(q.fR))+' m³')),h('div',{class:'n'},h('small',{},'Net (fill − cut)'),h('b',{},(net>=0?'+':'')+fmt(Math.round(net))+' m³'))),
+        st?h('table',{class:'skv'},...[['Total design points',fmt(st.n)],['Area (plan)',fmt(Math.round(st.m2))+' m²'],['Avg. design RL',st.z.toFixed(3)+' m'],['Avg. NGL RL',st.g.toFixed(3)+' m'],['Avg. difference (D − NGL)',sgn(st.d)+(st.d>=0?' (fill)':' (cut)'),st.d>=0?'#4dabf7':'#ff6b6b'],['Min. difference',sgn(st.mn)+(st.mn<0?' (cut)':''),'#ff6b6b'],['Max. difference',sgn(st.mx)+(st.mx>0?' (fill)':''),'#4dabf7']].map(([k,v,c])=>h('tr',{},h('th',{},k),h('td',{style:c?'color:'+c+';font-weight:700':''},v)))):null,
+        sideSec('🧱 Layer control','lc',[(()=>{try{return layCtlBox(test,Z)}catch(e){return null}})()]),
+        sideSec('Σ Engineering quantities – '+aselName(),'eq',[h('table',{class:'skv sq'},
+          h('tr',{},h('th',{},'Completed fill'),h('td',{},fmt(Math.round(q.fD))+' m³ ',h('em',{},'('+(q.fR>0?(q.fD/q.fR*100).toFixed(1):'0')+'%)'),aBar(q.fR>0?q.fD/q.fR:0,'#51cf66'))),
+          h('tr',{},h('th',{},'Remaining fill'),h('td',{},fmt(Math.round(Math.max(0,q.fR-q.fD)))+' m³ ',h('em',{},'('+(q.fR>0?((q.fR-q.fD)/q.fR*100).toFixed(1):'0')+'%)'),aBar(q.fR>0?(q.fR-q.fD)/q.fR:0,'#fcc419'))),
+          h('tr',{},h('th',{},'Completed cut'),h('td',{},fmt(Math.round(q.cD))+' m³ ',h('em',{},'('+(q.cR>0?(q.cD/q.cR*100).toFixed(1):'0')+'%)'),aBar(q.cR>0?q.cD/q.cR:0,'#ff8787'))),
+          h('tr',{},h('th',{},'Total fill (design)'),h('td',{},fmt(Math.round(q.fR))+' m³')),h('tr',{},h('th',{},'Total cut (design)'),h('td',{},fmt(Math.round(q.cR))+' m³')))]),
+        ASEL.area>=0?h('button',{class:'btn sm',style:'width:100%;margin-top:8px',onclick:()=>qtySheet('area',String(ASEL.area))},'Full record & report ›'):null)}}
+  S.replaceChildren(...[tb,ASEL.tab==='point'?null:pick,body].filter(Boolean))}
+/* map taps feed the side panel on big screens */
+{const _info=info;info=function(e,n){_info(e,n);if(!WIDE())return;const i=nearestBase(e,n,200);if(i>=0&&B.A[i]>=0&&!K.areas[B.A[i]].w){ASEL.area=B.A[i];ASEL.phase=areaPh(ASEL.area)}ASEL.tab='point';aselSave();atlasSide()}}
+addEventListener('resize',()=>{clearTimeout(window.__asr);window.__asr=setTimeout(()=>{if(cur==='map'){atlasSide();legR();sizeMap();draw()}},150)});
+
+/* ---------- legend boxes on the map (big screens) ---------- */
+function legR(){const el=$('#legR');if(!el)return;if(!WIDE()){el.replaceChildren();el.style.display='none';return}el.style.display='';
+  const phs=Object.keys(K.phases||{}).sort(),box=(t,kids)=>h('div',{class:'lgb'},h('b',{},t),...kids);
+  const cf=mapMode==='heat'?[['> +1.50 (fill)',1.75],['+1.00 – +1.50',1.25],['+0.50 – +1.00',0.75],['−0.50 – +0.50',0],['−1.00 – −0.50',-0.75],['−1.50 – −1.00',-1.25],['< −1.50 (cut)',-1.75]].map(([t,v])=>h('div',{class:'lgr'},h('i',{style:'background:rgb('+heatCol(v).map(Math.round).join(',')+')'}),t)):null;
+  const line=(t,css)=>h('div',{class:'lgr'},h('i',{style:'height:0;border-top:'+css+';background:none'}),t);
+  el.replaceChildren(box('Phases',phs.map(p=>h('div',{class:'lgr'},h('i',{style:'background:'+PHC2[p]}),'Phase '+p))),cf?box('Cut / fill (m)',cf.concat([h('div',{class:'seg',style:'margin-top:5px'},h('button',{class:HEATSRC==='rem'?'on':'',onclick:()=>{HEATSRC='rem';lsSet('as2_heatsrc','rem');delete LYR.heat;legR();legend();draw()}},'To do'),h('button',{class:HEATSRC==='need'?'on':'',onclick:()=>{HEATSRC='need';lsSet('as2_heatsrc','need');delete LYR.heat;legR();legend();draw()}},'vs NGL'))])):null,
+    box('Legend',[h('div',{class:'lgr'},h('i',{style:'background:#fff;border-radius:50%;width:9px;height:9px'}),'IFC design point'),h('div',{class:'lgr'},h('i',{style:'background:#ff3b3b;border-radius:50%;width:9px;height:9px'}),'Survey point'),line('Area boundary','2px solid #ffd43b'),line('Phase boundary','2px solid #54a0ff'),line('Site boundary','2px dashed #ffeb3b'),line('Wadi','3px solid #2a90cc')]))}
+
+/* ---------- layer bar above the map ---------- */
+function lyrBar(){const el=$('#lyrBar');if(!el)return;const L=[['ifc','IFC points'],['areas','Areas'],['phases','Phases'],['colour','Cut / fill'],['svy','Survey points'],['labels','Labels'],['scale','Scale']];
+  el.replaceChildren(h('b',{class:'lbt'},'🗂 Map layers'),...L.map(([k,t])=>h('label',{class:LYRV[k]?'on':''},h('input',{type:'checkbox',checked:!!LYRV[k],onchange:e=>{lyrSet(k,e.target.checked);lyrBar()}}),t)))}
+/* surveyed ground points (red) when zoomed in */
+function svyDraw(x,P,s){if(!LYRV.svy||s<0.7)return;const c=$('#map'),dp=devicePixelRatio||1,W=c.width/dp,H=c.height/dp,[e0,n1]=S2W(-5,-5),[e1,n0]=S2W(W+5,H+5);let k=0;x.fillStyle='#ff3b3b';const r=Math.max(1.4,Math.min(3,s*0.5));
+  for(let i=0;i<B.n;i++){if(!LAST[i])continue;const e=B.E[i],n=B.N[i];if(e<e0||e>e1||n<n0||n>n1)continue;if(++k>20000)break;const [u,w]=P(e,n);x.beginPath();x.arc(u,w,r,0,7);x.fill()}}
+
+/* ============================== v8.7 – Atlas tool bar, measure, side menu, top bar ============================== */
+/* ---------- measure: tap points, see length and area ---------- */
+let MEAS=null;
+function measStart(){show('map');DRAW=null;SECT=null;PDRAW=null;MEAS={pts:[]};setTimeout(()=>{measBar();draw();toast('Tap points on the map – length and area show as you go')},60)}
+function measLen(P){let s=0;for(let k=1;k<P.length;k++)s+=Math.hypot(P[k][0]-P[k-1][0],P[k][1]-P[k-1][1]);return s}
+function measArea(P){if(P.length<3)return 0;let a=0;for(let k=0;k<P.length;k++){const p=P[k],q=P[(k+1)%P.length];a+=p[0]*q[1]-q[0]*p[1]}return Math.abs(a)/2}
+function measBar(){let b=$('#measBar');if(!MEAS){if(b)b.remove();return}if(!b){b=h('div',{id:'measBar',class:'mbar'});$('#mapBox').append(b)}const P=MEAS.pts,L=measLen(P),A=measArea(P),last=P.length>1?Math.hypot(P[P.length-1][0]-P[P.length-2][0],P[P.length-1][1]-P[P.length-2][1]):0;
+  b.replaceChildren(h('b',{},'📏 Measure'),h('div',{class:'mut',style:'font-size:12px'},P.length+' point'+(P.length===1?'':'s')),
+    h('div',{class:'kv',style:'margin-top:4px'},h('span',{},'Length'),h('b',{},L.toFixed(2)+' m'),h('span',{},'Last part'),h('b',{},last.toFixed(2)+' m'),...(P.length>2?[h('span',{},'Area (closed)'),h('b',{},fmt(Math.round(A))+' m² · '+(A/1e4).toFixed(3)+' ha')]:[])),
+    h('div',{class:'row',style:'gap:6px;margin-top:6px'},h('button',{class:'btn sm',onclick:()=>{P.pop();measBar();draw()}},'↶ Undo'),h('button',{class:'btn sm',onclick:()=>{MEAS.pts=[];measBar();draw()}},'Clear'),h('button',{class:'btn sm pri',onclick:()=>{MEAS=null;measBar();toolSet('select');draw()}},'Done')))}
+function measDraw(x,P){if(!MEAS||!MEAS.pts.length)return;const Q=MEAS.pts.map(q=>P(q[0],q[1]));x.save();
+  if(Q.length>2){x.fillStyle='rgba(255,212,59,.12)';x.beginPath();Q.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.closePath();x.fill()}
+  x.strokeStyle='#ffd43b';x.lineWidth=2.5;x.setLineDash([6,4]);x.beginPath();Q.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.stroke();x.setLineDash([]);
+  x.font='700 11px IBM Plex Sans,system-ui';x.textAlign='center';x.lineWidth=3;
+  for(let k=0;k<Q.length;k++){const [a,b]=Q[k];x.fillStyle='#ffd43b';x.beginPath();x.arc(a,b,4,0,7);x.fill();if(k){const [c,d]=Q[k-1],m=Math.hypot(MEAS.pts[k][0]-MEAS.pts[k-1][0],MEAS.pts[k][1]-MEAS.pts[k-1][1]).toFixed(1)+' m';x.strokeStyle='rgba(0,0,0,.85)';x.strokeText(m,(a+c)/2,(b+d)/2-6);x.fillStyle='#fff';x.fillText(m,(a+c)/2,(b+d)/2-6)}}
+  x.restore()}
+
+/* ---------- tool bar under the map ---------- */
+let TOOL='select';
+const TOOLS=[['select','↖','Select'],['pan','✋','Pan'],['zoom','🔍','Zoom'],['ident','ⓘ','Identify'],['meas','📏','Measure'],['addp','➕','Add points'],['drawa','⬠','Draw area'],['edit','✎','Edit'],'|',['heat','≋','Cut / Fill'],['layers','🗂','Layers'],['qty','📊','Quantities'],['rep','📄','Reports'],['exp','⬇','Export']];
+function toolSet(k){TOOL=k;const b=$('#mapTools');if(b)b.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k||(x.dataset.k==='heat'&&mapMode==='heat')))}
+function toolGo(k){
+  if(k==='select'||k==='ident'||k==='pan'){MEAS=null;measBar();SECT=null;PDRAW=null;if(DRAW&&!DRAW.pts.length){DRAW=null;drawBar()}toolSet(k);if(k==='pan')toast('Drag to move · pinch or wheel to zoom · taps do nothing');if(k==='ident')toast('Tap any point to see all its details');draw();return}
+  if(k==='zoom'){if(ASEL.area>=0&&K.areas[ASEL.area]){fitTo(K.areas[ASEL.area].c.map(q=>({e:q[0],n:q[1]})))}else fit();draw();return}
+  if(k==='meas'){toolSet('meas');measStart();return}
+  if(k==='addp'){newSurvey();return}
+  if(k==='drawa'){subDraw(ASEL.area>=0?ASEL.area:null);return}
+  if(k==='edit'){svView='list';show('surv');return}
+  if(k==='heat'){mapMode='heat';lsSet('as2_mm','heat');rMap();return}
+  if(k==='layers'){lyrPanel();return}
+  if(k==='qty'){show('qty');return}if(k==='rep'){show('rep');return}
+  if(k==='exp'){expMenu();return}}
+function mapTools(){const b=$('#mapTools');if(!b)return;b.replaceChildren(...TOOLS.map(t=>t==='|'?h('i',{class:'tsep'}):h('button',{'data-k':t[0],onclick:()=>toolGo(t[0])},h('span',{class:'ti'},t[1]),h('span',{},t[2]))));toolSet(TOOL)}
+function expMenu(){const p=$('#expPop');if(p){p.remove();return}const box=h('div',{id:'expPop',class:'lyrpop',style:'left:auto;right:62px;top:auto;bottom:12px'},h('b',{},'⬇ Export'),
+  h('button',{class:'btn sm',onclick:()=>{box.remove();const c=$('#map');c.toBlob(bl=>shareOrSave(bl,'Khuzam4_map_'+today()+'.png','Khuzam 4 map',''),'image/png')}},'🖼 Map picture (PNG)'),
+  h('button',{class:'btn sm',onclick:()=>{box.remove();if(ASEL.area>=0)qtySheet('area',String(ASEL.area));else show('rep')}},'📄 '+(ASEL.area>=0?'Area record & report PDF':'Report PDF / Excel')),
+  h('button',{class:'btn sm',onclick:()=>{box.remove();rlAuditSheet()}},'📏 RL audit (CSV)'),
+  h('button',{class:'btn sm',onclick:()=>{box.remove();ganttSheet()}},'📅 Area progress (Gantt)'));$('#mapBox').append(box)}
+
+/* ---------- more items in the side menu (big screens) ---------- */
+const NAVX=[['📋','Survey register',()=>{svView='list';show('surv')}],['🗂','WIR register',()=>{svView='wir';show('surv')}],['🧱','Layer control',()=>{show('map');ASEL.tab='area';aselSave();setTimeout(atlasSide,80)}],['📅','Area progress',()=>ganttSheet()],['📏','RL audit',()=>rlAuditSheet()],['📰','Daily report',()=>dsSheet()],['⛰','Stockpiles',()=>pileSheet()],['⬇','Reports & exports',()=>show('rep')],['⚙','Backup & settings',()=>show('data')]];
+function navExtra(){const n=$('#nav');if(!n||n.querySelector('.navx'))return;n.append(h('div',{class:'navx nsep'}),...NAVX.map(([i,t,f])=>h('button',{class:'navx',onclick:f},h('i',{class:'nxi'},i),t)))}
+
+/* ---------- top bar extras (big screens) ---------- */
+function hdrExtra(){const H=document.querySelector('body>header');if(!H||H.querySelector('.hx'))return;const more=$('#hMore');
+  const net=h('span',{class:'hx hnet'}),setNet=()=>{const on=navigator.onLine;net.className='hx hnet '+(on?'on':'off');net.textContent=on?'● Online':'● Offline'};setNet();addEventListener('online',setNet);addEventListener('offline',setNet);
+  const proj=h('div',{class:'hx hproj'},h('small',{},'Project'),h('b',{},'📁 Khuzam 4 – Enabling earthworks'));
+  const who=h('div',{class:'hx hwho'},h('b',{},'Engr Muhammad Sheraz Abbasi'),h('small',{},'Survey | Earthwork | Quantity | Progress | Reporting'));
+  const btn=(t,lbl,f)=>h('button',{class:'hx hbtn',title:lbl,'aria-label':lbl,onclick:f},t);
+  H.insertBefore(who,H.querySelector('.av'));H.insertBefore(proj,H.querySelector('.av'));
+  H.insertBefore(net,more);H.insertBefore(btn('?','Help',helpSheet),more);H.insertBefore(btn('⚙','Settings',()=>show('data')),more);
+  H.insertBefore(btn('⛶','Full screen',()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){toast('Full screen not allowed here')}}),more)}
+function helpSheet(){const ov=sheetOpen('How to use the map'),L=[['↖ Select / ⓘ Identify','Tap any point: N, E, design, NGL, ground now, cut / fill and layers here. The area is picked in the right panel.'],['✋ Pan','Drag to move, pinch or mouse wheel to zoom.'],['🔍 Zoom','Zooms to the area picked in the right panel (or the whole site).'],['📏 Measure','Tap points: length of each part, total length and area.'],['➕ Add points','New survey / WIR – paste, file, photo or instrument data.'],['⬠ Draw area','Draw a sub-area by tapping its corners.'],['✎ Edit','Open the survey list – ✎ Points, Edit or Delete in each survey.'],['≋ Cut / Fill','Heatmap: blue = fill, green = on level, red = cut.'],['🗂 Layers','Switch IFC points, areas, phases, colours, survey points, labels, scale.'],['⬇ Export','Map picture, area report PDF, RL audit, Gantt.']];
+  ov.body.replaceChildren(...L.map(([k,v])=>h('div',{style:'padding:8px 0;border-bottom:1px solid var(--ln)'},h('b',{},k),h('div',{class:'mut',style:'font-size:12.5px'},v))))}
+
+async function boot(){navBuild();M=Object.assign(defMeta(),lsGet(MK,{}));if(!canEdit()){const v=lsGet('as2-view',null);if(v){M=Object.assign(defMeta(),v);RO=true;document.documentElement.classList.add('ro')}}cloudBadge();visGate();$('#hMore').onclick=()=>show('data');try{navExtra();hdrExtra()}catch(e){console.error(e)}mapEvents();show(cur);
   await new Promise(r=>setTimeout(r,20));B0=buildBase();B=B0;await dbOpen();for(const s of M.surveys){await ptsOf(s.id);if(RO&&!nPts(PTS[s.id])){const c=await dbGet('cpts:'+s.id);if(c)PTS[s.id]=c}}
   if(RO)for(const x of M.designs.concat(M.ngl,M.surf||[])){if(!nPts(await ptsOf(x.id))){const c=await dbGet('cpts:'+x.id);if(c)PTS[x.id]=c}}
   await rebuild();render();setTimeout(handleHash,300);AUD0=audSnap();consultApply();setTimeout(()=>ckCheck().then(()=>consLoad()).then(()=>{try{attnFill()}catch(e){}if(cur==='surv')render()}),2500);setTimeout(liveStart,1200);if(canEdit())setTimeout(()=>loadVisits().then(L=>{VISL=L;attnFill()}).catch(()=>{}),4000);teamCheck().then(()=>{if(isSurveyor())mySubs(true)});if(canEdit())setTimeout(()=>loadSubs().then(()=>{attnFill();if(cur==='today')render()}),3000);setTimeout(()=>autoSnap().catch(()=>{}),25000);orthoLoad().then(o=>{if(o&&cur==='map')draw()});setTimeout(async()=>{try{await cloudSync()}catch(e){}autoSubOnce()},800);setInterval(cloudPoll,60000);document.addEventListener('visibilitychange',cloudPoll)}
