@@ -871,9 +871,10 @@ async function fbSignIn(email,pw){const r=await fetch('https://identitytoolkit.g
   const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||('Sign-in failed ('+r.status+')'));AUTH={tok:j.idToken,rt:j.refreshToken,exp:Date.now()+(+j.expiresIn-60)*1000,uid:j.localId,email:j.email};lsSet('es_auth',AUTH);return AUTH}
 async function idToken(){if(!signedIn())return '';if(AUTH.tok&&Date.now()<AUTH.exp)return AUTH.tok;
   try{const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(AUTH.rt)});
-    const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message);AUTH.tok=j.id_token;AUTH.rt=j.refresh_token||AUTH.rt;AUTH.exp=Date.now()+(+j.expires_in-60)*1000;lsSet('es_auth',AUTH);return AUTH.tok}catch(e){return AUTH.tok||''}}
-async function fb(path,method,body){const t=canEdit()&&method&&method!=='GET'?await idToken():'';const r=await fetch(DBU+ROOT+'/'+path+'.json'+(t?'?auth='+encodeURIComponent(t):''),{method:method||'GET',body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
-  if(!r.ok)throw new Error(r.status===401||r.status===403?'Firebase rules do not allow this yet (add the "as2" rule)':'Server answered '+r.status);return r.json()}
+    const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message);AUTH.tok=j.id_token;AUTH.rt=j.refresh_token||AUTH.rt;AUTH.exp=Date.now()+(+j.expires_in-60)*1000;lsSet('es_auth',AUTH);return AUTH.tok}catch(e){return Date.now()<(AUTH.exp||0)?AUTH.tok:''}}
+async function fb(path,method,body,_again){const w=canEdit()&&method&&method!=='GET',t=w?await idToken():'';const r=await fetch(DBU+ROOT+'/'+path+'.json'+(t?'?auth='+encodeURIComponent(t):''),{method:method||'GET',body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
+  if(!r.ok){if((r.status===401||r.status===403)&&w&&!_again){AUTH.exp=0;AUTH.tok='';return fb(path,method,body,true)}
+    throw new Error(r.status===401||r.status===403?(w&&!AUTH.tok?'Sign-in has expired – press Sign out, then sign in again':'Firebase said no (401) – press Sign out, then sign in again. If it stays, publish the rules again.'):'Server answered '+r.status)}return r.json()}
 /* point lists travel as compact text: big lists as millimetre integers (base64), small lists as "id,N,E,Z;…" */
 function b64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
 function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
@@ -2188,7 +2189,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='8.7',APPD='16 Nov 2026';
+const APPV='8.8',APPD='16 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
