@@ -271,7 +271,7 @@ nav button i{transition:transform .15s,background .15s}nav button.on i{backgroun
  header .hbtn.hx{margin-left:4px}
 }
 .rav{margin:6px 0 4px;padding:12px}
-.adash .sg2p{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}@media (max-width:800px){.adash .sg2p{grid-template-columns:1fr}}
+.adash .sg2p .flt td{overflow-wrap:anywhere}.adash .sg2p .flt td:last-child{white-space:nowrap}@media (max-width:600px){.adash .sg2p .flt{font-size:11.5px}.adash .sg2p .abx>div:nth-child(2){flex-direction:column;align-items:stretch!important}.adash .sg2p .abx>div:nth-child(2)>div:first-child{align-self:center}}.adash .sg2p{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}@media (max-width:800px){.adash .sg2p{grid-template-columns:1fr}}
 .adash .apgw{padding:10px 10px 12px;margin:10px 0}.adash .apgh{display:flex;align-items:center;gap:8px;margin-bottom:8px}.adash .apgh b{color:var(--gd2);font-size:15px}.adash .apgn{color:var(--mu);font-size:12px;flex:1}
 .adash .apgtg{background:transparent;border:1px solid color-mix(in srgb,var(--gd) 60%,transparent);color:var(--gd2);border-radius:8px;padding:3px 9px;font-size:12px}
 .adash .apg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media (min-width:700px){.adash .apg{grid-template-columns:repeat(6,1fr)}}@media (min-width:1100px){.adash .apg{grid-template-columns:repeat(9,1fr)}}
@@ -2385,7 +2385,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='11.4',APPD='22 Nov 2026';
+const APPV='11.5',APPD='22 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
@@ -6255,7 +6255,7 @@ function adMapDraw(cv,ai){if(AMS&&cv.classList.contains('amcv')&&cv.closest('.ad
   x.save();path();x.strokeStyle='#ffd93b';x.lineWidth=3.5;x.shadowColor='#ffcc33';x.shadowBlur=10;x.stroke();x.restore();
   x.font='800 13px IBM Plex Sans,system-ui';x.textAlign='center';x.textBaseline='middle';for(const [t,u,w] of labs){const tw=x.measureText(t).width+16;x.fillStyle='rgba(8,14,28,.85)';x.strokeStyle='rgba(255,255,255,.7)';x.beginPath();x.roundRect?x.roundRect(u-tw/2,w-11,tw,22,11):x.rect(u-tw/2,w-11,tw,22);x.fill();x.stroke();x.fillStyle='#fff';x.fillText(t,u,w)}
   /* scale bar */
-  const want=W*0.22/s,p=Math.pow(10,Math.floor(Math.log10(want))),m=[1,2,2.5,5].map(f=>f*p).filter(v=>v<=want).pop()||p,len=m*s;const SX=isD?W/2+len/2+24:W;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(SX-len-36,H-30,len+26,22);for(let k=0;k<4;k++){x.fillStyle=k%2?'#fff':'#111';x.fillRect(SX-len-24+len*k/4,H-16,len/4,5)}x.fillStyle='#fff';x.font='600 10px system-ui';x.textAlign='center';x.fillText('0',SX-len-24,H-22);x.fillText(fmt(m)+' m',SX-24,H-22)}
+  const want=W*0.22/s,p=Math.pow(10,Math.floor(Math.log10(want))),m=[1,2,2.5,5].map(f=>f*p).filter(v=>v<=want).pop()||p,len=m*s;const SX=isD?W/2+len/2+24:W,SY=isD?40:H;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(SX-len-36,SY-30,len+26,22);for(let k=0;k<4;k++){x.fillStyle=k%2?'#fff':'#111';x.fillRect(SX-len-24+len*k/4,SY-16,len/4,5)}x.fillStyle='#fff';x.font='600 10px system-ui';x.textAlign='center';x.fillText('0',SX-len-24,SY-22);x.fillText(fmt(m)+' m',SX-24,SY-22)}
 
 /* ---------- small pieces ---------- */
 function adLayers(ai,Z){const R=[];let pn=0,pd=0;const need={},done={};for(let i=0;i<B.n;i++){if(B.A[i]!==ai)continue;const z=Z[i],g=G[i];if(!(z===z)||!(g===g)||z<=g)continue;pn++;if(prepared(i))pd++;const ln=layersNeeded(i,Z),ld=layersDone(i,Z);for(let k=1;k<=ln;k++){need[k]=(need[k]||0)+1;if(ld>=k)done[k]=(done[k]||0)+1}}
@@ -6776,7 +6776,7 @@ function repAtlasView(){const A=repAtlasArgs(),per=arRange(A.kind,A.d)[2];
   const box=h('div',{class:'adash rav'},
     h('div',{class:'rav-hd'},h('div',{},h('div',{class:'rav-t'},'⭐ '+ARKN[A.kind]),h('div',{class:'rav-s'},A.sc.name+(A.sc.sub?' · '+A.sc.zone:A.sc.zone&&!A.sc.all?' · '+A.sc.zone:'')+'  ·  '+per)),
       h('div',{class:'rav-who'},h('div',{},'Prepared by ',h('b',{},ARP.by)),h('div',{},'Sent to ',h('b',{},ARP.to)))),pages,
-    h('div',{class:'rav-ft'},'This is exactly the PDF that Send / WhatsApp / E-mail / PDF / Print will make (2 pages, A4 landscape).'));
+    h('div',{class:'rav-ft'},'This is exactly the PDF that Send / WhatsApp / E-mail / PDF / Print will make ('+(A.kind==='day'?'1 page, A4 portrait':A.kind==='area'?'2 pages, A4 landscape':'1 page, A4 landscape')+').'));
   (async()=>{try{const b=await repAtlasBlob();if(!pages.isConnected)return;await loadPdfJs();const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await b.arrayBuffer())}).promise;pages.replaceChildren();
       for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n),w=Math.min(1600,Math.max(900,(pages.clientWidth||900)*(devicePixelRatio||1)*1.2)),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:w/v0.width});const cv=h('canvas',{class:'rav-cv'});cv.width=vp.width;cv.height=vp.height;
         await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;const lab=h('div',{class:'rav-pn'},'Page '+n+' of '+pdf.numPages);pages.append(h('div',{class:'rav-pw'},cv,lab));cv.onclick=()=>{const u=URL.createObjectURL(b);open(u,'_blank')}}}
@@ -7170,7 +7170,7 @@ function adSiteDraw(cv,ai){const dp=devicePixelRatio||1,W=cv.clientWidth,H=cv.cl
   const sel=K.areas[ai];if(sel){poly(sel.c);x.fillStyle='rgba(255,211,107,.18)';x.fill();x.strokeStyle='#ffd93b';x.lineWidth=3.5;x.shadowColor='#ffcc33';x.shadowBlur=10;x.stroke();x.shadowBlur=0}
   const fs=Math.max(9,Math.min(13,s*60));x.font='800 '+fs+'px system-ui';x.textAlign='center';x.textBaseline='middle';
   K.areas.forEach((a,k)=>{if(a.w)return;const [u,w]=P(a.lx,a.ly);if(u<-20||u>W+20||w<-20||w>H+20)return;const t=a.name.replace('AREA ','A-'),tw=x.measureText(t).width+10;x.fillStyle=k===ai?'#ffd36b':'rgba(8,14,28,.82)';x.strokeStyle=k===ai?'#fff':'rgba(255,255,255,.6)';x.lineWidth=1;x.beginPath();x.roundRect?x.roundRect(u-tw/2,w-fs*.8,tw,fs*1.6,5):x.rect(u-tw/2,w-fs*.8,tw,fs*1.6);x.fill();x.stroke();x.fillStyle=k===ai?'#0a1430':'#fff';x.fillText(t,u,w+.5)});
-  const want=W*0.2/s,p=Math.pow(10,Math.floor(Math.log10(want))),m=[1,2,2.5,5].map(f=>f*p).filter(v=>v<=want).pop()||p,len=m*s,SX=W/2+len/2+24;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(SX-len-36,H-30,len+26,22);for(let k=0;k<4;k++){x.fillStyle=k%2?'#fff':'#111';x.fillRect(SX-len-24+len*k/4,H-16,len/4,5)}x.fillStyle='#fff';x.font='600 10px system-ui';x.fillText('0',SX-len-24,H-22);x.fillText(fmt(m)+' m',SX-24,H-22);
+  const want=W*0.2/s,p=Math.pow(10,Math.floor(Math.log10(want))),m=[1,2,2.5,5].map(f=>f*p).filter(v=>v<=want).pop()||p,len=m*s,SX=W/2+len/2+24,SY=40;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(SX-len-36,SY-30,len+26,22);for(let k=0;k<4;k++){x.fillStyle=k%2?'#fff':'#111';x.fillRect(SX-len-24+len*k/4,SY-16,len/4,5)}x.fillStyle='#fff';x.font='600 10px system-ui';x.fillText('0',SX-len-24,SY-22);x.fillText(fmt(m)+' m',SX-24,SY-22);
   if(!cv.__site){cv.__site=1;let dn=null,mv=false;cv.addEventListener('pointerdown',e=>{if(!AMS)return;dn=[e.clientX,e.clientY,AMP.x,AMP.y];mv=false;cv.setPointerCapture(e.pointerId)});
     cv.addEventListener('pointermove',e=>{if(!AMS||!dn)return;const dx=e.clientX-dn[0],dy=e.clientY-dn[1];if(Math.abs(dx)+Math.abs(dy)>5)mv=true;if(mv){AMP.x=dn[2]+dx;AMP.y=dn[3]+dy;adSiteDraw(cv,adArea())}});
     cv.addEventListener('pointerup',e=>{if(!AMS||!dn)return;const was=mv;dn=null;if(was||!AMT)return;const r=cv.getBoundingClientRect(),E=(e.clientX-r.left-AMT.ox)/AMT.s,N=(AMT.oy-(e.clientY-r.top))/AMT.s;const sq=AMZ>=1.8?subs().find(q=>q.c&&q.c.length>2&&inPoly(E,N,q.c)):null;if(sq){subSet(subOf(sq),sq.id);return}const k=K.areas.findIndex(a=>!a.w&&inPoly(E,N,a.c));if(k>=0){subSet(k,'');setTimeout(()=>siteZoomTo(k),150)}});
