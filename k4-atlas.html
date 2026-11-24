@@ -723,7 +723,7 @@ function placeOf(P){const cnt={};for(const p of P){const i=nearestBase(p.e,p.n,4
 let svView=lsGet('as2_svv','list'),svF={who:'',kind:'',q:''};
 function rSurv(){const el=$('#p-surv');el.replaceChildren();
   el.append(h('h1',{class:'pt'},'Surveys'),h('div',{class:'sub'},'Every as-built survey on site – who surveyed, where, which work, and the quantity it shows.'));
-  el.append(h('div',{class:'row',style:'margin-bottom:12px'},h('div',{class:'seg'},...[['list','All surveys'],['wir','WIR register'],['day','Daily log'],['who','By surveyor']].map(([k,l])=>h('button',{class:svView===k?'on':'',onclick:()=>{svView=k;lsSet('as2_svv',k);rSurv()}},l))),h('span',{class:'sp'}),h('button',{class:'btn pri',onclick:()=>newSurvey()},'+ New survey')));
+  el.append(h('div',{class:'row',style:'margin-bottom:12px'},h('div',{class:'seg'},...[['list','All surveys'],['wir','WIR register'],['day','Daily log'],['who','By surveyor']].map(([k,l])=>h('button',{class:svView===k?'on':'',onclick:()=>{svView=k;lsSet('as2_svv',k);rSurv()}},l))),h('span',{class:'sp'}),h('button',{class:'btn',onclick:()=>wirImport(),title:'Paste your WIR summary sheet'},'⇪ Import WIR summary'),h('button',{class:'btn pri',onclick:()=>newSurvey()},'+ New survey')));
   if(svView==='wir'){rWirReg(el);return}
   const all=surveys(),who=[...new Set(all.map(s=>s.surveyor||'–'))];
   el.append(h('div',{class:'row',style:'margin-bottom:12px'},
@@ -780,6 +780,37 @@ function irParse(x){x=String(x||'');const U=x.toUpperCase(),o={};const num=re=>{
   o.layer=num(/LAYER\s*-?\s*0*(\d+)/);if(part!=null&&o.phase)o.sub='M4-P'+o.phase+'-PART-'+String(part).padStart(3,'0');else if(part!=null)o.sub='M4-PART-'+String(part).padStart(3,'0');
   const k=(U.match(/KHUZAM\s*0*(\d+)/)||[])[1];if(k)o.proj='Khuzam '+(+k);return o}
 const cwirTxt=s=>s&&s.cwir?'Civil WIR-'+String(s.cwir).padStart(4,'0'):'';
+const subMain=n=>/^\s*(AREA|ARES|ARE)\b|^\s*(AREA|ARES)[-_ ]?\d|^\s*\d{1,2}\s*-\s*[A-Z]\d*\s*$/i.test(String(n||''));
+const subUsers=x=>surveys().filter(q=>survSub(q)===x).length;
+function subAssign(sv,nm){nm=String(nm||'').trim().slice(0,40);if(!nm)return null;const cur=survSub(sv);const kk=x=>String(x||'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
+  const ex=subs().find(x=>kk(x.name)===kk(nm)&&(!cur||x.area===cur.area));if(ex)return ex;
+  if(cur&&subUsers(cur)<=1&&cur.from===sv.id){cur.name=nm;cur.u=Date.now();return cur}
+  return autoSub(sv,true,nm,true)}
+function setSv(s,o){if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},o,{u:Date.now()})}else{const x=M.surveys.find(q=>q.id===s.id);if(x)Object.assign(x,o,{u:Date.now()})}Object.assign(s,o)}
+function wirSumParse(txt){const out=[];for(let L of String(txt||'').split(/\r?\n/)){L=L.trim();if(!L)continue;let sw=null,cw=null,rest=L;
+    const re=/\bW\.?I\.?R\.?\s*[-_#:]?\s*0*(\d{1,6})\b/gi;const ms=[...L.matchAll(re)];
+    if(ms.length){sw=+ms[0][1];if(ms[1])cw=+ms[1][1];rest=L.replace(re,' ')}
+    else{const m=L.match(/^\s*0*(\d{1,6})[\s,;|\t]+0*(\d{1,6})[\s,;|\t]+(.*)$/);if(m){sw=+m[1];cw=+m[2];rest=m[3]}else{const m1=L.match(/^\s*0*(\d{1,6})[\s,;|\t]+(.*)$/);if(m1){sw=+m1[1];rest=m1[2]}}}
+    if(!sw)continue;rest=rest.replace(/^[\s,;|\t\-–:]+|[\s,;|\t]+$/g,'').replace(/[\t|]+/g,' ').replace(/\s{2,}/g,' ');out.push({sw,cw,ir:rest,r:irParse(rest)})}return out}
+function wirImport(){if(!guard())return;const ta=h('textarea',{style:'min-height:150px;width:100%',placeholder:'Paste the rows of your WIR summary sheet (copy them from Excel or WhatsApp):\nWIR-000096  WIR-000099  PHASE 1- ZONE 07-AREA 03-FILLING LAYER 01 FOR FILL PART 0009 …\nWIR-000097  WIR-000100  PHASE 1- ZONE 07-AREA 03-FILLING LAYER 01 FOR FILL PART 0016 …\n\nFirst number = Survey WIR · second = Civil WIR · the rest = Inspection Request.'});
+  const out=h('div',{style:'margin-top:8px;max-height:46vh;overflow:auto'});let rows=[];const all=surveys();
+  const cln=h('input',{type:'checkbox',checked:true,style:'width:auto;flex:none;margin:0'});const ow=h('input',{type:'checkbox',checked:true,style:'width:auto;flex:none;margin:0'});
+  const show=()=>{rows=wirSumParse(ta.value);out.replaceChildren();if(!rows.length){out.append(h('div',{class:'mut'},ta.value.trim()?'No WIR numbers found in what you pasted.':'Paste rows above – a preview shows here.'));return}
+    const tb=h('table',{class:'t',style:'font-size:12px'},h('tr',{},...['Survey WIR','Civil WIR','Sub-area','Now','Status'].map(x=>h('th',{},x))));let ok=0;
+    for(const r of rows){const s=all.find(x=>+x.wir===r.sw);r.s=s;const cur=s&&survSub(s);if(s)ok++;
+      tb.append(h('tr',{},h('td',{},'WIR-'+String(r.sw).padStart(4,'0')),h('td',{},r.cw?String(r.cw).padStart(4,'0'):'–'),h('td',{style:'font-weight:700;color:var(--accent)'},r.r.sub||'–'),h('td',{class:'mut'},cur?cur.name:'–'),h('td',{style:'color:'+(s?'var(--ok)':'var(--bad)')},s?'✓ '+dmy(s.date):'not in app')))}
+    out.append(h('div',{class:'mut',style:'margin-bottom:6px'},ok+' of '+rows.length+' rows match a survey in the app.'),tb)};
+  ta.oninput=show;show();
+  modal('Import WIR summary',h('div',{},h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:6px'},'Sets the Civil WIR No., the Inspection Request and the sub-area name (M4-P1-PART-017 …) on every matching survey in one go. The sub-area boundary is made from the survey\'s outer points.'),ta,
+    h('label',{style:'display:flex;gap:8px;align-items:center;justify-content:flex-start;text-align:left;font-size:12.5px;margin-top:8px'},ow,'Replace sub-area names that are a main-area name (AREA-03, 03-A …)'),
+    h('label',{style:'display:flex;gap:8px;align-items:center;justify-content:flex-start;text-align:left;font-size:12.5px;margin-top:4px'},cln,'Remove old main-area-named sub-areas left with no survey'),out),
+    close=>[h('button',{class:'btn',onclick:close},'Cancel'),h('button',{class:'btn pri',onclick:async()=>{if(!rows.length){toast('Paste the rows first');return}let n=0,ns=0,miss=[];
+      for(const r of rows){const s=r.s;if(!s){miss.push(r.sw);continue}const o={};if(r.cw)o.cwir=r.cw;if(r.ir)o.ir=r.ir;const p=r.r;if(p.phase)o.phase=p.phase;if(p.zone)o.zone=p.zone;if(p.area)o.areaNo=p.area;if(p.part!=null)o.part=p.part;
+        if(p.sub&&!String(s.wref||'').trim())o.wref=p.sub;if(p.kind&&!s.kind)o.kind=p.kind;if(p.layer&&!s.layer&&(o.kind||s.kind)==='fill')o.layer=p.layer;setSv(s,o);n++;
+        if(p.sub){const cur=survSub(s);if(!cur||ow.checked||!subMain(cur.name)||true){if(cur&&!ow.checked&&subMain(cur.name)){}else{const sa=subAssign(s,p.sub);if(sa&&sa.id){setSv(s,{sa:sa.id});ns++}}}}}
+      let rm=0;if(cln.checked)for(const x of subs())if(subMain(x.name)&&!subUsers(x)){M.del[x.id]=Date.now();rm++}
+      for(const k in AREA_CACHE)delete AREA_CACHE[k];saveMeta();close();await recalc();
+      toast(n+' surveys updated · '+ns+' sub-areas named'+(rm?' · '+rm+' old removed':'')+(miss.length?' · not in app: '+miss.join(', '):''))}},'Apply')])}
 function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('as2_lastwho','Muhammad Sheraz Abbasi'),kind:'fill',layer:'',note:'',wir:nextWir(),sub:today()};
   const who=[...new Set(M.surveyors.concat(surveys().map(x=>x.surveyor).filter(x=>x&&x!=='Survey team')))];
   const f={date:h('input',{type:'date',value:s.date}),who:h('input',{list:'whoL',value:s.surveyor||''}),kind:h('select',{},...Object.entries(KIND).map(([k,[n]])=>h('option',{value:k,selected:s.kind===k},n))),
@@ -789,7 +820,7 @@ function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('
   
   const upd=()=>{const P=parsePts(f.txt.value);saFill(P);if(!P.length){prev.textContent=isNew?'No points read yet.':'Leave empty to keep the '+fmt(s.n)+' points already saved.';return}const pl=placeOf(P);const L=saList(P);prev.textContent=P.length+' points read · '+pl.txt+(L.best?' · inside sub-area '+subs().find(x=>x.id===L.best).name:'')};
   f.txt.oninput=upd;const say=t=>{prev.textContent=t};
-  const irGo=(apply)=>{const r=irParse(f.ir.value);const bits=[];if(r.kind){bits.push((KIND[r.kind]||KIND.other)[0]);if(apply)f.kind.value=r.kind}if(r.layer&&r.kind==='fill'){bits.push('layer '+r.layer);if(apply)f.layer.value=r.layer}if(r.phase)bits.push('Phase '+r.phase);if(r.zone)bits.push('Zone '+String(r.zone).padStart(2,'0'));if(r.area)bits.push('Area '+String(r.area).padStart(2,'0'));if(r.sub){bits.push('Sub-area '+r.sub);if(apply&&!f.saN.value.trim())f.saN.value=r.sub;if(apply&&!f.wref.value.trim())f.wref.value=r.sub}f.irI.textContent=bits.length?'Read: '+bits.join(' · '):(f.ir.value.trim()?'Nothing recognised – fill the fields below by hand.':'')};f.ir.oninput=()=>irGo(true);irGo(false);
+  const irGo=(apply)=>{const r=irParse(f.ir.value);const bits=[];if(r.kind){bits.push((KIND[r.kind]||KIND.other)[0]);if(apply)f.kind.value=r.kind}if(r.layer&&r.kind==='fill'){bits.push('layer '+r.layer);if(apply)f.layer.value=r.layer}if(r.phase)bits.push('Phase '+r.phase);if(r.zone)bits.push('Zone '+String(r.zone).padStart(2,'0'));if(r.area)bits.push('Area '+String(r.area).padStart(2,'0'));if(r.sub){bits.push('Sub-area '+r.sub);if(apply&&(!f.saN.value.trim()||subMain(f.saN.value)))f.saN.value=r.sub;if(apply&&!f.wref.value.trim())f.wref.value=r.sub}f.irI.textContent=bits.length?'Read: '+bits.join(' · '):(f.ir.value.trim()?'Nothing recognised – fill the fields below by hand.':'')};f.ir.oninput=()=>irGo(true);irGo(false);
   const src=srcRow((t,name,how,photo)=>{if(how==='plain'&&(/\.xml$/i.test(name)||/<LandXML/i.test(t.slice(0,4000)))){const r=readPoints(t,name,'vertices');f.txt.value=toObjs(r.T).map(p=>[p.id,p.n.toFixed(3),p.e.toFixed(3),p.z.toFixed(3)].join(',')).join('\n')}else f.txt.value=t;upd();if(how==='rows'){const n=t?t.split('\n').length:0;prev.textContent=(n?n+' rows read from '+name+(photo?' (photo – please check the numbers below; on WIR sheets the finished level is used)':'')+' · ':'No point rows found in '+name+'. ')+prev.textContent}},say);upd();
   const body=h('div',{},h('datalist',{id:'whoL'},...who.map(w=>h('option',{value:w}))),
     h('div',{class:'f2'},h('label',{class:'f'},h('span',{},'Date'),f.date),h('label',{class:'f'},h('span',{},'Surveyor'),f.who)),
@@ -811,7 +842,7 @@ function newSurvey(){if(!isSurveyor()&&!guard())return;surveyForm(null,async(o,P
   M.surveys.push(Object.assign({id,n:P.length,area:pl.txt,u:Date.now()},o));saveMeta();cloudPushPts(id);await recalc();toast('Survey saved · '+pl.txt);if(!o.sa&&o.kind!=='other'&&o.kind!=='waste'&&(saName||lsGet('as2_autosub',true)!==false)){const sv=surveys().find(x=>x.id===id);if(sv){const sa=autoSub(sv,false,saName);if(sa&&sa.id){sv.sa=sa.id;const x=M.surveys.find(q=>q.id===id);if(x)x.sa=sa.id;saveMeta()}}}})}
 function editSurvey(s){if(!guard())return;surveyForm(s,async(o,P)=>{const saName=o.saName||'';delete o.saName;if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},{sa:o.sa,date:o.date,surveyor:o.surveyor,kind:o.kind,layer:o.layer,note:o.note,wir:o.wir,sub:o.sub,wref:o.wref,desc:o.desc,cwir:o.cwir,ir:o.ir,phase:o.phase,zone:o.zone,areaNo:o.areaNo,part:o.part,u:Date.now()})}
   else{const x=M.surveys.find(q=>q.id===s.id);Object.assign(x,o,{u:Date.now()});if(P){await dbPut('pts:'+s.id,P);PTS[s.id]=P;x.n=P.length;x.area=placeOf(P).txt;delete AREA_CACHE[s.id];cloudPushPts(s.id)}}
-  saveMeta();await recalc();if(saName&&!o.sa){const sv=surveys().find(q=>q.id===s.id);const sa=sv&&autoSub(sv,true,saName);if(sa&&sa.id){if(s.builtin)M.edits[s.id].sa=sa.id;else{const x=M.surveys.find(q=>q.id===s.id);if(x)x.sa=sa.id}saveMeta();render();toast('Saved · sub-area '+sa.name);return}}toast('Saved')})}
+  saveMeta();await recalc();if(saName&&!o.sa){const sv=surveys().find(q=>q.id===s.id);const sa=sv&&subAssign(sv,saName);if(sa&&sa.id){if(s.builtin)M.edits[s.id].sa=sa.id;else{const x=M.surveys.find(q=>q.id===s.id);if(x)x.sa=sa.id}saveMeta();render();toast('Saved · sub-area '+sa.name);return}}toast('Saved')})}
 async function recalc(){ready=false;render();await new Promise(r=>setTimeout(r,30));DZ={};await rebuild();LYR={};render()}
 /* ============================== DESIGN (IFC register) + NGL ============================== */
 let cmpA='',cmpB='',CMP=null;
@@ -2349,10 +2380,10 @@ const AREACOL=['#ff8787','#74c0fc','#8ce99a','#ffe066','#e599f7','#ffa94d','#63e
 const areaCol=ai=>AREACOL[ai%AREACOL.length];
 let SEL=null; // {t:'sub'|'area', id}
 /* a survey's outer points become a sub-area of the area it is in – once per place (layers on the same spot share it) */
-function autoSub(sv,quiet,nm0){nm0=(nm0||'').trim().slice(0,40);const P=ptsEN(sv);if(P.length<3)return null;const H=outline(P);if(H.length<3||polyArea(H)<100)return null;
+function autoSub(sv,quiet,nm0,fresh){nm0=(nm0||'').trim().slice(0,40);const P=ptsEN(sv);if(P.length<3)return null;const H=outline(P);if(H.length<3||polyArea(H)<100)return null;
   let cx=0,cy=0;for(const q of H){cx+=q[0];cy+=q[1]}cx/=H.length;cy/=H.length;const i=nearestBase(cx,cy,900);const ai=i>=0?B.A[i]:-1;if(ai<0||K.areas[ai].w)return null;const a=K.areas[ai],A0=polyArea(H);
   if(nm0){const ex=subs().find(x=>x.area===a.name&&String(x.name).toLowerCase()===nm0.toLowerCase());if(ex){if(!quiet)toast('Saved in sub-area '+ex.name);return ex}}
-  const same=subs().find(x=>x.area===a.name&&(x.from===sv.id||(inPoly(cx,cy,x.c)&&(()=>{const r=polyArea(x.c)/A0;return r>0.6&&r<1.6})())));if(same){if(nm0&&same.from===sv.id){same.name=nm0;same.u=Date.now();if(!quiet){saveMeta();toast('Sub-area renamed to '+nm0)}}return same}
+  const same=!fresh&&subs().find(x=>x.area===a.name&&(x.from===sv.id||(inPoly(cx,cy,x.c)&&(()=>{const r=polyArea(x.c)/A0;return r>0.6&&r<1.6})())));if(same){if(nm0&&same.from===sv.id){same.name=nm0;same.u=Date.now();if(!quiet){saveMeta();toast('Sub-area renamed to '+nm0)}}return same}
   const used=new Set(subs().filter(x=>x.area===a.name).map(x=>x.name));let k=0,nm;do{nm=a.name.replace('AREA ','')+'-'+String.fromCharCode(65+k%26)+(k>=26?Math.floor(k/26):'');k++}while(used.has(nm));if(nm0)nm=nm0;
   const o={id:'sa'+uid(),name:nm,area:a.name,c:H.map(q=>[+q[0].toFixed(3),+q[1].toFixed(3)]),col:SUBCOL[subs().length%SUBCOL.length],note:'from '+(sv.wir?wirTxt(sv):'survey '+dmy(sv.date))+' outer points',from:sv.id,u:Date.now()};
   M.subs=M.subs||[];M.subs.push(o);if(!quiet){saveMeta();toast('Sub-area '+nm+' made from the outer points')}return o}
@@ -2412,7 +2443,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='12.6',APPD='22 Nov 2026';
+const APPV='12.7',APPD='22 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
