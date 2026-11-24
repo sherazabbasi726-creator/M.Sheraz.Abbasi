@@ -775,15 +775,15 @@ function parsePts(text){const out=[];let order=null;
 /* ===== Inspection-request text → work, layer, phase, zone, area, part (sub-area name M4-P1-PART-017) ===== */
 function irParse(x){x=String(x||'');const U=x.toUpperCase(),o={};const num=re=>{const m=U.match(re);return m?+m[1]:null};
   o.phase=num(/PHASE\s*-?\s*0*(\d+)/)||num(/\bP\s*0*(\d)\b/);o.zone=num(/ZONE\s*-?\s*0*(\d+)/);o.area=num(/AREA\s*-?\s*0*(\d+)/);
-  let part=num(/PART\s*-?\s*0*(\d+)/);const mm=U.match(/M\s*(\d)\s*[.\-_ ]?\s*P\s*(\d+)\s*[.\-_ ]?\s*PART\s*[.\-_ ]?\s*0*(\d+)/);if(mm){o.phase=o.phase||+mm[2];part=+mm[3]}
+  let part=num(/PART\s*-?\s*0*(\d+)/);let praw=(U.match(/PART\s*-?\s*(\d+)/)||[])[1]||null;const mm=U.match(/M\s*(\d)\s*[.\-_ ]?\s*P\s*(\d+)\s*[.\-_ ]?\s*PART\s*[.\-_ ]?\s*0*(\d+)/);if(mm){o.phase=o.phase||+mm[2];part=+mm[3];praw=(U.match(/M\s*\d\s*[.\-_ ]?\s*P\s*\d+\s*[.\-_ ]?\s*PART\s*[.\-_ ]?\s*(\d+)/)||[])[1]||praw}
   o.part=part;if(/SURFACE\s*PREP|PREPER|PREPAR/.test(U))o.kind='prep';else if(/WASTE|REMOV/.test(U))o.kind='waste';else if(/FILL/.test(U))o.kind='fill';else if(/FINAL|FINISH/.test(U))o.kind='final';else if(/CUT|EXCAVAT/.test(U))o.kind='cut';
-  o.layer=num(/LAYER\s*-?\s*0*(\d+)/);if(part!=null&&o.phase)o.sub='M4-P'+o.phase+'-PART-'+String(part).padStart(3,'0');else if(part!=null)o.sub='M4-PART-'+String(part).padStart(3,'0');
+  o.layer=num(/LAYER\s*-?\s*0*(\d+)/);if(part!=null){const pp=praw&&praw.length>=3?praw:String(part).padStart(3,'0');if(part!=null&&o.phase)o.sub='M4-P'+o.phase+'-PART-'+pp;else if(part!=null)o.sub='M4-PART-'+pp}
   const k=(U.match(/KHUZAM\s*0*(\d+)/)||[])[1];if(k)o.proj='Khuzam '+(+k);return o}
 const cwirTxt=s=>s&&s.cwir?'Civil WIR-'+String(s.cwir).padStart(4,'0'):'';
 const subMain=n=>/^\s*(AREA|ARES|ARE)\b|^\s*(AREA|ARES)[-_ ]?\d|^\s*\d{1,2}\s*-\s*[A-Z]\d*\s*$/i.test(String(n||''));
 const subUsers=x=>surveys().filter(q=>survSub(q)===x).length;
-function subAssign(sv,nm){nm=String(nm||'').trim().slice(0,40);if(!nm)return null;const cur=survSub(sv);const kk=x=>String(x||'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
-  const ex=subs().find(x=>kk(x.name)===kk(nm)&&(!cur||x.area===cur.area));if(ex)return ex;
+function subAssign(sv,nm){nm=String(nm||'').trim().slice(0,40);if(!nm)return null;const cur=survSub(sv);const kk=x=>String(x||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').replace(/(^|[^0-9])0+(?=\d)/g,'$1').replace(/ /g,'');
+  const ex=subs().find(x=>kk(x.name)===kk(nm)&&(!cur||x.area===cur.area));if(ex){if(ex.name!==nm){ex.name=nm;ex.u=Date.now()}return ex}
   if(cur&&subUsers(cur)<=1&&cur.from===sv.id){cur.name=nm;cur.u=Date.now();return cur}
   return autoSub(sv,true,nm,true)}
 function setSv(s,o){if(s.builtin){M.edits[s.id]=Object.assign(M.edits[s.id]||{},o,{u:Date.now()})}else{const x=M.surveys.find(q=>q.id===s.id);if(x)Object.assign(x,o,{u:Date.now()})}Object.assign(s,o)}
@@ -2443,7 +2443,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='12.7',APPD='22 Nov 2026';
+const APPV='12.9',APPD='22 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
