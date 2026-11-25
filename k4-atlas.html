@@ -480,6 +480,7 @@ html.atlasv #p-today{padding-top:10px}
 .am3d{position:absolute;left:10px;bottom:12px;z-index:2;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:rgba(6,18,42,.88);border:1px solid rgba(255,211,107,.6);color:#fff;font:800 18px var(--disp);cursor:pointer}
 @media (max-width:1099px){.amlg,.amel{display:none}.amcp{transform:scale(.8);transform-origin:top right}}
 
+.lrow{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.lchip{display:flex;flex-direction:column;align-items:flex-start;min-width:84px;padding:6px 9px;border-radius:10px;border:1px dashed var(--line,#3a444c);background:transparent;color:inherit;font:inherit;cursor:default;opacity:.6;text-align:left}.lchip b{font-size:13px}.lchip small{font-size:10.5px;line-height:1.3;opacity:.9}.lchip.on{opacity:1;cursor:pointer;border:1px solid var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}.lchip.on b{color:var(--c)}.lbk{padding:10px 0;border-top:1px solid var(--line,#2a3238)}.lbk:first-of-type{border-top:0}
 </style>
 
 
@@ -723,8 +724,8 @@ function placeOf(P){const cnt={};for(const p of P){const i=nearestBase(p.e,p.n,4
 let svView=lsGet('as2_svv','list'),svF={who:'',kind:'',q:''};
 function rSurv(){const el=$('#p-surv');el.replaceChildren();
   el.append(h('h1',{class:'pt'},'Surveys'),h('div',{class:'sub'},'Every as-built survey on site – who surveyed, where, which work, and the quantity it shows.'));
-  el.append(h('div',{class:'row',style:'margin-bottom:12px'},h('div',{class:'seg'},...[['list','All surveys'],['wir','WIR register'],['day','Daily log'],['who','By surveyor']].map(([k,l])=>h('button',{class:svView===k?'on':'',onclick:()=>{svView=k;lsSet('as2_svv',k);rSurv()}},l))),h('span',{class:'sp'}),h('button',{class:'btn',onclick:()=>wirImport(),title:'Paste your WIR summary sheet'},'⇪ Import WIR summary'),h('button',{class:'btn pri',onclick:()=>newSurvey()},'+ New survey')));
-  if(svView==='wir'){rWirReg(el);return}
+  el.append(h('div',{class:'row',style:'margin-bottom:12px'},h('div',{class:'seg'},...[['list','All surveys'],['wir','WIR register'],['day','Daily log'],['who','By surveyor'],['sub','By sub-area']].map(([k,l])=>h('button',{class:svView===k?'on':'',onclick:()=>{svView=k;lsSet('as2_svv',k);rSurv()}},l))),h('span',{class:'sp'}),h('button',{class:'btn',onclick:()=>wirImport(),title:'Paste your WIR summary sheet'},'⇪ Import WIR summary'),h('button',{class:'btn pri',onclick:()=>newSurvey()},'+ New survey')));
+  if(svView==='wir'){rWirReg(el);return}if(svView==='sub'){subBook(el);return}
   const all=surveys(),who=[...new Set(all.map(s=>s.surveyor||'–'))];
   el.append(h('div',{class:'row',style:'margin-bottom:12px'},
     h('select',{style:'width:auto',onchange:e=>{svF.who=e.target.value;rSurv()}},h('option',{value:''},'All surveyors'),...who.map(w=>h('option',{value:w,selected:svF.who===w},w))),
@@ -811,6 +812,26 @@ function wirImport(){if(!guard())return;const ta=h('textarea',{style:'min-height
       let rm=0;if(cln.checked)for(const x of subs())if(subMain(x.name)&&!subUsers(x)){M.del[x.id]=Date.now();rm++}
       for(const k in AREA_CACHE)delete AREA_CACHE[k];saveMeta();close();await recalc();
       toast(n+' surveys updated · '+ns+' sub-areas named'+(rm?' · '+rm+' old removed':'')+(miss.length?' · not in app: '+miss.join(', '):''))}},'Apply')])}
+function subLadder(sa,Z){const SV=surveys().filter(s=>{const q=survSub(s);return q&&q.id===sa.id}).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(+a.wir||0)-(+b.wir||0));
+  let need=0;try{if(Z){const o=qtyOf(subTest(sa),Z);const st=layStats(o.lN);need=st?st.most:0}}catch(e){}
+  const by={};for(const s of SV){const k=s.kind==='fill'?'L'+(s.layer||0):s.kind;(by[k]=by[k]||[]).push(s)}
+  const hasF=SV.some(s=>s.kind==='fill'||s.kind==='prep'),hasC=SV.some(s=>s.kind==='cut'||s.kind==='final');if(hasC&&!hasF)need=0;const maxL=Math.max(need,...SV.filter(s=>s.kind==='fill').map(s=>+s.layer||0),0);
+  const chip=(lab,L,col)=>{const s=L&&L[L.length-1];return h('button',{class:'lchip'+(s?' on':''),style:s?'--c:'+col:'',title:s?(L.length>1?L.length+' surveys – latest shown':''):'not surveyed yet',onclick:()=>{if(s)survSheet(s)}},h('b',{},lab),h('small',{},s?(s.wir?'WIR-'+String(s.wir).padStart(4,'0'):'no WIR')+(s.cwir?' / C-'+String(s.cwir).padStart(4,'0'):''):'–'),h('small',{},s?dmy(s.date)+(L.length>1?' ×'+L.length:''):''))};
+  const row=[];if(by.prep||maxL)row.push(chip('Prep',by.prep,KIND.prep[1]));for(let l=1;l<=maxL;l++)row.push(chip('L'+l,by['L'+l],KIND.fill[1]));if(by.L0)row.push(chip('Fill',by.L0,KIND.fill[1]));
+  const cut=(by.cut||[]).map((s,i)=>chip('Cut '+(i+1),[s],KIND.cut[1]));const fin=by.final?[chip('Final',by.final,KIND.final[1])]:[];const ws=(by.waste||[]).map((s,i)=>chip('Removal '+(i+1),[s],KIND.waste[1]));const ot=(by.other||[]).map((s,i)=>chip('Other '+(i+1),[s],KIND.other[1]));
+  const done=SV.filter(s=>s.kind==='fill').map(s=>+s.layer||0);const top=done.length?Math.max(...done):0;
+  const nc=(by.cut||[]).length;const sum=[top||need?'layer '+top+(need>top?' of '+need:''):'',nc?'cut stage '+nc:'',by.final?'final done':''].filter(Boolean).join(' · ');return {SV,need,top,sum,el:h('div',{},row.length?h('div',{class:'lrow'},...row):null,(cut.length||fin.length)?h('div',{class:'lrow'},...cut,...fin):null,(ws.length||ot.length)?h('div',{class:'lrow'},...ws,...ot):null,SV.length?null:h('div',{class:'mut',style:'font-size:12px'},'No survey saved in this sub-area yet.'))}}
+function subBook(el){const Z=ready?DZ[activeDesign().id]:null;const ALL=subs();const areas=[...new Set(ALL.map(x=>x.area))].sort();
+  el.append(h('div',{class:'mut',style:'font-size:12.5px;margin-bottom:10px'},'Main areas stay as they are. Every sub-area (part) keeps its own layers: each new layer you save with the same sub-area name shows here in the same row. A new part makes a new sub-area. Tap a layer to open its survey.'));
+  const q=h('input',{placeholder:'Find sub-area, e.g. 0015',style:'max-width:260px;margin-bottom:10px'});el.append(q);const box=h('div');el.append(box);
+  const draw=()=>{box.replaceChildren();const f=q.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    for(const an of areas){const L=ALL.filter(x=>x.area===an&&(!f||String(x.name).toUpperCase().replace(/[^A-Z0-9]/g,'').includes(f))).sort((a,b)=>String(a.name).localeCompare(String(b.name),undefined,{numeric:true}));if(!L.length)continue;
+      const c=h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},an.replace('AREA ','Area ')+' · '+L.length+' sub-area'+(L.length>1?'s':''))));
+      for(const sa of L){const r=subLadder(sa,Z);c.append(h('div',{class:'lbk'},h('div',{class:'row',style:'gap:8px;align-items:center;margin-bottom:6px'},h('span',{style:'width:12px;height:12px;border-radius:3px;flex:none;background:'+(sa.col||subCol(sa))}),h('b',{style:'font-size:14px'},sa.name),h('span',{class:'mut',style:'font-size:12px'},r.SV.length+' survey'+(r.SV.length===1?'':'s')+(r.sum?' · '+r.sum:'')),h('span',{class:'sp'}),h('button',{class:'btn sm',onclick:()=>qtySheet('sub',sa.id)},'Quantities ›')),r.el))}
+      box.append(c)}
+    const no=surveys().filter(s=>!survSub(s)&&s.kind!=='other');if(no.length&&!f)box.append(h('div',{class:'card'},h('div',{class:'ct'},h('h3',{},'No sub-area yet ('+no.length+')')),h('div',{class:'mut',style:'font-size:12px;margin-bottom:6px'},'Open one and type the sub-area name (or paste the Inspection Request), or use ⇪ Import WIR summary.'),...no.slice(0,40).map(survItem)));
+    if(!box.children.length)box.append(h('div',{class:'mut'},'No sub-area found.'))};
+  q.oninput=draw;draw()}
 function surveyForm(s,onSave){const isNew=!s;s=s||{date:today(),surveyor:lsGet('as2_lastwho','Muhammad Sheraz Abbasi'),kind:'fill',layer:'',note:'',wir:nextWir(),sub:today()};
   const who=[...new Set(M.surveyors.concat(surveys().map(x=>x.surveyor).filter(x=>x&&x!=='Survey team')))];
   const f={date:h('input',{type:'date',value:s.date}),who:h('input',{list:'whoL',value:s.surveyor||''}),kind:h('select',{},...Object.entries(KIND).map(([k,[n]])=>h('option',{value:k,selected:s.kind===k},n))),
@@ -1979,7 +2000,7 @@ function qtySheet(type,key){if(!ready)return;const D=activeDesign(),Z=DZ[D.id];Q
       g.type==='area'||g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 8px'},h('button',{class:'btn sm',onclick:()=>stakeOut(g)},'📐 Stakeout file (GSI / SDR / CSV)'),h('button',{class:'btn sm',onclick:()=>cadSheet(g)},'📤 DXF / LandXML'),h('button',{class:'btn sm',onclick:()=>pondSheet(g)},'💧 Ponding check')):null,
       g.type==='area'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai)}},'+ Sub-area (draw on map)'),h('button',{class:'btn sm',onclick:()=>{close();v3Open(g.ai)}},'🧊 3D')):null,
       g.type==='sub'?h('div',{class:'row',style:'gap:8px;margin:4px 0 12px'},h('button',{class:'btn sm',onclick:()=>{close();subDraw(g.ai,g.sub)}},'Edit corners / name'),canEdit()||!CLOUD.st?h('button',{class:'btn sm dng',onclick:()=>{if(!confirm('Delete sub-area '+g.sub.name+'?'))return;M.del[g.sub.id]=1;saveMeta();close();toast('Deleted')}},'Delete'):null):null,
-      h('div',{class:'card'},h('h3',{},'Surveys here'),SV.length?h('div',{},...SV.slice(0,30).map(survItem)):h('div',{class:'mut'},'No survey yet.'),SV.length>30?h('div',{class:'mut'},'+ '+(SV.length-30)+' more in the Excel file'):null)))}
+      g.type==='sub'?h('div',{class:'card'},h('h3',{},'Layers in this sub-area'),subLadder(g.sub,Z).el):null,h('div',{class:'card'},h('h3',{},'Surveys here'),SV.length?h('div',{},...SV.slice(0,30).map(survItem)):h('div',{class:'mut'},'No survey yet.'),SV.length>30?h('div',{class:'mut'},'+ '+(SV.length-30)+' more in the Excel file'):null)))}
 function areaSummary(ai){qtySheet('area',ai)}
 async function qtyPdf(g,X,maps){await loadJs(JSPDF_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF));await loadJs(AUTOT_URL,()=>!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable));
   maps=await Promise.all(maps.map(u=>u?toJpg(u,'#0b0e10',0.8):u));const LOGOJ=await toJpg(document.querySelector('header .lg').src,'#0e1113',0.9);
@@ -2443,7 +2464,7 @@ function despike(R){let C=R.slice();for(let pass=0;pass<6;pass++){let ch=false;c
 
 
 /* ============================== VERSION AND UPDATE ============================== */
-const APPV='13.0',APPD='22 Nov 2026';
+const APPV='13.1',APPD='22 Nov 2026';
 const cmpV=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
 async function doUpdate(){toast('Updating…');try{for(const k of await caches.keys())if(k.startsWith('as2-'))await caches.delete(k)}catch(e){}try{const r=await navigator.serviceWorker.getRegistration('./alomaier');if(r)await r.update()}catch(e){}location.replace(location.pathname+'?v='+Date.now())}
 async function checkUpdate(manual){if(location.protocol==='file:'&&!manual)return;if(!navigator.onLine){if(manual)toast('No internet – cannot check now');return}
